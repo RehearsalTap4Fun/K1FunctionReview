@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "adapterId": "gold-miner",
+  "version": "20261019-v1",
+  "sourceIdentity": {
+    "sha": "",
+    "files": {
+      "client/Assets/k1/Editor/Tools/ToolSet/GoldMiner/GoldMinerGmPanel.Commands.cs": "",
+      "client/Assets/k1/Script/HotfixScripts/K1D1/Code/Game/GoldMiner/Mgr/LGoldMinerMgr.Data.cs": "",
+      "client/Assets/k1/Script/HotfixScripts/K1D1/Code/Game/Data/Dynamic/GM/GMGameData.cs": ""
+    }
+  },
+  "requiredTypes": [
+    "Logic.LPlayer",
+    "Game.GoldMiner.LGoldMinerMgr"
+  ],
+  "identity": {
+    "accountId": "",
+    "serverId": 0,
+    "activityId": "",
+    "clientIdentity": "",
+    "sessionId": ""
+  },
+  "runtimeAssembly": "",
+  "setupNote": "Unconfigured template. Bind actual source hashes, live identity and runtime assembly before use; this file is not runtime verification evidence."
+}

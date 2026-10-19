@@ -1,0 +1,14 @@
+{
+  "baseUrl": "",
+  "username": "",
+  "apiToken": "",
+  "deploymentDefaults": {
+    "ALIVE": "5"
+  },
+  "environmentWorkflow": {
+    "groupId": "",
+    "sender": "",
+    "senderId": "",
+    "runtimeHost": ""
+  }
+}

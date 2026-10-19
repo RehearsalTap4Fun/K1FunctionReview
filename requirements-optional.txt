@@ -1,0 +1,2 @@
+# Required only for Excel configuration parsing/variants.
+openpyxl>=3.1
