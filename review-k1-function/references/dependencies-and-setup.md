@@ -31,6 +31,95 @@ Jenkins 至少需可读取“指定备份线上服”“自定义代码配表分
 
 本 skill 的脚本不直接调用 OpenAI API，因此不额外要求 OpenAI API Key。运行它的宿主本身如何登录/计费，由接收者自己的环境决定。**DownKey 是每次备份产生的临时结果，不是安装时应共享或预填的 API Key**；本地不需要另装 `file-ladder` 来取得它。
 
+## 安装 k1-mcp 与 mcporter（Windows）
+
+### 1. 确认内网连接
+
+`k1-mcp` 是团队已部署的远程 MCP 服务，使用者添加连接即可，无需在个人电脑安装服务端。当前团队地址为 `http://172.20.90.39:8443`，协议为 HTTP；按此完整地址配置，不自行追加 `/mcp` 或 `/sse`。需要能访问公司内网或对应 VPN，可在 PowerShell 只读检查端口：
+
+```powershell
+Test-NetConnection 172.20.90.39 -Port 8443
+```
+
+`TcpTestSucceeded: True` 只表示端口可达，后面仍需验证 MCP 工具发现。本机参考连接没有额外 API Key 或认证头；接收者若遇到认证要求，应向服务维护者获取自己的配置，不能复制他人凭证。此服务地址与 Jenkins 配置中的 `runtimeHost` 含义不同，不从 MCP 地址自动推定部署节点。
+
+### 2. 在使用的 Agent 中添加连接
+
+Codex 与 Cursor 按实际使用情况选配，不要求同时安装两者。已有同名连接时先核对，保留已有认证设置，避免重复添加。
+
+**Codex：** 已有 Codex CLI 时执行：
+
+```powershell
+codex mcp add k1-mcp --url http://172.20.90.39:8443
+```
+
+也可把下面内容合并到当前用户的 `~/.codex/config.toml`，两种方式选一种：
+
+```toml
+[mcp_servers.k1-mcp]
+url = "http://172.20.90.39:8443"
+```
+
+保存后重新打开会话，确认工具列表可发现 `k1-mcp`。配置格式见 [OpenAI 官方 MCP 接入说明](https://developers.openai.com/learn/docs-mcp)。
+
+**Cursor：** 在当前用户的 `~/.cursor/mcp.json` 中合并以下条目，保留原有的其他服务，然后重启 Cursor：
+
+```json
+{
+  "mcpServers": {
+    "k1-mcp": {
+      "type": "http",
+      "url": "http://172.20.90.39:8443"
+    }
+  }
+}
+```
+
+Windows 下 `~` 表示当前用户目录。上述文件属于个人客户端配置，不放进 skill 分享目录。
+
+### 3. 安装 Node.js 和 mcporter
+
+自动建环境脚本还需要独立的 mcporter CLI。先从 [Node.js 官方下载页](https://nodejs.org/en/download)安装当前受支持的 LTS 版本，选择适合自己电脑的 Windows 安装包，保留 npm 并加入 PATH；安装后重新打开 PowerShell。
+
+下面固定使用本 skill 已核验的 `mcporter 0.9.0`。该包声明 Node.js 最低版本为 `20.11.0`，这是兼容下限，不是建议安装已停止支持的 Node.js 版本。已有可用安装时先检查版本，无需重复安装或降级。
+
+```powershell
+node --version
+npm.cmd --version
+npm.cmd install -g mcporter@0.9.0
+mcporter.cmd --version
+```
+
+Windows 示例使用 `npm.cmd` / `mcporter.cmd`，避免 PowerShell 对同名 `.ps1` 包装器的执行策略限制，无需为此修改系统执行策略。mcporter 项目说明见 [官方仓库](https://github.com/openclaw/mcporter)。
+
+### 4. 给 mcporter 添加同名连接
+
+首次配置时执行：
+
+```powershell
+mcporter.cmd config add k1-mcp --url http://172.20.90.39:8443 --scope home
+```
+
+`--scope home` 将连接保存到当前用户配置，使从 FunctionPreview 项目运行的脚本也能发现它。仅在 Codex/Cursor 添加连接不能替代这里的核验；服务名必须为 `k1-mcp`，因为脚本按 `k1-mcp.ssh_exec` 调用。已有同名配置时先核对其来源和地址，不覆盖自定义认证。不要把完整连接配置或认证信息提交到 GitHub。
+
+### 5. 只读验证与常见问题
+
+在 FunctionPreview 项目目录中执行：
+
+```powershell
+Set-Location C:/Project/FunctionPreview
+mcporter.cmd list k1-mcp
+$mcporterEntry = Join-Path (Split-Path (Get-Command mcporter.cmd -ErrorAction Stop).Source) 'node_modules/mcporter/dist/cli.js'
+Test-Path -LiteralPath $mcporterEntry
+```
+
+通过标准：mcporter 能读取该服务的工具列表，包含 `ssh_exec`，且最后的安装入口检查返回 `True`。这些命令只做工具发现和本地路径检查，不触发 Jenkins 构建或执行服务器业务操作；它们也不证明具体 SSH/Docker 权限已满足，实际节点探针按后续只读预检执行。
+
+- 找不到 `node`、`npm.cmd` 或 `mcporter.cmd`：重新打开终端，检查 Node.js 安装和 npm 全局安装目录是否在 PATH。可用 `npm.cmd prefix -g` 查看全局目录。
+- 连接超时或端口不可达：检查内网/VPN、服务地址和服务状态；不要通过触发构建来测试连接。
+- Agent 中可用但 mcporter 报服务不存在：在实际执行脚本的同一用户和项目目录下核对 mcporter 配置；项目配置或环境覆盖可能指向其他连接。
+- 缺少 `ssh_exec`、出现认证/权限错误，或安装入口返回 `False`：分别核对服务工具授权、本人认证配置、npm 全局安装布局。脚本报 `MCPORTER_NODE_ENTRY_UNAVAILABLE` 时需修复 Node.js/入口路径；不要借用他人密钥或绕过权限。
+
 ## 本地配置模板
 
 分享包提供无凭证模板 [assets/jenkins-local-config.example.json](../assets/jenkins-local-config.example.json)。接收者复制到自己的默认配置位置或其他私有位置，再在本地填写 `baseUrl`、`username`、`apiToken`；模板中的空值不能直接执行。不要把填写后的文件加入 Git 或分享包。
