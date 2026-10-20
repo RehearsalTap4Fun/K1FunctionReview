@@ -2,6 +2,8 @@
 
 本说明用于分享给同事、迁移机器或首次执行。只检查本次任务需要的能力；已配置且已核验的依赖无需反复询问。安装 skill 只提供流程说明和脚本，不会自动授予 Jenkins、钉钉、Git 或测试服务器访问权限。
 
+从零配置自动建环境时，先按仓库 README 准备 FunctionPreview、Python/Git 及 server/config 仓库，再依次完成本文的 MCP/mcporter、DWS 登录、Jenkins Token 和环境标识配置，最后执行只读检查。凭证文件和登录态均由使用者在自己电脑上建立。
+
 ## 按场景准备
 
 | 使用场景 | 外部 skill | 工具与访问要求 |
@@ -119,6 +121,147 @@ Test-Path -LiteralPath $mcporterEntry
 - 连接超时或端口不可达：检查内网/VPN、服务地址和服务状态；不要通过触发构建来测试连接。
 - Agent 中可用但 mcporter 报服务不存在：在实际执行脚本的同一用户和项目目录下核对 mcporter 配置；项目配置或环境覆盖可能指向其他连接。
 - 缺少 `ssh_exec`、出现认证/权限错误，或安装入口返回 `False`：分别核对服务工具授权、本人认证配置、npm 全局安装布局。脚本报 `MCPORTER_NODE_ENTRY_UNAVAILABLE` 时需修复 Node.js/入口路径；不要借用他人密钥或绕过权限。
+
+## 安装 DWS 与个人登录（Windows）
+
+### 1. 安装 CLI 和对应 skill
+
+在尚未安装 DWS 的电脑上，新开 PowerShell，按 [DWS 官方安装说明](https://github.com/DingTalk-Real-AI/dingtalk-workspace-cli/blob/main/README_zh.md)执行。以下固定为本工作流已核验的 [v1.0.35](https://github.com/DingTalk-Real-AI/dingtalk-workspace-cli/releases/tag/v1.0.35)，并选择与依赖表名称一致的单入口 `dws` skill（`mono`）：
+
+```powershell
+$env:DWS_VERSION = 'v1.0.35'
+$env:DWS_SKILL_MODE = 'mono'
+Invoke-RestMethod 'https://raw.githubusercontent.com/DingTalk-Real-AI/dingtalk-workspace-cli/main/scripts/install.ps1' | Invoke-Expression
+```
+
+这是官方远程安装脚本，会安装 CLI 和 skill；安装器的环境变量见 [官方 Windows 安装脚本](https://raw.githubusercontent.com/DingTalk-Real-AI/dingtalk-workspace-cli/main/scripts/install.ps1)。已有 DWS 或自定义 skill 时先核对版本和安装目标，不直接重装、降级或覆盖。已有新版拆分 skill（如 `dingtalk-chat`）时可沿用，CLI 能力与权限需按下面步骤核验，不为改名称重复安装。
+
+安装完成后重新打开 PowerShell 和 Agent，以刷新 PATH 和 skill 发现：
+
+```powershell
+Get-Command dws -ErrorAction Stop
+dws version --format json
+dws auth login --help --format json
+```
+
+默认二进制位置为当前用户的 `~/.local/bin/dws.exe`。找不到命令时检查该目录是否加入当前用户 PATH。CLI 安装完成后还要确认宿主能发现 `dws` 或相应产品 skill；CLI 与 skill 是两项依赖，安装 skill 本身不建立钉钉登录态。
+
+### 2. 使用本人钉钉账号授权
+
+普通本机环境执行：
+
+```powershell
+dws auth login --format json
+```
+
+根据 CLI 打开的浏览器或显示的授权入口，使用本人钉钉账号扫码/授权，选择拥有 K1 通知群访问权限的企业。当前核验版本默认通过本机 `127.0.0.1` 回调完成登录。SSH、容器或无本地浏览器的环境改用设备流，按提示在可用浏览器完成授权：
+
+```powershell
+dws auth login --device --format json
+```
+
+两种方式选一种。授权后在本机检查：
+
+```powershell
+dws auth status --format json
+```
+
+查看是否已认证、企业/账号是否正确；CLI 管理本人的登录态及续期，不需要把 access token、refresh token 填入本项目。状态检查在不同版本可能刷新凭证，不把它描述为完全不写本地状态的操作。若需要重新授权，先按当前 `dws auth login --help --format json` 核对后执行 `dws auth login --force --format json`。
+
+普通用户先走默认 OAuth。企业未开通 CLI 时，按授权页提示向管理员申请 CLI 访问，开通后重新登录；自建 OAuth 应用场景由企业管理员提供 AppKey/AppSecret 及回调配置。这些应用配置不能替代个人授权。不要在共享命令、文档或聊天中填写真实密钥，不导出或共享登录态，也不运行 `auth reset` 作为常规安装步骤。
+
+### 3. 验证通知群权限并取得环境标识
+
+先搜索维护者告知的备份通知群：
+
+```powershell
+$notificationGroupName = Read-Host '输入备份通知群名称'
+dws chat search --query $notificationGroupName --limit 20 --format json
+```
+
+按真实返回和维护者确认目标群；同名群不能随便选。后续 `--group` 要求的是 `openConversationId`，不是群名称或内部 numeric groupId。若搜索结果中字段名称不同，以实际消息的 `openConversationId` 和当前 CLI 帮助核验，不编造标识。
+
+选择一段已知有备份机器人通知的时间，只在内存读取消息，输出群与机器人标识，不输出消息正文：
+
+```powershell
+$notificationGroup = Read-Host '输入已确认的 openConversationId'
+$notificationSince = Read-Host '输入历史通知起始时间（yyyy-MM-dd HH:mm:ss，北京时间）'
+$notificationRaw = dws chat message list --group $notificationGroup --time $notificationSince --limit 20 --format json
+if ($LASTEXITCODE -ne 0) { throw 'DWS 消息读取失败；在本机核对权限与命令帮助，不输出原始消息。' }
+try { $notificationResult = $notificationRaw | ConvertFrom-Json -ErrorAction Stop }
+catch { throw 'DWS 返回内容不是有效 JSON；仅在本机排查，不复制原始消息。' }
+if ($notificationResult.success -ne $true -or $null -eq $notificationResult.result.messages) {
+    throw 'DWS 未返回预期消息结构；核对 CLI 版本、企业能力和群权限。'
+}
+$notificationResult.result.messages |
+    Where-Object { $_.sendType -eq 'robot' } |
+    Select-Object openConversationId, sender, senderOpenDingTalkId, createTime
+$notificationRaw = $null
+$notificationResult = $null
+```
+
+把确认属于备份通知机器人的 `sender` 和 `senderOpenDingTalkId` 分别填入 Jenkins 本地配置的 `environmentWorkflow.sender`、`senderId`；消息的 `openConversationId` 填入 `groupId`。仅靠显示名无法区分机器人，须核对稳定 ID；不把其他通知机器人的记录混用。
+
+能登录不代表能读取该群历史。空结果只说明本次窗口没有可见消息；检查时间、分页、群成员及历史消息权限，必要时联系维护者确认，不能为补齐安装配置触发新备份。若命令不存在或只打印父级帮助，使用 `dws chat --help --format json` 和 `dws chat message list --help --format json` 核对当前企业能力；当前工作流要求 `result.messages`、`result.hasMore` 及消息身份字段，不把不同版本的返回结构直接当作可用。
+
+## 获取 Jenkins API Token 并配置
+
+### 1. 准备账号和任务权限
+
+向团队维护者取得 Jenkins 基础地址和本人账号。先确认可在浏览器登录，并能访问“指定备份线上服”“自定义代码配表分支启动个人远程服”和实际下游“个人远程服务器部署”。脚本需要这些任务及相关队列、构建记录、参数和日志的读取权限，以及前两项的构建权限；授权范围由管理员配置，创建 API Token 不会增加账号权限。
+
+### 2. 在个人设置中生成 Token
+
+1. 登录 Jenkins，点击右上角本人用户名，进入 **Security / 安全**；较旧版本入口可能叫 **Configure / 配置**。
+2. 找到 **API Token** 区域，选择 **Add new Token / 添加新令牌**，取一个便于辨认的名称，例如 `K1FunctionReview-本机`，点击 **Generate / 生成**。
+3. 在生成时复制 Token，直接保存到自己的密码管理器或下述本地配置文件；新式 Token 后续无法再次查看明文。不要把 Token 发到聊天、截图、终端参数或 Git。
+4. 记录该 Token 所属账号的真实 Jenkins 用户 ID，作为 `username`，不能用昵称或显示名代替。个人测试实例归属也使用这个字段。
+
+入口及用户名 + API Token 的认证方式见 [Jenkins 官方认证说明](https://www.jenkins.io/doc/book/system-administration/authenticating-scripted-clients/)，Token 管理见 [Jenkins 官方 Token 说明](https://www.jenkins.io/blog/2018/07/02/new-api-token-system/)。找不到 Token 区域或禁止创建时联系管理员，不改用他人账号、账号密码或 Job 的远程触发 Token。
+
+### 3. 复制空模板，在本机填写
+
+建议将凭证文件放在仓库外。下面在用户目录创建私有配置，存在时保留原文件；在 FunctionPreview 根目录执行：
+
+```powershell
+Set-Location C:/Project/FunctionPreview
+$jenkinsConfig = Join-Path $env:USERPROFILE '.config/k1-function-review/jenkins.local.json'
+if (-not (Test-Path -LiteralPath $jenkinsConfig)) {
+    New-Item -ItemType Directory -Path (Split-Path $jenkinsConfig) -Force | Out-Null
+    Copy-Item -LiteralPath './review-k1-function/assets/jenkins-local-config.example.json' -Destination $jenkinsConfig -ErrorAction Stop
+}
+notepad.exe $jenkinsConfig
+```
+
+在本地编辑器填写并保存为 UTF-8 JSON（无 BOM、无注释）。不在终端运行显示整个配置文件的命令。字段按下表取得：
+
+| 字段 | 填写方式 |
+|---|---|
+| `baseUrl` | 维护者提供的 Jenkins 根地址，包含实际上下文路径（如部署在 `/jenkins` 则保留它）；不要填某个 Job/Build 页面、登录页，也不要附带账号、密码或查询参数 |
+| `username` | Token 所属的本人 Jenkins 用户 ID，同时用于个人测试实例归属 |
+| `apiToken` | 上一步新生成的个人 API Token；空模板没有可用凭证 |
+| `deploymentDefaults.ALIVE` | 模板默认 `"5"`；实际单位和可用值以当前 Job 参数说明为准 |
+| `environmentWorkflow.groupId` | 已确认通知消息的 `openConversationId` |
+| `environmentWorkflow.sender` | 已确认备份机器人的消息字段 `sender` |
+| `environmentWorkflow.senderId` | 同一机器人的消息字段 `senderOpenDingTalkId`，不是群 ID 或显示名 |
+| `environmentWorkflow.runtimeHost` | 维护者确认的个人测试部署节点，须与实际部署和 `k1-mcp.ssh_exec` 探针目标一致，不从 MCP URL 推测 |
+
+保持文件仅本人及必要的本机管理员可读，不放入共享/同步目录。本文使用仓库外位置，每次调用脚本都传 `--config`；如果使用默认 `C:/Project/K1Game/.jenkins.local.json`，同样不能提交该文件或覆盖已有配置。DownKey 留给每轮备份获取，不写进这里。
+
+### 4. 只读验证并维护 Token
+
+在同一 PowerShell 中执行，或先重新设置上一步的 `$jenkinsConfig`：
+
+```powershell
+python -X utf8 ./review-k1-function/scripts/jenkins_test_environment.py inspect --config $jenkinsConfig
+```
+
+通过标准：返回目标“自定义代码配表分支启动个人远程服”的任务信息与参数定义，不出现 `error`。此 `inspect` 只发送读取请求，不触发构建；它只验证该部署入口的读取能力，不能证明备份/下游任务权限、构建权限或整套环境已就绪。另由维护者确认其余任务权限，再按环境流程进行已授权的操作。
+
+- `JENKINS_HTTP_401` / `403`：核对用户名与 Token 是否属于同一账号、Token 是否撤销、任务权限及代理策略；Jenkins 认证失败也可能返回 403，不能一律理解为“Token 正确但无权限”。
+- `JENKINS_HTTP_404`：核对根地址、上下文路径和当前 Job 路径；部分权限配置也可能隐藏任务。
+- `JENKINS_NETWORK_ERROR`、重定向状态或 `JENKINS_INVALID_JSON`：检查内网、证书信任、代理/SSO 是否返回登录页面。应修正入口或管理员配置，不关闭 TLS 验证来绕过问题。
+- Token 丢失或泄露：在本人 API Token 页面撤销对应 Token，生成新的 Token 后更新本地文件，并再次执行 `inspect`。不要把新旧 Token 或配置差异提交到 GitHub。
 
 ## 本地配置模板
 
