@@ -8,6 +8,7 @@ K1 功能审核 skill：需求对齐、静态预检、运行验收，以及线�
 
 - `review-k1-function/scripts/`：完整工作流、Jenkins/钉钉结果关联、运行探针、验收与证据处理脚本。
 - `review-k1-function/references/`：流程合同、外部依赖、凭证配置和使用说明。
+- `review-k1-function/features/`：[按功能整理的验收经验与可复用脚本](review-k1-function/features/index.md)；验收前读取对应档案，阶段结束或中断前更新。历史结论与本轮验证分开记录。
 - `review-k1-function/assets/`：空配置/请求模板、Unity 执行配方、场景/重放定义及本地验收工作台资源；不是运行记录。
 - `tests/`：使用本地协议 fixture 的 Jenkins 与环境整链回归，不连接实际 Jenkins/钉钉/SSH。
 

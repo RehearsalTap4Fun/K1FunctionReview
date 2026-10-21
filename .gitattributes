@@ -1,0 +1,4 @@
+# Preserve archived script bytes so the SHA256 values in usage.md remain valid.
+# Keep historical CRLF and final blank lines while checking other whitespace.
+review-k1-function/features/*/scripts/*.cs.txt -text whitespace=blank-at-eol,space-before-tab,cr-at-eol,-blank-at-eof
+review-k1-function/features/*/scripts/*.py -text whitespace=blank-at-eol,space-before-tab,cr-at-eol,-blank-at-eof

@@ -24,6 +24,8 @@ description: Align K1 requirements and run static prechecks or runtime acceptanc
 - “备份线上服并建测试环境 / 复制战场服 / 指定线上 SID、代码分支、配表分支部署”：直接读取 [references/jenkins-test-environment.md](references/jenkins-test-environment.md) 的整链入口，使用 `scripts/jenkins_environment_workflow.py`。这是独立环境任务，不要求先做策划文档对齐或静态预审。默认本人同 SID；战场服同样先备份，部署 `app=battle`；未指定保留列表则全量恢复，指定列表则按列表保留。沿用明确的备份、导入与重建授权，禁止覆盖他人实例。
 - “预检 / 静态预审 / 需求对齐”：执行下述静态流程。仅提供 Jira 单号或分支名，不自动授权部署。
 - “运行验收 / 测试 / 继续补验”：继承已确认的需求、操作范围和已有证据，完整读取 [references/runtime-acceptance.md](references/runtime-acceptance.md)。已有有效前置交接时直接续跑，不重问旧决定。
+- 每次功能任务先按 [经验读写规则](references/feature-experience.md) 查询 [功能索引](features/index.md)，读取对应档案及需要的脚本说明；每阶段结束、交接或中断前自动合并有证据的新经验，并报告回写结果。版本变化先核对适用性，历史验收结论不直接沿用。黄金矿工使用 [独立档案](features/k1-gold-miner/experience.md)。
+- 重复运行操作先查 [已学习流程](references/learned-runtime-flows.md)：首次学习入口与成功条件，后续复用有时限的状态流程，用回包/权威状态确认；新界面、异常和视觉断言再看图。固定导航可复用，关卡策略与本轮授权不能盲目沿用。
 - 反馈表复验必须逐项查看原问题截图及预期/参考图，记录原图与本次实测的对应关系；新增反馈附本次问题截图，并验证在线附件可打开。图片读取为空不代表无图，未查看原图不得认定原问题已复现或已修复；具体记录和附件核验见运行验收规则。
 - 同步或整理反馈表时，截图统一追加到对应行的“问题截图”单元格，保留原图并支持多图；验收只保留一个状态字段，必要说明合并到“验收详情”。按 [运行验收规则 §4.2](references/runtime-acceptance.md#42-反馈表字段整理与格式保留) 做最小范围写入，并回读核对原有下拉验证、选项、颜色与适用范围。
 - 运行阶段缺环境：读取 [references/jenkins-test-environment.md](references/jenkins-test-environment.md)，从 Jira 关联、远端分支及 Jenkins 历史分别解析代码和配置来源，在已授权测试服范围内准备并部署。部署成功后验证实际运行状态，再继续原补验队列。
@@ -68,6 +70,8 @@ description: Align K1 requirements and run static prechecks or runtime acceptanc
 
 唯一允许的网络 Git 写入命令由 `scripts/prepare-remote-snapshots.ps1` 在 FunctionPreview 远端缓存中执行；唯一允许的 LFS fetch/smudge 由 `scripts/export-git-file.ps1 -MaterializeLfs` 在该缓存中执行。不得手写替代命令绕过脚本边界。
 
+经验维护的文件写入例外：按 [经验读写规则](references/feature-experience.md) 更新本 Skill 的 `features/` 索引与档案，及已走通流程所需的 `features/<featureId>/scripts/` 模板和说明；既有公共执行脚本只引用，不因记录经验而自动改写。原始截图、回执、身份绑定执行副本仍保存在 FunctionPreview 的 `.tmp` / `reports`，不随 Skill 分享。此例外适用于静态与运行阶段的经验归档，不授权静态阶段执行运行脚本，也不改变三端正式仓库只读边界。
+
 ## 完成标准与单次超时
 
 - 对齐和预审均无总时限，`deadlineSeconds=null`。记录实际耗时，持续报告已覆盖内容、未决项和下一步。
@@ -82,6 +86,7 @@ description: Align K1 requirements and run static prechecks or runtime acceptanc
 - 创建唯一的 `C:/Project/FunctionPreview/.tmp/<run-id>`。
 - 调用 `scripts/snapshot-repository-state.ps1` 记录三端 before digest。
 - 记录开始时间；检查 24 小时分析缓存，但不得用缓存跳过本次完整工作流的实时远端解析或文档对齐。
+- 读取本功能档案，在本轮 `experience-notes.md` 记录所用档案版本、可复用线索及待复核项；对齐、预审结束或中断时按经验规则回写增量。
 
 ### 2. 冻结审核对象
 
@@ -164,4 +169,4 @@ description: Align K1 requirements and run static prechecks or runtime acceptanc
 - 开发文档每项需求都出现在矩阵中；未知项包含原因与运行验收动作。
 - 所有叠加命中的规则都有一条且仅一条 `reviewChecks` 审计记录。
 - 三份非空报告发布到唯一新目录且旧报告未覆盖。
-- 对话只返回总体结论、阻断/风险/未知计数、耗时、`summary.html` 链接和非验收声明。
+- 对话返回总体结论、阻断/风险/未知计数、耗时、`summary.html` 链接和非验收声明；另用一句说明功能档案更新结果及待回写项。
