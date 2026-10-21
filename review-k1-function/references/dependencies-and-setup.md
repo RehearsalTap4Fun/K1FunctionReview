@@ -15,6 +15,7 @@
 | 缺少用例、需要从需求生成用例 | `slg-testcase-generator` | 可访问需求文档及必要项目知识；本地 Markdown 交付不要求 Google Drive/API Key |
 | Unity 客户端实测/GM/故障模拟 | 建议 `unity-mcp-orchestrator`（目录也可能名为 `unity-mcp-skill`） | 对应版本 Unity Editor、打开的 K1 客户端项目、MCP for Unity 连接和实际可用的项目工具、授权测试账号 |
 | 钉钉需求文档、反馈表 | 走 CLI 时使用 `dws`；已连接的文档工具也可按原路由使用 | 本人的钉钉登录态和目标文档/表格权限；维护时需要编辑权限；图片追加等浏览器步骤还需可用的浏览器工具及登录态 |
+| 版本进包项进度播报 | 本 skill 的 Python 脚本 | 用户指定并授权的自定义机器人 Webhook；按 [播报配置](acceptance-progress.md#机器人私有配置) 存本地私有文件，不随 Skill 分享 |
 | Word / PDF 需求材料 | 分别按文档路由使用 `documents:documents` / `pdf:pdf` | 对应 skill 自身运行依赖；本地文件不需要统一的额外 API Key |
 | Jira 单号定位 / Confluence 文档 | 按实际来源选择已配置连接；用 Confluence 时可配 `confluence` | 本人的 Jira/Confluence 访问凭证或有效登录态。直接提供分支与可读本地需求时，不强制配置这两项 |
 

@@ -1,0 +1,73 @@
+# 版本进包项进度播报
+
+用于用户已指定版本日进包内容表、并授权向自定义机器人发送验收进度的任务。它是需求结论保存时触发的流程，不创建定时任务。单功能验收未关联进包表时不生成版本总数。
+
+## 统计与触发
+
+以**完整版本日清单的一条需求**为计数单位，用稳定行 ID 或 Jira ID 去重；行号、标题、子用例数量都不能代替需求身份。同一需求的多个端、反馈项和子用例只算一项。
+
+| 状态 | 含义 | 计入 | 是否播报 |
+|---|---|---|---|
+| `pending` | 尚未开始 | 待验收 | 否 |
+| `running` | 已开始，仍在执行或补验 | 正在验收 | 否 |
+| `passed` | 当前模式下本需求的验收范围通过 | 已完成 | 是 |
+| `failed` | 本需求形成未通过结论 | 未完成 | 是 |
+| `blocked` | 本轮因明确阻塞暂时无法继续 | 未完成 | 是 |
+
+总需求 = 已完成 + 待验收 + 正在验收 + 未完成。四类互斥，待验收与正在验收分别显示，不输出百分比。`blocked` 恢复补验时转 `running`；仍有可执行补验的部分验证保持 `running`。
+
+完成项包含通过、未通过、阻塞，消息显式显示结果；不能把“测试结束”计为通过。子用例通过不触发需求完成，原运行验收的用例 `counts` 不能作为版本需求数。
+
+每次需求结论持久化后立即发送。相同 `eventId` 重放幂等；复验后相同状态与相同结论不重复播报，新结果或改变的结论再播报。仅证据文件变化不制造新结论。新版本日、不同源表或不同验收模式使用各自台账，不能把开发验收结论当主分支回归结果。
+
+## 版本清单与统一台账
+
+1. 使用有权限的文档工具完整读取进包表，按版本日过滤，读完分页与筛选外的需求，记录来源版本/内容哈希及带时区的读取时间。明确源表状态映射，不能把“开发完成”当“验收通过”。无法确认已有验收结果的需求从 `pending` 开始。
+2. 同一源表 + 版本日 + 验收模式共用一个持久目录，例如 `<workspaceRoot>/.local/acceptance-progress/<table-id>/<YYYY-MM-DD>/<mode>/`。启动时先检查该目录，有 `progress.json` 就 `status` 和 `flush` 续跑，禁止为各协作者或每个会话另建台账。
+3. 仅首次运行使用 `init`。`source.complete=true` 是协调者对完整读取的声明，脚本不能验证远端是否仍有未读行。未读全时不能填写该值或发布猜测的总数。初始化保留可靠的已有状态，但不补发历史完成项。
+4. 开始每条需求时 `record` 为 `running`。协作者交付需求 ID、结论与证据，由总协调者调用 `record`；锁与每需求 revision 校验可防止多个协调进程丢失更新，但不能代替实际 Unity/账号资源隔离。
+5. 需求验收结束后，先保存/回读运行报告或反馈结果，再调用 `record` 保存需求结论并发送。`passed` 必须确认该需求本轮全部必要验收范围与收尾已完成、文档基线有效，不能用单个通过用例替代。需求结论证据应包含对应需求 ID、版本日、验收模式、范围与观察；脚本检查文件存在并记录哈希，不替代证据真实性判断。
+6. 表格增删或标题变化时重新完整读取，用 `sync` 更新清单并提供 `expectedRevision`；成员变化另填 `reason`。现有状态必须与台账相同，外部协作者的新结论先按 `record` 入账，不能被快照覆盖。新需求从 `pending` 开始。移出版本的需求不再计入当前总数，原清单与已产生播报保留历史。暂时阻塞的需求不能从清单删除。
+
+`init` 请求见 [清单示例](../assets/acceptance-progress-snapshot.json)。`record` 请求见 [结论示例](../assets/acceptance-progress-record.json)。示例数据不是实际验收证据。
+
+以下命令在 Skill 目录执行。台账写入用户工作区，禁止写入三端正式 K1 仓库。
+
+```powershell
+python scripts/acceptance_progress.py init --store-dir <持久台账目录> --request <完整清单.json>
+python scripts/acceptance_progress.py status --store-dir <持久台账目录>
+python scripts/acceptance_progress.py record --store-dir <持久台账目录> --request <需求状态或结论.json>
+python scripts/acceptance_progress.py flush --store-dir <持久台账目录>
+```
+
+也可使用 `python scripts/acceptance_workflow.py progress <action> --run-dir <持久台账目录> --request <请求.json>`；请求可选 `robotConfig` 只传私有配置路径。独立 CLI 用 `--config`。完整命令参数见 `--help`。
+
+`record` 必填 `eventId`、`itemId`、`expectedItemRevision`、`status`。开始/补验只需这四项。结论另填 `conclusionFinal=true`、简洁稳定的 `conclusion` 和已保存的非空 `evidence` 文件绝对路径；通过还需 `scopeComplete=true`。ID 一旦用于某次提交，重试必须原样复用；新结论使用新 ID。revision 冲突先 `status` 核对同一需求的最新记录，不盲目改版本号重放旧结论。
+
+## 发送与恢复
+
+需求更新、进度快照和待发送事件写在同一个原子文件中。消息包含需求标题、结果、验收模式、版本日、四类数量，以及北京时间记录时间和唯一播报编号。并发结果按保存顺序各生成一次进度快照；消息数字对应**该结论保存时刻**，重试保留原时间与快照，不能冒充当前最新状态。
+
+`record` 默认自动尝试发送；`flush` 在任务恢复、等待下一步和收尾时调用，处理已到期重试。没有后台常驻进程；任务停止时队列留存，下次恢复继续。一次最多处理 5 条，单次 HTTP 超时 5 秒；每台账一分钟至多尝试 15 次。高频积压留存，验收继续。
+
+- 只有钉钉返回明确成功才标记 `sent`；HTTP 成功但响应不完整不算送达。
+- 明确未送达（如 DNS/拒绝连接、明确 API 拒绝）保留 `pending`，30 秒、120 秒后可重试；每轮最多 3 次，之后 `failed`，报告错误码并待处理。HTTP 429 按 `Retry-After` 暂停当前台账发送，缺少有效值时至少等待 60 秒，不循环强发。
+- 超时、连接中断、无效回包、服务端异常及发送中进程退出标为 `unknown`。不自动重发；按播报编号、版本日、标题和时间查群消息。现有自定义机器人发送接口没有自动查询送达能力，不能从“没拿到回执”推断没发出。
+- 保留群回读/用户核实证据后，用 `resolve` 请求：`sequence` 为播报序号，`outcome` 为 `sent` 或 `not_sent`，`evidence` 为非空证据文件绝对路径列表。`sent` 结束；明确 `not_sent` 才重新入队，随后 `flush`。不确定就继续保留 `unknown`，其他需求照常验收与播报。
+- 凭证缺失、通知失败不会回滚验收结论。命令输出中的 `notification.error` / `notifications` 必须交接，不能只看退出码认定所有消息已发送。收尾报告列出积压、失败和待核对播报。
+
+`preview` 只展示已入队消息，不发送；`status` 不展示 Webhook。外部异常只保存脱敏错误码。
+
+## 机器人私有配置
+
+群聊和 Webhook 由用户指定。默认读取 `~/.codex/private/review-k1-function/progress-robot.local.json`；环境变量 `K1_PROGRESS_ROBOT_CONFIG` 或 `--config` 可覆盖。配置格式见 [私有配置模板](../assets/progress-robot.example.json)。密钥仅留本机，不能复制到 Skill、Git、请求样例、日志或报告。接收者分享 Skill 后配置自己的机器人。
+
+消息标题和正文固定包含 **进度播报**，匹配本轮用户设置的自定义关键词；不 @ 全员。脚本为事件触发发送使用 Webhook，只有已授权的进包验收需求结论会发送。配置校验只读：
+
+```powershell
+python scripts/acceptance_progress.py check-config
+```
+
+校验通过只说明本地配置可读、格式有效，不证明群归属、Webhook 有效或已真实送达。空示例不能发送。用户授权范围之外的演示/联调消息另行明确授权；本地测试使用模拟传输，不向真实群发送虚构验收进度。
+
+接口参考：[钉钉自定义机器人](https://open.dingtalk.com/document/robots/custom-robot-access)、[机器人安全设置](https://open.dingtalk.com/document/robots/customize-robot-security-settings)。

@@ -10,6 +10,9 @@ from acceptance import evidence, operations
 def execute(domain, action, request, root):
     reject_formal_write(root)
     store = RunStore(root)
+    if domain == 'progress':
+        from acceptance_progress import execute as execute_progress
+        return execute_progress(action, request, root, request.get('robotConfig'))
     if domain == 'run':
         if action == 'init': return store.create(request)
         if action == 'show': return store.read()
@@ -83,7 +86,7 @@ def main():
         serve(Path(args.root), args.host, args.port)
         return 0
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('domain', help='run | operation | evidence | feedback | fixture | recording | replay | impact | runtime | scenario | task')
+    parser.add_argument('domain', help='run | operation | evidence | feedback | fixture | recording | replay | impact | runtime | scenario | task | progress')
     parser.add_argument('action', help='Use the workflow reference for action request schemas')
     parser.add_argument('--request')
     parser.add_argument('--run-dir', required=True)

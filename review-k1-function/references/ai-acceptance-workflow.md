@@ -1,5 +1,7 @@
 # AI 验收工作流
 
+版本进包表任务使用 `progress init/status/sync/record/flush/resolve/preview` 维护需求级台账与钉钉播报，完整合同见 [版本进度播报](acceptance-progress.md)。`record` 保存真实需求结论后自动发送，不能用运行用例统计替代版本需求统计。此领域的 `--run-dir` 是跨会话共用的版本台账目录。
+
 入口：`python -X utf8 review-k1-function/scripts/acceptance_workflow.py <领域> <动作> --request <JSON> --run-dir <本轮目录>`。
 
 Agent 在使用这些命令前按 [经验读写规则](feature-experience.md) 读取 [本功能档案](../features/index.md)，在阶段完成或中断前更新档案与必要脚本说明。CLI 维护的运行状态与证据继续独立保存，不把 `runtime reuse` 或 `publish` 当成经验自动回写。

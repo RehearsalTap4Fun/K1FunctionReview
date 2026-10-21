@@ -1,6 +1,6 @@
 ---
 name: review-k1-function
-description: Align K1 requirements and run static prechecks or runtime acceptance, including multilingual UI and screen adaptation checks. Use when preparing a personal test environment from an online game or battle server, backing up via Jenkins, obtaining the DingTalk DownKey, deploying independent code/config branches, or continuing partially verified cases.
+description: Align K1 requirements and run static prechecks or runtime acceptance, including multilingual UI and screen adaptation checks. Use for version package acceptance and DingTalk progress broadcasts, preparing a personal test environment from an online game or battle server, backing up via Jenkins, obtaining the DingTalk DownKey, deploying independent code/config branches, or continuing partially verified cases.
 ---
 
 # K1 需求对齐与静态预审、运行验收
@@ -21,6 +21,7 @@ description: Align K1 requirements and run static prechecks or runtime acceptanc
 
 ## 入口路由
 
+- “版本进包内容表验收 / 版本进包项进度播报”：读取 [版本需求进度与钉钉播报](references/acceptance-progress.md)。同一版本日完整需求清单共用台账，先记录开始状态，每项需求形成结论后调用 `python scripts/acceptance_progress.py record` 保存并立即播报标题、结果与总数/已完成/待验收/正在验收/未完成；子用例不计为需求，验收结果与通知送达分别记录。续跑与收尾检查待发送、失败和待核对消息。仅向用户已指定并授权的机器人发送，Webhook 留在私有配置。
 - “备份线上服并建测试环境 / 复制战场服 / 指定线上 SID、代码分支、配表分支部署”：直接读取 [references/jenkins-test-environment.md](references/jenkins-test-environment.md) 的整链入口，使用 `scripts/jenkins_environment_workflow.py`。这是独立环境任务，不要求先做策划文档对齐或静态预审。默认本人同 SID；战场服同样先备份，部署 `app=battle`；未指定保留列表则全量恢复，指定列表则按列表保留。沿用明确的备份、导入与重建授权，禁止覆盖他人实例。
 - “预检 / 静态预审 / 需求对齐”：执行下述静态流程。仅提供 Jira 单号或分支名，不自动授权部署。
 - “运行验收 / 测试 / 继续补验”：继承已确认的需求、操作范围和已有证据，完整读取 [references/runtime-acceptance.md](references/runtime-acceptance.md)。先核对文档确认标记，再按已明确的验收模式生成范围与计划；已有有效交接直接续跑，不重问旧决定。开发分支按文档及反馈表详细验收；主分支按文档规则进行正常玩家体验，不自动套用全量开发用例或反馈复验。模式不能仅凭分支名猜测。

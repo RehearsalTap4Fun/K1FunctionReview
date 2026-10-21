@@ -1,0 +1,14 @@
+{
+  "schemaVersion": 1,
+  "versionDate": "2026-10-21",
+  "acceptanceMode": "mainline_regression",
+  "source": {
+    "tableId": "replace-with-stable-table-id",
+    "revision": "replace-with-readback-version-or-content-hash",
+    "capturedAt": "2026-10-21T10:00:00+08:00",
+    "complete": false
+  },
+  "items": [
+    {"id": "replace-with-stable-requirement-id", "title": "替换为真实进包需求标题", "status": "pending"}
+  ]
+}
