@@ -13,6 +13,8 @@ Use the applicable rows after building the requirement matrix. Record a locatabl
 | Local cache | Read/write/invalidation sites and the key or model persisted | No state is cached on the client |
 | Reconnect | Re-subscription, state refresh, or recovery path invoked after reconnect | The feature has no session-spanning or push-dependent state |
 | Localization | UI lookup call and formal localization key/value evidence | The client shows no user-facing text |
+| Multilingual display | Dynamic text, mixed writing direction, font and wrapping behavior in the final UI implementation; runtime evidence is still required for acceptance | The requirement changes no player-visible text or UI |
+| Screen adaptation | Layout constraints, safe-area handling, scaling and scroll/touch behavior in the final UI implementation; runtime evidence is still required for acceptance | The requirement changes no player-visible UI |
 | Error presentation | Error mapping from server/local failure to the visible client state or message | The operation cannot surface a user-visible failure |
 
 ## Server

@@ -1,6 +1,6 @@
 ---
 name: review-k1-function
-description: Align K1 requirements and run static prechecks or runtime acceptance. Use when preparing a personal test environment from an online game or battle server, backing up via Jenkins, obtaining the DingTalk DownKey, deploying independent code/config branches, or continuing partially verified cases.
+description: Align K1 requirements and run static prechecks or runtime acceptance, including multilingual UI and screen adaptation checks. Use when preparing a personal test environment from an online game or battle server, backing up via Jenkins, obtaining the DingTalk DownKey, deploying independent code/config branches, or continuing partially verified cases.
 ---
 
 # K1 需求对齐与静态预审、运行验收
@@ -24,6 +24,7 @@ description: Align K1 requirements and run static prechecks or runtime acceptanc
 - “备份线上服并建测试环境 / 复制战场服 / 指定线上 SID、代码分支、配表分支部署”：直接读取 [references/jenkins-test-environment.md](references/jenkins-test-environment.md) 的整链入口，使用 `scripts/jenkins_environment_workflow.py`。这是独立环境任务，不要求先做策划文档对齐或静态预审。默认本人同 SID；战场服同样先备份，部署 `app=battle`；未指定保留列表则全量恢复，指定列表则按列表保留。沿用明确的备份、导入与重建授权，禁止覆盖他人实例。
 - “预检 / 静态预审 / 需求对齐”：执行下述静态流程。仅提供 Jira 单号或分支名，不自动授权部署。
 - “运行验收 / 测试 / 继续补验”：继承已确认的需求、操作范围和已有证据，完整读取 [references/runtime-acceptance.md](references/runtime-acceptance.md)。已有有效前置交接时直接续跑，不重问旧决定。
+- 涉及玩家可见 UI 的运行验收，同时读取 [多语言与屏幕适配验收规则](references/ui-language-and-screen-adaptation.md)，按当前支持范围安排语言、分辨率及真实截图；未覆盖组合不能推定通过。
 - 每次功能任务先按 [经验读写规则](references/feature-experience.md) 查询 [功能索引](features/index.md)，读取对应档案及需要的脚本说明；每阶段结束、交接或中断前自动合并有证据的新经验，并报告回写结果。版本变化先核对适用性，历史验收结论不直接沿用。黄金矿工使用 [独立档案](features/k1-gold-miner/experience.md)。
 - 重复运行操作先查 [已学习流程](references/learned-runtime-flows.md)：首次学习入口与成功条件，后续复用有时限的状态流程，用回包/权威状态确认；新界面、异常和视觉断言再看图。固定导航可复用，关卡策略与本轮授权不能盲目沿用。
 - 反馈表复验必须逐项查看原问题截图及预期/参考图，记录原图与本次实测的对应关系；新增反馈附本次问题截图，并验证在线附件可打开。图片读取为空不代表无图，未查看原图不得认定原问题已复现或已修复；具体记录和附件核验见运行验收规则。

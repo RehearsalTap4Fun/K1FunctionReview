@@ -45,6 +45,7 @@
 
 - `baselineFile` 指向保存的基线 JSON，至少包含 `metadata.documentVersion`、同值 `testcaseDocumentVersion` 和非空 `testcases`（每条含 id、requirementIds、expected）。优先使用静态阶段原始 PrecheckResult。
 - `requiredEvidence` 只能选 `ui / protocol / server / runtime / platform / isolated / static / gm`。按原需求确定，正常业务验收不以 gm/isolated/static 代替 runtime/protocol/server；界面和原生 SDK 还需相应 UI/平台证据。
+- 玩家可见 UI 改动按 [多语言与屏幕适配验收规则](ui-language-and-screen-adaptation.md) 拆分俄语、阿拉伯语、英语与代表性设备组合，并把组合、预期和 `ui` 证据写入断言计划；未测组合保留缺口，不因单一设备或语言正常而判为全范围通过。
 - `phase` 为 0 起整数，同阶段先可重复/负向，再资源消耗与不可逆操作。先核验“新建、取消、边界、失败恢复”等分支，再跨截止时间。并行跨服只并行独立只读采集，共享账号/联盟/Unity 的写操作串行。
 - `dependsOn` 是必须通过的前置断言 ID。可行的另一测试前置优先构造，不应因一个失败阻塞整个功能。
 - 初始化后计划及基线有哈希绑定，不能删除断言或降低证据要求来结案。需求确实变化时新建修订计划/台账，保留旧版和逐项继承、废止的用户决定；补测使用新环境时同样明确证据批次，不能静默换版本。

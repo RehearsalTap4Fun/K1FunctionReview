@@ -80,6 +80,29 @@
       "notApplicableWhen": "客户端不展示用户可见文本。"
     },
     {
+      "id": "client.multilingual-display",
+      "scope": "client",
+      "title": "多语言显示适配",
+      "rolesAny": ["client"],
+      "evidenceRoles": ["client", "config"],
+      "pathGlobsAny": ["**/UI/**", "**/View/**", "**/*Panel*.*", "**/*Localization*.*", "**/*Language*.*"],
+      "requirementTermsAny": ["多语言", "俄语", "阿拉伯语", "英语", "RTL", "翻译", "文本排版", "文案适配"],
+      "trigger": "any",
+      "evidenceExpectation": "重点核对俄语、阿拉伯语和英语中玩家可见文本及动态变量的字体、换行、长文本和 RTL/混合方向处理；静态证据不能替代目标构建的真机语言切换与截图验收。",
+      "notApplicableWhen": "需求不改变玩家可见文本或界面。"
+    },
+    {
+      "id": "client.screen-adaptation",
+      "scope": "client",
+      "title": "屏幕分辨率适配",
+      "rolesAny": ["client"],
+      "pathGlobsAny": ["**/UI/**", "**/View/**", "**/*Panel*.*", "**/*Layout*.*", "**/*Canvas*.*"],
+      "requirementTermsAny": ["分辨率", "屏幕适配", "安全区", "刘海屏", "横屏", "竖屏", "界面缩放"],
+      "trigger": "any",
+      "evidenceExpectation": "核对布局约束、缩放、滚动和安全区处理，识别小屏及长宽比变化下的遮挡、重叠与触控风险；通过结论仍需受支持尺寸上的运行截图和交互证据。",
+      "notApplicableWhen": "需求不改变玩家可见界面。"
+    },
+    {
       "id": "client.error-presentation",
       "scope": "client",
       "title": "错误呈现",
