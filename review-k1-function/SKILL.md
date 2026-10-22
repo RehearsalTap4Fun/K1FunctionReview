@@ -25,12 +25,14 @@ description: Align K1 requirements and run static prechecks or runtime acceptanc
 - “备份线上服并建测试环境 / 复制战场服 / 指定线上 SID、代码分支、配表分支部署”：直接读取 [references/jenkins-test-environment.md](references/jenkins-test-environment.md) 的整链入口，使用 `scripts/jenkins_environment_workflow.py`。这是独立环境任务，不要求先做策划文档对齐或静态预审。默认本人同 SID；战场服同样先备份，部署 `app=battle`；未指定保留列表则全量恢复，指定列表则按列表保留。沿用明确的备份、导入与重建授权，禁止覆盖他人实例。
 - “预检 / 静态预审 / 需求对齐”：执行下述静态流程。仅提供 Jira 单号或分支名，不自动授权部署。
 - “运行验收 / 测试 / 继续补验”：继承已确认的需求、操作范围和已有证据，完整读取 [references/runtime-acceptance.md](references/runtime-acceptance.md)。先核对文档确认标记，再按已明确的验收模式生成范围与计划；已有有效交接直接续跑，不重问旧决定。开发分支按文档及反馈表详细验收；主分支按文档规则进行正常玩家体验，不自动套用全量开发用例或反馈复验。模式不能仅凭分支名猜测。
+- 两类运行验收开测前均执行 [设备与测试服隔离](references/device-server-isolation.md)：默认一设备一独占实例，可复用满足条件的已有实例；先查已知参数，缺分配或必要部署信息时向用户确认，受影响设备暂不部署或执行游戏操作。同服例外需用户明确指定，服务器级 GM 统一协调。
 - 已有明确验收列表时，开测前先输出有序计划：检查状态和时间依赖、合并可共享准备与操作的项目、保留逐项结果和证据，再按资源隔离情况安排协作者分批并发。具体字段和派发规则见 [运行验收 §3](references/runtime-acceptance.md#3-冻结可执行断言计划)。
-- 开发分支详细验收涉及玩家可见 UI，或用户明确要求语言/适配专项时，同时读取 [多语言与屏幕适配验收规则](references/ui-language-and-screen-adaptation.md)，按当前支持范围安排语言、分辨率及真实截图；未覆盖组合不能推定通过。主分支回归按本轮玩家体验的语言和设备检查，不自动扩展为完整组合矩阵。
+- 验收项涉及新增界面或旧界面改动时，两类验收都按 [UI 多语言与屏幕适配规则](references/ui-language-and-screen-adaptation.md) 对受影响界面切换英语、俄语、阿拉伯语，逐语言检查显示并保存截图。缺少必要语言验证时保留补验/阻塞，不能整项通过；结束恢复原语言。主分支回归同样执行这三语检查，范围限于受影响界面，不自动扩展全部功能或屏幕组合。
 - 每次功能任务先按 [经验读写规则](references/feature-experience.md) 查询 [功能索引](features/index.md)，读取对应档案及需要的脚本说明；每阶段结束、交接或中断前自动合并有证据的新经验，并报告回写结果。版本变化先核对适用性，历史验收结论不直接沿用。黄金矿工使用 [独立档案](features/k1-gold-miner/experience.md)。
 - 重复运行操作先查 [已学习流程](references/learned-runtime-flows.md)：首次学习入口与成功条件，后续复用有时限的状态流程，用回包/权威状态确认；新界面、异常和视觉断言再看图。固定导航可复用，关卡策略与本轮授权不能盲目沿用。
 - 反馈表复验必须逐项查看原问题截图及预期/参考图，记录原图与本次实测的对应关系；新增反馈附本次问题截图，并验证在线附件可打开。图片读取为空不代表无图，未查看原图不得认定原问题已复现或已修复；具体记录和附件核验见运行验收规则。
 - 同步或整理反馈表时，截图统一追加到对应行的“问题截图”单元格，保留原图并支持多图；验收只保留一个状态字段，必要说明合并到“验收详情”。按 [运行验收规则 §4.2](references/runtime-acceptance.md#42-反馈表字段整理与格式保留) 做最小范围写入，并回读核对原有下拉验证、选项、颜色与适用范围。
+- 结果已写入文档并回读、逐图核验后，按 [过程文件归档与清理](references/runtime-artifact-cleanup.md) 自动删除本轮不可复用且无依赖的临时文件；先迁移可迁移的引用，保留未同步、待补验、机器校验依赖的证据及正式台账，不清空整个工作区。
 - 运行阶段缺环境：读取 [references/jenkins-test-environment.md](references/jenkins-test-environment.md)，从 Jira 关联、远端分支及 Jenkins 历史分别解析代码和配置来源，在已授权测试服范围内准备并部署。部署成功后验证实际运行状态，再继续原补验队列。
 - 不把“部分验证”当作结束状态。每轮调用 `scripts/runtime_acceptance.py next`，执行可继续动作；推进时间前调用 `check-advance`；最终报告只能由 `publish` 在收尾检查通过后生成。
 
@@ -69,11 +71,13 @@ description: Align K1 requirements and run static prechecks or runtime acceptanc
 
 正式 K1 仓库禁止 `fetch`、`pull`、`checkout`、`switch`、`reset`、`clean`、`stash`、`add`、`commit`、`merge`、`rebase` 和任何 Git LFS 命令。静态阶段也禁止编译、测试、启动、运行验收、导表、配置/代码/资源生成、依赖安装、子模块更新和 Jenkins。
 
-运行阶段及独立环境任务的明确例外：可在已获授权的服务器/账号范围内使用 Unity、正常业务请求、现有 GM、故障模拟和测试部署任务；用 `scripts/jenkins_environment_workflow.py` 执行已授权的线上备份 → 钉钉 DownKey → 本人测试服导入重建 → 运行校验；只部署已有 Key/空服时仍可使用 `scripts/jenkins_test_environment.py`。两者读取项目本地连接配置。探针和隔离测试写入 FunctionPreview，禁止借测试任务修改正式业务源码、清理用户工作区或发布线上热更。清档、导入、改时间依照实际已获授权范围分别记录，不从“允许部署”推导清除数据的权限。Unity 自身产生的资源/缓存变化如实披露，不擅自回滚。
+运行阶段及独立环境任务的明确例外：可在已获授权的服务器/账号范围内使用 Unity、正常业务请求、现有 GM、故障模拟和测试部署任务；用 `scripts/jenkins_environment_workflow.py` 执行已授权的线上备份 → 钉钉 DownKey → 本人测试服导入重建 → 运行校验；只部署已有 Key/空服时仍可使用 `scripts/jenkins_test_environment.py`。两者读取项目本地连接配置。探针和隔离测试写入 FunctionPreview，禁止借测试任务修改正式业务源码、清理与本轮无关的用户文件或发布线上热更。清档、导入、改时间依照实际已获授权范围分别记录，不从“允许部署”推导清除数据的权限。Unity 自身产生的资源/缓存变化如实披露，不擅自回滚。
 
 唯一允许的网络 Git 写入命令由 `scripts/prepare-remote-snapshots.ps1` 在 FunctionPreview 远端缓存中执行；唯一允许的 LFS fetch/smudge 由 `scripts/export-git-file.ps1 -MaterializeLfs` 在该缓存中执行。不得手写替代命令绕过脚本边界。
 
 经验维护的文件写入例外：按 [经验读写规则](references/feature-experience.md) 更新本 Skill 的 `features/` 索引与档案，及已走通流程所需的 `features/<featureId>/scripts/` 模板和说明；既有公共执行脚本只引用，不因记录经验而自动改写。原始截图、回执、身份绑定执行副本仍保存在 FunctionPreview 的 `.tmp` / `reports`，不随 Skill 分享。此例外适用于静态与运行阶段的经验归档，不授权静态阶段执行运行脚本，也不改变三端正式仓库只读边界。
+
+运行过程文件的删除例外仅限上述归档与清理规则：本轮自建临时目录内已核验、无依赖的一次性文件可自动清理，正式证据、用户原件和其他任务文件继续保留。
 
 ## 完成标准与单次超时
 
@@ -148,7 +152,7 @@ description: Align K1 requirements and run static prechecks or runtime acceptanc
 
 - 保存本次 `PrecheckResult` 输入 JSON，交接文档版本、完整用例及稳定 ID、冻结三端 manifest、已确认决定、发现和未知项；不要仅交 HTML 摘要。
 - 按 `references/runtime-acceptance.md` 先确定验收模式和文档状态，再建立对应范围的断言计划及状态台账，使用 `assets/runtime-plan.json`、`assets/jenkins-test-request.json` 填写实际数据。
-- 执行文档标记核验 → 模式与范围 → 环境核验 → 依赖排序及分组计划 → 正常业务验证 → 自动补验 → 清理核对 → 按模式发布运行报告。Jenkins 与 GM 是环境准备路径，不能替代被测业务结果。
+- 执行文档标记核验 → 模式与范围 → 设备独占实例与环境核验 → 依赖排序及分组计划 → 正常业务验证 → 自动补验 → 清理核对 → 按模式发布运行报告 → 文档回读与过程文件清理。Jenkins 与 GM 是环境准备路径，不能替代被测业务结果。
 - 最终交付前可继续补验项必须为零；剩余未验分支必须有真实阻塞、用户排除或执行遗漏记录。失败项仍需继续其他独立分支。
 
 ## 静态结论词汇
