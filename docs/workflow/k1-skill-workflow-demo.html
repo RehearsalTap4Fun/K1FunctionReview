@@ -1,0 +1,372 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>K1 Skill 动作流 · 分步演示</title>
+<style>*{box-sizing:border-box}body{margin:0;background:#f4f7fb;color:#17263d;font-family:"Microsoft YaHei",sans-serif}header{height:76px;display:flex;align-items:center;gap:16px;padding:0 24px;border-bottom:1px solid #dbe4ef;background:#fff}header strong{font-size:20px}button,a.download{font:inherit;font-size:14px;padding:9px 13px;border:1px solid #d6dfeb;background:#fff;color:#234993;border-radius:8px;cursor:pointer;text-decoration:none}button:hover,a.download:hover{background:#edf2ff}header .spacer{flex:1}main{display:grid;grid-template-columns:minmax(0,1fr) 330px;height:calc(100vh - 76px)}#stage{overflow:auto;padding:22px;scrollbar-gutter:stable}#canvas{margin:auto;min-width:200px}svg{width:100%;height:auto;display:block;background:#f4f7fb;border-radius:12px}aside{background:#fff;border-left:1px solid #dbe4ef;padding:22px;overflow:auto}#tabs{display:flex;flex-direction:column;gap:7px}#tabs button{text-align:left}#tabs button.active{background:#315bd7;color:white;border-color:#315bd7}h2{font-size:19px;margin:24px 0 14px}#notes{padding-left:19px;font-size:14px;line-height:1.85}#notes li{margin-bottom:13px}.nav{display:flex;justify-content:space-between;gap:8px;margin-top:18px}.muted{color:#66758c;font-size:12px;line-height:1.7}@media(max-width:850px){main{grid-template-columns:1fr;height:auto}#stage{height:68vh}aside{border-left:0;border-top:1px solid #dbe4ef}header{height:auto;min-height:76px;flex-wrap:wrap;padding:14px}header strong{width:100%}#tabs{display:grid;grid-template-columns:1fr 1fr}}</style></head><body>
+<header><strong>K1 Skill · 动作流讲解</strong><span class="muted">按步骤聚焦，左右方向键切换</span><span class="spacer"></span><button id="minus" aria-label="缩小">−</button><span id="zoom">100%</span><button id="plus" aria-label="放大">+</button><button id="fit">适合宽度</button><a class="download" href="k1-skill-workflow.svg" download>下载完整 SVG</a></header>
+<main><section id="stage"><div id="canvas"><svg xmlns="http://www.w3.org/2000/svg" width="1840" height="3770" viewBox="0 0 1840 3770" role="img" aria-labelledby="title desc">
+<title id="title">K1 功能验收 Skill 完整动作流</title>
+<desc id="desc">基于当前 review-k1-function：任务入口、反馈文档查找与缺链接新建分支、必需字段补建、测试用例生成、两类验收、设备隔离、三语检查、逐项反馈维护、补验、进度播报、报告及归档清理。</desc>
+<defs><marker id="arrow" viewBox="0 0 10 10" refX="8.2" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 1 1 L 9 5 L 1 9 Z" fill="#8da0b8"/></marker></defs>
+<style>text{font-family:'Microsoft YaHei','PingFang SC','Noto Sans CJK SC',sans-serif} a{cursor:pointer} .phase{transition:opacity .2s} </style>
+<rect width="1840" height="3770" fill="#f4f7fb"/>
+
+<g id="overview" class="phase" data-focus="overview" transform="translate(0,0)">
+<text x="56" y="77" font-size="44" fill="#17263d" font-weight="700" text-anchor="start" >K1 功能验收 · Skill 完整动作流</text>
+<text x="56" y="118" font-size="22" fill="#586b83" font-weight="400" text-anchor="start" >先选入口，再确定本轮范围；以真实证据推进，按需求回写，按条件收尾。</text>
+<text x="1784" y="77" font-size="19" fill="#586b83" font-weight="400" text-anchor="end" >2026.10.22</text>
+<text x="1784" y="111" font-size="15" fill="#586b83" font-weight="400" text-anchor="end" >当前本地规则 · 反馈文档流程已更新</text>
+<g id="entry"><title>00  接收任务与恢复上下文。识别：预检 / 运行验收或续验 / 独立建环境 / 版本进包表验收。读取功能经验、已有计划与实际授权；按场景核验工具、连接和私有配置。；事实能查就查；已有有效决定直接沿用。版本进包表任务先完整读取版本日清单，共用需求级台账；单功能任务不编造版本总数。</title>
+<rect x="56" y="172" width="1728" height="130" rx="16" fill="#fff" stroke="#dbe4ef" />
+<rect x="56" y="172" width="6" height="130" rx="3" fill="#52677e" stroke="#52677e" />
+<text x="80" y="207" font-size="23" fill="#52677e" font-weight="700" text-anchor="start" >00  接收任务与恢复上下文</text>
+<text x="80" y="237" font-size="19" fill="#17263d" font-weight="400" text-anchor="start" >识别：预检 / 运行验收或续验 / 独立建环境 / 版本进包表验收。读取功能经验、已有计划与实际授权；按场景核验工具、连接和私有配置。</text>
+<text x="80" y="265" font-size="19" fill="#17263d" font-weight="400" text-anchor="start" >事实能查就查；已有有效决定直接沿用。版本进包表任务先完整读取版本日清单，共用需求级台账；单功能任务不编造版本总数。</text>
+</g>
+</g>
+<g id="feedback" class="phase" data-focus="feedback" transform="translate(0,0)">
+<text x="56" y="355" font-size="29" fill="#17263d" font-weight="700" text-anchor="start" >P  运行验收入口：先准备反馈文档与必需字段</text>
+<text x="56" y="385" font-size="18" fill="#586b83" font-weight="400" text-anchor="start" >开发验收与主分支回归均适用；静态预检走 A，运行验收走 P → B。缺信息只暂停受影响动作。</text>
+<g id="P1"><title>P1  查找唯一、适用的来源。用户链接 → 当前任务关联 → 私有功能经验。；核对功能、版本、工作表与真实权限。；有唯一来源 → 复用已有表。；确实找不到 → 确认补链接或新建。；协作者共用同一表，由协调者准备。；多个候选或链接打不开，先核对来源；；不可读不等于不存在，不能另建替代。</title>
+<rect x="56" y="416" width="420" height="368" rx="16" fill="#fff" stroke="#dbe4ef" />
+<rect x="56" y="416" width="6" height="368" rx="3" fill="#7652ba" stroke="#7652ba" />
+<text x="80" y="451" font-size="23" fill="#7652ba" font-weight="700" text-anchor="start" >P1  查找唯一、适用的来源</text>
+<text x="80" y="481" font-size="17" fill="#17263d" font-weight="400" text-anchor="start" >用户链接 → 当前任务关联 → 私有功能经验。</text>
+<text x="80" y="511" font-size="17" fill="#17263d" font-weight="400" text-anchor="start" >核对功能、版本、工作表与真实权限。</text>
+<text x="80" y="541" font-size="17" fill="#17263d" font-weight="400" text-anchor="start" >有唯一来源 → 复用已有表。</text>
+<text x="80" y="571" font-size="17" fill="#17263d" font-weight="400" text-anchor="start" >确实找不到 → 确认补链接或新建。</text>
+<text x="80" y="601" font-size="17" fill="#17263d" font-weight="400" text-anchor="start" >协作者共用同一表，由协调者准备。</text>
+<text x="80" y="631" font-size="17" fill="#17263d" font-weight="400" text-anchor="start" >多个候选或链接打不开，先核对来源；</text>
+<text x="80" y="661" font-size="17" fill="#17263d" font-weight="400" text-anchor="start" >不可读不等于不存在，不能另建替代。</text>
+</g>
+<g id="P2a"><title>P2a  找到 → 核对并复用。在既有授权范围内复用，不重复索取已知链接。；来源或权限不明，只确认缺失项；独立验收继续。</title>
+<rect x="520" y="416" width="560" height="140" rx="16" fill="#fff" stroke="#dbe4ef" />
+<rect x="520" y="416" width="6" height="140" rx="3" fill="#7652ba" stroke="#7652ba" />
+<text x="544" y="451" font-size="23" fill="#7652ba" font-weight="700" text-anchor="start" >P2a  找到 → 核对并复用</text>
+<text x="544" y="481" font-size="18" fill="#17263d" font-weight="400" text-anchor="start" >在既有授权范围内复用，不重复索取已知链接。</text>
+<text x="544" y="508" font-size="18" fill="#17263d" font-weight="400" text-anchor="start" >来源或权限不明，只确认缺失项；独立验收继续。</text>
+</g>
+<g id="P2b"><title>P2b  未找到 → 补链接 / 新建。向用户确认：补已有链接，或新建（推荐）。；已有建表决定与位置 → 直接创建并回读。；缺必要目录时再问；未回答不当作同意。；等待期间保留本地问题与截图，继续独立验收。</title>
+<rect x="520" y="584" width="560" height="200" rx="16" fill="#fff" stroke="#dbe4ef" />
+<rect x="520" y="584" width="6" height="200" rx="3" fill="#ab6415" stroke="#ab6415" />
+<text x="544" y="619" font-size="23" fill="#ab6415" font-weight="700" text-anchor="start" >P2b  未找到 → 补链接 / 新建</text>
+<text x="544" y="649" font-size="18" fill="#17263d" font-weight="400" text-anchor="start" >向用户确认：补已有链接，或新建（推荐）。</text>
+<text x="544" y="677" font-size="18" fill="#17263d" font-weight="400" text-anchor="start" >已有建表决定与位置 → 直接创建并回读。</text>
+<text x="544" y="705" font-size="18" fill="#17263d" font-weight="400" text-anchor="start" >缺必要目录时再问；未回答不当作同意。</text>
+<text x="544" y="733" font-size="18" fill="#17263d" font-weight="400" text-anchor="start" >等待期间保留本地问题与截图，继续独立验收。</text>
+</g>
+<g id="P3"><title>P3  检查字段：有则映射，缺则补建。稳定反馈 ID、关联需求/用例、问题描述、问题截图，；验收、验收详情、验收环境/版本、最近验收时间。；同义字段直接映射；原生稳定记录 ID 可复用。；缺字段 → 原表补建 → 回读；不重建整表。；新建验收单选：待验收 / 验收中 / 未通过 / 已通过。；保留原图、原下拉和开发状态；只保留一个验收字段。；新表按此结构初始化；没有真实问题就保留空表。；记录来源、字段映射与待办；准备后再生成反馈快照。</title>
+<rect x="1120" y="416" width="664" height="368" rx="16" fill="#fff" stroke="#dbe4ef" />
+<rect x="1120" y="416" width="6" height="368" rx="3" fill="#7652ba" stroke="#7652ba" />
+<text x="1144" y="451" font-size="23" fill="#7652ba" font-weight="700" text-anchor="start" >P3  检查字段：有则映射，缺则补建</text>
+<text x="1144" y="481" font-size="18" fill="#17263d" font-weight="400" text-anchor="start" >稳定反馈 ID、关联需求/用例、问题描述、问题截图，</text>
+<text x="1144" y="511" font-size="18" fill="#17263d" font-weight="400" text-anchor="start" >验收、验收详情、验收环境/版本、最近验收时间。</text>
+<text x="1144" y="541" font-size="18" fill="#17263d" font-weight="400" text-anchor="start" >同义字段直接映射；原生稳定记录 ID 可复用。</text>
+<text x="1144" y="571" font-size="18" fill="#17263d" font-weight="400" text-anchor="start" >缺字段 → 原表补建 → 回读；不重建整表。</text>
+<text x="1144" y="601" font-size="18" fill="#17263d" font-weight="400" text-anchor="start" >新建验收单选：待验收 / 验收中 / 未通过 / 已通过。</text>
+<text x="1144" y="631" font-size="18" fill="#17263d" font-weight="400" text-anchor="start" >保留原图、原下拉和开发状态；只保留一个验收字段。</text>
+<text x="1144" y="661" font-size="18" fill="#17263d" font-weight="400" text-anchor="start" >新表按此结构初始化；没有真实问题就保留空表。</text>
+<text x="1144" y="691" font-size="18" fill="#17263d" font-weight="400" text-anchor="start" >记录来源、字段映射与待办；准备后再生成反馈快照。</text>
+</g>
+<path d="M 476 488 L 514 488" fill="none" stroke="#8da0b8" stroke-width="2.2" stroke-linejoin="round" marker-end="url(#arrow)"/>
+<path d="M 476 682 L 514 682" fill="none" stroke="#8da0b8" stroke-width="2.2" stroke-linejoin="round" marker-end="url(#arrow)"/>
+<path d="M 1080 488 L 1114 488" fill="none" stroke="#8da0b8" stroke-width="2.2" stroke-linejoin="round" marker-end="url(#arrow)"/>
+<path d="M 1080 682 L 1114 682" fill="none" stroke="#8da0b8" stroke-width="2.2" stroke-linejoin="round" marker-end="url(#arrow)"/>
+<rect x="56" y="813" width="1728" height="72" rx="12" fill="#fff5df" stroke="#ebd5a7" />
+<text x="80" y="841" font-size="19" fill="#17263d" font-weight="700" text-anchor="start" >缺链接 / 字段 / 权限：已测结果与待同步材料留在本地，不能声称反馈维护完成；未归档截图保留。</text>
+<text x="80" y="868" font-size="17" fill="#586b83" font-weight="400" text-anchor="start" >建表和补字段由 Agent 调用文档工具；现有 feedback CLI 只处理已有表的结果与图片补丁，不自动建表补列。</text>
+<path d="M 1452 784 L 1452 802" fill="none" stroke="#8da0b8" stroke-width="2.2" stroke-linejoin="round" marker-end="url(#arrow)"/>
+</g>
+<g id="static" class="phase" data-focus="static" transform="translate(0,600)">
+<text x="56" y="344" font-size="27" fill="#087e8b" font-weight="700" text-anchor="start" >A  首次对齐与静态预检</text>
+<text x="56" y="373" font-size="16" fill="#586b83" font-weight="400" text-anchor="start" >完整预检路径；仅给 Jira / 分支不自动部署</text>
+<g id="A1"><title>A1  冻结审核对象。原文全文 + 三端 base / target 完整 SHA。；正式仓库只读；在工作区缓存取证。；远端缺失只降级该端，不回退本地分支。</title>
+<rect x="56" y="394" width="500" height="154" rx="16" fill="#fff" stroke="#dbe4ef" />
+<rect x="56" y="394" width="6" height="154" rx="3" fill="#087e8b" stroke="#087e8b" />
+<text x="80" y="429" font-size="23" fill="#087e8b" font-weight="700" text-anchor="start" >A1  冻结审核对象</text>
+<text x="80" y="459" font-size="18" fill="#17263d" font-weight="400" text-anchor="start" >原文全文 + 三端 base / target 完整 SHA。</text>
+<text x="80" y="484" font-size="18" fill="#17263d" font-weight="400" text-anchor="start" >正式仓库只读；在工作区缓存取证。</text>
+<text x="80" y="509" font-size="18" fill="#17263d" font-weight="400" text-anchor="start" >远端缺失只降级该端，不回退本地分支。</text>
+</g>
+<g id="A2"><title>A2  双向对齐，先维护文档。文档需求 ↔ 分支累计变化与最终状态。；列出新增 / 删除 / 修改 / 待判定。；用户确认「需求已调整」→ 最小回写原文。；「实现有问题 / 证据不足」→ 保留并交接。；写前复读、写后回读；校验交接记录。；无差异也要核验，不必确认空清单。</title>
+<rect x="56" y="578" width="500" height="238" rx="16" fill="#fff" stroke="#dbe4ef" />
+<rect x="56" y="578" width="6" height="238" rx="3" fill="#087e8b" stroke="#087e8b" />
+<text x="80" y="613" font-size="23" fill="#087e8b" font-weight="700" text-anchor="start" >A2  双向对齐，先维护文档</text>
+<text x="80" y="643" font-size="17" fill="#17263d" font-weight="400" text-anchor="start" >文档需求 ↔ 分支累计变化与最终状态。</text>
+<text x="80" y="669" font-size="17" fill="#17263d" font-weight="400" text-anchor="start" >列出新增 / 删除 / 修改 / 待判定。</text>
+<text x="80" y="695" font-size="17" fill="#17263d" font-weight="400" text-anchor="start" >用户确认「需求已调整」→ 最小回写原文。</text>
+<text x="80" y="721" font-size="17" fill="#17263d" font-weight="400" text-anchor="start" >「实现有问题 / 证据不足」→ 保留并交接。</text>
+<text x="80" y="747" font-size="17" fill="#17263d" font-weight="400" text-anchor="start" >写前复读、写后回读；校验交接记录。</text>
+<text x="80" y="773" font-size="17" fill="#17263d" font-weight="400" text-anchor="start" >无差异也要核验，不必确认空清单。</text>
+</g>
+<g id="A3"><title>A3  生成／更新测试用例。按确认文档生成；已有用例校准并补齐覆盖。；写明前置、操作、预期；关联稳定需求 ID。；用例文档版本必须等于回读后的版本。</title>
+<rect x="56" y="846" width="500" height="144" rx="16" fill="#fff" stroke="#dbe4ef" />
+<rect x="56" y="846" width="6" height="144" rx="3" fill="#087e8b" stroke="#087e8b" />
+<text x="80" y="881" font-size="23" fill="#087e8b" font-weight="700" text-anchor="start" >A3  生成／更新测试用例</text>
+<text x="80" y="911" font-size="17" fill="#17263d" font-weight="400" text-anchor="start" >按确认文档生成；已有用例校准并补齐覆盖。</text>
+<text x="80" y="936" font-size="17" fill="#17263d" font-weight="400" text-anchor="start" >写明前置、操作、预期；关联稳定需求 ID。</text>
+<text x="80" y="961" font-size="17" fill="#17263d" font-weight="400" text-anchor="start" >用例文档版本必须等于回读后的版本。</text>
+</g>
+<g id="A4"><title>A4  静态预审与证据校验。沿客户端、协议、服务端、配置追踪闭环。；正式 XLSX 是配置依据；JSON 仅辅助。；匹配检查规则，核验冻结源码原文定位。；证据缺口标明，校验记录不替代业务判断。</title>
+<rect x="56" y="1020" width="500" height="178" rx="16" fill="#fff" stroke="#dbe4ef" />
+<rect x="56" y="1020" width="6" height="178" rx="3" fill="#087e8b" stroke="#087e8b" />
+<text x="80" y="1055" font-size="23" fill="#087e8b" font-weight="700" text-anchor="start" >A4  静态预审与证据校验</text>
+<text x="80" y="1085" font-size="17" fill="#17263d" font-weight="400" text-anchor="start" >沿客户端、协议、服务端、配置追踪闭环。</text>
+<text x="80" y="1110" font-size="17" fill="#17263d" font-weight="400" text-anchor="start" >正式 XLSX 是配置依据；JSON 仅辅助。</text>
+<text x="80" y="1135" font-size="17" fill="#17263d" font-weight="400" text-anchor="start" >匹配检查规则，核验冻结源码原文定位。</text>
+<text x="80" y="1160" font-size="17" fill="#17263d" font-weight="400" text-anchor="start" >证据缺口标明，校验记录不替代业务判断。</text>
+</g>
+<g id="A5"><title>A5  发布预检，沉淀确认标记。终检工作区边界、覆盖、文档与证据一致性。；产出 summary.html / review.md / testcases.md。；写入「预检后文档已确认」版本及来源。；静态预检结果不代表功能验收通过。</title>
+<rect x="56" y="1228" width="500" height="182" rx="16" fill="#fff" stroke="#dbe4ef" />
+<rect x="56" y="1228" width="6" height="182" rx="3" fill="#087e8b" stroke="#087e8b" />
+<text x="80" y="1263" font-size="23" fill="#087e8b" font-weight="700" text-anchor="start" >A5  发布预检，沉淀确认标记</text>
+<text x="80" y="1293" font-size="17" fill="#17263d" font-weight="400" text-anchor="start" >终检工作区边界、覆盖、文档与证据一致性。</text>
+<text x="80" y="1317" font-size="17" fill="#17263d" font-weight="400" text-anchor="start" >产出 summary.html / review.md / testcases.md。</text>
+<text x="80" y="1341" font-size="17" fill="#17263d" font-weight="400" text-anchor="start" >写入「预检后文档已确认」版本及来源。</text>
+<text x="80" y="1365" font-size="17" fill="#17263d" font-weight="400" text-anchor="start" >静态预检结果不代表功能验收通过。</text>
+<text x="80" y="1393" font-size="15" fill="#586b83" font-weight="400" text-anchor="start" >用户请求运行验收时，再交接到 B1 →</text>
+</g>
+<path d="M 306 552 L 306 572" fill="none" stroke="#087e8b" stroke-width="2.2" stroke-linejoin="round" marker-end="url(#arrow)"/>
+<path d="M 306 820 L 306 840" fill="none" stroke="#087e8b" stroke-width="2.2" stroke-linejoin="round" marker-end="url(#arrow)"/>
+<path d="M 306 994 L 306 1014" fill="none" stroke="#087e8b" stroke-width="2.2" stroke-linejoin="round" marker-end="url(#arrow)"/>
+<path d="M 306 1202 L 306 1222" fill="none" stroke="#087e8b" stroke-width="2.2" stroke-linejoin="round" marker-end="url(#arrow)"/>
+<path d="M 556 1318 L 572 1318 L 572 467 L 590 467" fill="none" stroke="#087e8b" stroke-width="1.8" stroke-linejoin="round" stroke-dasharray="7 6" marker-end="url(#arrow)"/>
+</g>
+<g id="runtime" class="phase" data-focus="runtime" transform="translate(0,600)">
+<text x="590" y="344" font-size="27" fill="#315bd7" font-weight="700" text-anchor="start" >B  运行验收主线</text>
+<text x="590" y="373" font-size="16" fill="#586b83" font-weight="400" text-anchor="start" >可直接接续已有有效交接，不重跑全部静态流程</text>
+<g id="B1"><title>B1  核对文档基线与本轮模式。当前文档与确认标记同版本 → 沿用；变化 → 只对齐受影响规则。；缺证据 / 不可读 → 待复核，不宣称文档最新或完整通过。；记录 P 的反馈准备状态；按用户意图定模式，不只凭分支名猜测。</title>
+<rect x="590" y="394" width="660" height="154" rx="16" fill="#fff" stroke="#dbe4ef" />
+<rect x="590" y="394" width="6" height="154" rx="3" fill="#315bd7" stroke="#315bd7" />
+<text x="614" y="429" font-size="23" fill="#315bd7" font-weight="700" text-anchor="start" >B1  核对文档基线与本轮模式</text>
+<text x="614" y="459" font-size="18" fill="#17263d" font-weight="400" text-anchor="start" >当前文档与确认标记同版本 → 沿用；变化 → 只对齐受影响规则。</text>
+<text x="614" y="485" font-size="18" fill="#17263d" font-weight="400" text-anchor="start" >缺证据 / 不可读 → 待复核，不宣称文档最新或完整通过。</text>
+<text x="614" y="511" font-size="18" fill="#17263d" font-weight="400" text-anchor="start" >记录 P 的反馈准备状态；按用户意图定模式，不只凭分支名猜测。</text>
+</g>
+<rect x="590" y="578" width="660" height="238" rx="16" fill="#fff" stroke="#dbe4ef" />
+<rect x="590" y="578" width="6" height="238" rx="3" fill="#315bd7" stroke="#315bd7" />
+<text x="614" y="613" font-size="23" fill="#315bd7" font-weight="700" text-anchor="start" >B2  确定覆盖范围，再建立本轮基线</text>
+<rect x="614" y="636" width="291" height="126" rx="10" fill="#edf2ff" stroke="#edf2ff" />
+<rect x="925" y="636" width="301" height="126" rx="10" fill="#eaf6f3" stroke="#eaf6f3" />
+<text x="632" y="663" font-size="19" fill="#315bd7" font-weight="700" text-anchor="start" >开发分支 · 详细验收</text>
+<text x="632" y="693" font-size="17" fill="#17263d" font-weight="400" text-anchor="start" >按文档和反馈表</text>
+<text x="632" y="718" font-size="17" fill="#17263d" font-weight="400" text-anchor="start" >覆盖规则、主流程、边界与异常</text>
+<text x="632" y="743" font-size="17" fill="#17263d" font-weight="400" text-anchor="start" >逐项复验，实际查看原问题图片</text>
+<text x="943" y="663" font-size="19" fill="#087e8b" font-weight="700" text-anchor="start" >主分支 · 玩家回归</text>
+<text x="943" y="693" font-size="17" fill="#17263d" font-weight="400" text-anchor="start" >理解规则，正常玩家体验玩法</text>
+<text x="943" y="718" font-size="17" fill="#17263d" font-weight="400" text-anchor="start" >指定问题才加入定向复验</text>
+<text x="943" y="743" font-size="17" fill="#17263d" font-weight="400" text-anchor="start" >不自动扩大全量开发用例</text>
+<text x="614" y="793" font-size="17" fill="#17263d" font-weight="400" text-anchor="start" >共同要求：真实证据、独占实例；有 UI 改动即加入英 / 俄 / 阿检查。</text>
+<g id="B3"><title>B3  核实设备隔离与整轮测试条件。设备 → 协作者 → 账号 → 实际独占服务器实例；可复用合格环境。；缺分配 / 必要参数先查后问；明确前，受影响设备不部署或开测。；回读实际版本、存储、时间、活动与跨服依赖；细则见 C1–C3。</title>
+<rect x="590" y="846" width="660" height="144" rx="16" fill="#fff" stroke="#dbe4ef" />
+<rect x="590" y="846" width="6" height="144" rx="3" fill="#315bd7" stroke="#315bd7" />
+<text x="614" y="881" font-size="23" fill="#315bd7" font-weight="700" text-anchor="start" >B3  核实设备隔离与整轮测试条件</text>
+<text x="614" y="911" font-size="18" fill="#17263d" font-weight="400" text-anchor="start" >设备 → 协作者 → 账号 → 实际独占服务器实例；可复用合格环境。</text>
+<text x="614" y="936" font-size="18" fill="#17263d" font-weight="400" text-anchor="start" >缺分配 / 必要参数先查后问；明确前，受影响设备不部署或开测。</text>
+<text x="614" y="961" font-size="18" fill="#17263d" font-weight="400" text-anchor="start" >回读实际版本、存储、时间、活动与跨服依赖；细则见 C1–C3。</text>
+</g>
+<g id="B4"><title>B4  先编排，再冻结可执行计划。分析状态、时间、消耗影响；共享准备可合并，逐项证据不合并。；真正业务前置用 dependsOn；执行顺序用组内顺序 / phase / batch。；独立资源分批并行；共享写操作串行，协调者统一派发和回填。；将三语断言纳入原需求；schedule → init，绑定基线与计划哈希。</title>
+<rect x="590" y="1020" width="660" height="178" rx="16" fill="#fff" stroke="#dbe4ef" />
+<rect x="590" y="1020" width="6" height="178" rx="3" fill="#315bd7" stroke="#315bd7" />
+<text x="614" y="1055" font-size="23" fill="#315bd7" font-weight="700" text-anchor="start" >B4  先编排，再冻结可执行计划</text>
+<text x="614" y="1085" font-size="18" fill="#17263d" font-weight="400" text-anchor="start" >分析状态、时间、消耗影响；共享准备可合并，逐项证据不合并。</text>
+<text x="614" y="1110" font-size="18" fill="#17263d" font-weight="400" text-anchor="start" >真正业务前置用 dependsOn；执行顺序用组内顺序 / phase / batch。</text>
+<text x="614" y="1135" font-size="18" fill="#17263d" font-weight="400" text-anchor="start" >独立资源分批并行；共享写操作串行，协调者统一派发和回填。</text>
+<text x="614" y="1160" font-size="18" fill="#17263d" font-weight="400" text-anchor="start" >将三语断言纳入原需求；schedule → init，绑定基线与计划哈希。</text>
+</g>
+<g id="B5"><title>B5  执行当前队列中的下一条断言。next → 实际业务入口 → 请求 / 回包 → 最终状态 → UI 与资产证据。；异步 Ack 成功不能代替落地；GM / 模拟只证明对应测试方式。；重复导航可复用已验证方法；新界面、异常和视觉断言实际看图。；协作者交证据与结果 → B6 维护反馈 → D 补验循环。</title>
+<rect x="590" y="1228" width="660" height="182" rx="16" fill="#fff" stroke="#dbe4ef" />
+<rect x="590" y="1228" width="6" height="182" rx="3" fill="#315bd7" stroke="#315bd7" />
+<text x="614" y="1263" font-size="23" fill="#315bd7" font-weight="700" text-anchor="start" >B5  执行当前队列中的下一条断言</text>
+<text x="614" y="1293" font-size="18" fill="#17263d" font-weight="400" text-anchor="start" >next → 实际业务入口 → 请求 / 回包 → 最终状态 → UI 与资产证据。</text>
+<text x="614" y="1318" font-size="18" fill="#17263d" font-weight="400" text-anchor="start" >异步 Ack 成功不能代替落地；GM / 模拟只证明对应测试方式。</text>
+<text x="614" y="1343" font-size="18" fill="#17263d" font-weight="400" text-anchor="start" >重复导航可复用已验证方法；新界面、异常和视觉断言实际看图。</text>
+<text x="614" y="1368" font-size="18" fill="#17263d" font-weight="400" text-anchor="start" >协作者交证据与结果 → B6 维护反馈 → D 补验循环。</text>
+</g>
+<path d="M 920 552 L 920 572" fill="none" stroke="#315bd7" stroke-width="2.2" stroke-linejoin="round" marker-end="url(#arrow)"/>
+<path d="M 920 820 L 920 840" fill="none" stroke="#315bd7" stroke-width="2.2" stroke-linejoin="round" marker-end="url(#arrow)"/>
+<path d="M 920 994 L 920 1014" fill="none" stroke="#315bd7" stroke-width="2.2" stroke-linejoin="round" marker-end="url(#arrow)"/>
+<path d="M 920 1202 L 920 1222" fill="none" stroke="#315bd7" stroke-width="2.2" stroke-linejoin="round" marker-end="url(#arrow)"/>
+</g>
+<g id="support" class="phase" data-focus="support" transform="translate(0,600)">
+<text x="1284" y="344" font-size="27" fill="#7652ba" font-weight="700" text-anchor="start" >C  按条件调用的配套动作</text>
+<text x="1284" y="373" font-size="16" fill="#586b83" font-weight="400" text-anchor="start" >不是所有任务都要走完右侧每一项</text>
+<g id="C1"><title>C1  隔离要看实际影响范围。默认一设备一独占实例，不要求独立物理机。；不同账号 / 别名不等于隔离。；共享时钟、战场和存储仍按共享资源处理。</title>
+<rect x="1284" y="394" width="500" height="154" rx="16" fill="#fff" stroke="#dbe4ef" />
+<rect x="1284" y="394" width="6" height="154" rx="3" fill="#7652ba" stroke="#7652ba" />
+<text x="1308" y="429" font-size="23" fill="#7652ba" font-weight="700" text-anchor="start" >C1  隔离要看实际影响范围</text>
+<text x="1308" y="459" font-size="17" fill="#17263d" font-weight="400" text-anchor="start" >默认一设备一独占实例，不要求独立物理机。</text>
+<text x="1308" y="485" font-size="17" fill="#17263d" font-weight="400" text-anchor="start" >不同账号 / 别名不等于隔离。</text>
+<text x="1308" y="511" font-size="17" fill="#17263d" font-weight="400" text-anchor="start" >共享时钟、战场和存储仍按共享资源处理。</text>
+</g>
+<g id="C2"><title>C2  独立建环境 / 运行缺环境。确认目标与代码 / 配表 / 数据恢复范围。；prepare 只读准备 → advance 推进工作流。；备份源服 → 匹配本次钉钉完成回执。；DownKey 仅内存 → 部署本人指定测试实例。；核验实际版本、进程、存储与登录目标。；ready 仅代表环境就绪；结果不明先核对。</title>
+<rect x="1284" y="578" width="500" height="238" rx="16" fill="#fff" stroke="#dbe4ef" />
+<rect x="1284" y="578" width="6" height="238" rx="3" fill="#7652ba" stroke="#7652ba" />
+<text x="1308" y="613" font-size="23" fill="#7652ba" font-weight="700" text-anchor="start" >C2  独立建环境 / 运行缺环境</text>
+<text x="1308" y="643" font-size="17" fill="#17263d" font-weight="400" text-anchor="start" >确认目标与代码 / 配表 / 数据恢复范围。</text>
+<text x="1308" y="669" font-size="17" fill="#17263d" font-weight="400" text-anchor="start" >prepare 只读准备 → advance 推进工作流。</text>
+<text x="1308" y="695" font-size="17" fill="#17263d" font-weight="400" text-anchor="start" >备份源服 → 匹配本次钉钉完成回执。</text>
+<text x="1308" y="721" font-size="17" fill="#17263d" font-weight="400" text-anchor="start" >DownKey 仅内存 → 部署本人指定测试实例。</text>
+<text x="1308" y="747" font-size="17" fill="#17263d" font-weight="400" text-anchor="start" >核验实际版本、进程、存储与登录目标。</text>
+<text x="1308" y="773" font-size="17" fill="#17263d" font-weight="400" text-anchor="start" >ready 仅代表环境就绪；结果不明先核对。</text>
+</g>
+<g id="C3"><title>C3  同服例外与服务器级 GM。仅用户明确指定同服时采用共享例外。；统一协调安全节点，再由指定一人操作。；check-advance 不替代其他台账的核对。</title>
+<rect x="1284" y="846" width="500" height="144" rx="16" fill="#fff" stroke="#dbe4ef" />
+<rect x="1284" y="846" width="6" height="144" rx="3" fill="#ab6415" stroke="#ab6415" />
+<text x="1308" y="881" font-size="23" fill="#ab6415" font-weight="700" text-anchor="start" >C3  同服例外与服务器级 GM</text>
+<text x="1308" y="911" font-size="17" fill="#17263d" font-weight="400" text-anchor="start" >仅用户明确指定同服时采用共享例外。</text>
+<text x="1308" y="936" font-size="17" fill="#17263d" font-weight="400" text-anchor="start" >统一协调安全节点，再由指定一人操作。</text>
+<text x="1308" y="961" font-size="17" fill="#17263d" font-weight="400" text-anchor="start" >check-advance 不替代其他台账的核对。</text>
+</g>
+<g id="C4"><title>C4  新增或改动 UI：三语必验。英语：排版、漏译、缺键与回退。；俄语：长文本、换行、截断和遮挡。；阿拉伯语：连写、RTL、数字英文混排。；逐语言截图，缺项不通过；结束恢复原语言。</title>
+<rect x="1284" y="1020" width="500" height="178" rx="16" fill="#fff" stroke="#dbe4ef" />
+<rect x="1284" y="1020" width="6" height="178" rx="3" fill="#7652ba" stroke="#7652ba" />
+<text x="1308" y="1055" font-size="23" fill="#7652ba" font-weight="700" text-anchor="start" >C4  新增或改动 UI：三语必验</text>
+<text x="1308" y="1085" font-size="17" fill="#17263d" font-weight="400" text-anchor="start" >英语：排版、漏译、缺键与回退。</text>
+<text x="1308" y="1110" font-size="17" fill="#17263d" font-weight="400" text-anchor="start" >俄语：长文本、换行、截断和遮挡。</text>
+<text x="1308" y="1135" font-size="17" fill="#17263d" font-weight="400" text-anchor="start" >阿拉伯语：连写、RTL、数字英文混排。</text>
+<text x="1308" y="1160" font-size="17" fill="#17263d" font-weight="400" text-anchor="start" >逐语言截图，缺项不通过；结束恢复原语言。</text>
+</g>
+<g id="C5"><title>C5  B6 的反馈写入与附件细则。原问题图先实际查看；新增图追加到原截图格。；保留原图、开发状态、下拉规则及非目标内容。；验收状态只留一个，说明合并到验收详情。；写后回读，逐图打开确认内容和访问权限。</title>
+<rect x="1284" y="1228" width="500" height="182" rx="16" fill="#fff" stroke="#dbe4ef" />
+<rect x="1284" y="1228" width="6" height="182" rx="3" fill="#7652ba" stroke="#7652ba" />
+<text x="1308" y="1263" font-size="23" fill="#7652ba" font-weight="700" text-anchor="start" >C5  B6 的反馈写入与附件细则</text>
+<text x="1308" y="1293" font-size="17" fill="#17263d" font-weight="400" text-anchor="start" >原问题图先实际查看；新增图追加到原截图格。</text>
+<text x="1308" y="1318" font-size="17" fill="#17263d" font-weight="400" text-anchor="start" >保留原图、开发状态、下拉规则及非目标内容。</text>
+<text x="1308" y="1343" font-size="17" fill="#17263d" font-weight="400" text-anchor="start" >验收状态只留一个，说明合并到验收详情。</text>
+<text x="1308" y="1368" font-size="17" fill="#17263d" font-weight="400" text-anchor="start" >写后回读，逐图打开确认内容和访问权限。</text>
+</g>
+</g>
+<g id="feedback_write" class="phase" data-focus="feedback_write" transform="translate(0,0)">
+<path d="M 920 2010 L 920 2035" fill="none" stroke="#315bd7" stroke-width="2.2" stroke-linejoin="round" marker-end="url(#arrow)"/>
+<g id="B6"><title>B6  逐项维护反馈文档 → 回读文字与全部图片 → 保存本项结论。已有反馈回填验收与详情；新问题补步骤、预期 / 实际表现、环境 / 版本、时间与截图。截图追加到原格，保留旧图、下拉与开发状态。；没有新问题的正常项写需求报告 / 台账，不编造问题行。缺表、缺字段或上传失败时记录待同步，继续独立项，保留相关证据。；形成需求结论后进入 E1 播报；必要反馈维护未闭环不报通过。其余可执行项继续 D → B5，不等整轮结束才维护文档。</title>
+<rect x="56" y="2042" width="1728" height="154" rx="16" fill="#fff" stroke="#dbe4ef" />
+<rect x="56" y="2042" width="6" height="154" rx="3" fill="#ac3b77" stroke="#ac3b77" />
+<text x="80" y="2077" font-size="23" fill="#ac3b77" font-weight="700" text-anchor="start" >B6  逐项维护反馈文档 → 回读文字与全部图片 → 保存本项结论</text>
+<text x="80" y="2107" font-size="19" fill="#17263d" font-weight="400" text-anchor="start" >已有反馈回填验收与详情；新问题补步骤、预期 / 实际表现、环境 / 版本、时间与截图。截图追加到原格，保留旧图、下拉与开发状态。</text>
+<text x="80" y="2135" font-size="19" fill="#17263d" font-weight="400" text-anchor="start" >没有新问题的正常项写需求报告 / 台账，不编造问题行。缺表、缺字段或上传失败时记录待同步，继续独立项，保留相关证据。</text>
+<text x="80" y="2163" font-size="19" fill="#17263d" font-weight="400" text-anchor="start" >形成需求结论后进入 E1 播报；必要反馈维护未闭环不报通过。其余可执行项继续 D → B5，不等整轮结束才维护文档。</text>
+</g>
+</g>
+<g id="loop" class="phase" data-focus="loop" transform="translate(0,790)">
+<text x="56" y="1475" font-size="29" fill="#17263d" font-weight="700" text-anchor="start" >D  自动补验循环</text>
+<text x="56" y="1503" font-size="17" fill="#586b83" font-weight="400" text-anchor="start" >每次动作、阶段结束或条件恢复后，重新评估队列。</text>
+<path d="M 660 1410 L 660 1518 L 310 1518 L 310 1550" fill="none" stroke="#8da0b8" stroke-width="2.2" stroke-linejoin="round" marker-end="url(#arrow)"/>
+<g id="D1"><title>D1  回填观察、证据与断言状态。pending / partial：仍需执行或补足证据。；passed / failed：按真实结果记录，保留依据。；blocked：记录原因、已尝试动作与可行方案。；excluded 需用户决定；missed 如实记遗漏。</title>
+<rect x="56" y="1555" width="500" height="188" rx="16" fill="#fff" stroke="#dbe4ef" />
+<rect x="56" y="1555" width="6" height="188" rx="3" fill="#315bd7" stroke="#315bd7" />
+<text x="80" y="1590" font-size="23" fill="#315bd7" font-weight="700" text-anchor="start" >D1  回填观察、证据与断言状态</text>
+<text x="80" y="1620" font-size="17" fill="#17263d" font-weight="400" text-anchor="start" >pending / partial：仍需执行或补足证据。</text>
+<text x="80" y="1646" font-size="17" fill="#17263d" font-weight="400" text-anchor="start" >passed / failed：按真实结果记录，保留依据。</text>
+<text x="80" y="1672" font-size="17" fill="#17263d" font-weight="400" text-anchor="start" >blocked：记录原因、已尝试动作与可行方案。</text>
+<text x="80" y="1698" font-size="17" fill="#17263d" font-weight="400" text-anchor="start" >excluded 需用户决定；missed 如实记遗漏。</text>
+<text x="80" y="1726" font-size="15" fill="#586b83" font-weight="400" text-anchor="start" >一项失败不阻断其他独立项；形成需求结论进入 E1。</text>
+</g>
+<g id="D2"><title>D2  还有可继续的动作或补验方案？。有 → 回到 B5；不能把部分验证当成本轮结束。；缺条件 → 现有条件 → 已授权 GM / 模拟 → 独立环境。；存在可行方案仍需执行；推进时间先检查会过期的断言。；本轮确实无可继续动作 → D3，保留所有覆盖缺口。</title>
+<rect x="590" y="1555" width="660" height="188" rx="16" fill="#fff" stroke="#dbe4ef" />
+<rect x="590" y="1555" width="6" height="188" rx="3" fill="#ab6415" stroke="#ab6415" />
+<text x="614" y="1590" font-size="23" fill="#ab6415" font-weight="700" text-anchor="start" >D2  还有可继续的动作或补验方案？</text>
+<text x="614" y="1620" font-size="18" fill="#17263d" font-weight="400" text-anchor="start" >有 → 回到 B5；不能把部分验证当成本轮结束。</text>
+<text x="614" y="1646" font-size="18" fill="#17263d" font-weight="400" text-anchor="start" >缺条件 → 现有条件 → 已授权 GM / 模拟 → 独立环境。</text>
+<text x="614" y="1672" font-size="18" fill="#17263d" font-weight="400" text-anchor="start" >存在可行方案仍需执行；推进时间先检查会过期的断言。</text>
+<text x="614" y="1698" font-size="18" fill="#17263d" font-weight="400" text-anchor="start" >本轮确实无可继续动作 → D3，保留所有覆盖缺口。</text>
+</g>
+<g id="D3"><title>D3  无可继续项，进入整轮收尾。真实阻塞 / 明确排除 / 遗漏可结束本轮，；但不能据此宣称完整通过。；只有文档已确认、全部断言通过、收尾完成，；才能给出本轮模式与范围内的完整通过。</title>
+<rect x="1284" y="1555" width="500" height="188" rx="16" fill="#fff" stroke="#dbe4ef" />
+<rect x="1284" y="1555" width="6" height="188" rx="3" fill="#315bd7" stroke="#315bd7" />
+<text x="1308" y="1590" font-size="23" fill="#315bd7" font-weight="700" text-anchor="start" >D3  无可继续项，进入整轮收尾</text>
+<text x="1308" y="1620" font-size="17" fill="#17263d" font-weight="400" text-anchor="start" >真实阻塞 / 明确排除 / 遗漏可结束本轮，</text>
+<text x="1308" y="1646" font-size="17" fill="#17263d" font-weight="400" text-anchor="start" >但不能据此宣称完整通过。</text>
+<text x="1308" y="1672" font-size="17" fill="#17263d" font-weight="400" text-anchor="start" >只有文档已确认、全部断言通过、收尾完成，</text>
+<text x="1308" y="1698" font-size="17" fill="#17263d" font-weight="400" text-anchor="start" >才能给出本轮模式与范围内的完整通过。</text>
+<text x="1308" y="1726" font-size="15" fill="#586b83" font-weight="400" text-anchor="start" >进入 E2 的报告发布门槛。</text>
+</g>
+<path d="M 556 1648 L 584 1648" fill="none" stroke="#8da0b8" stroke-width="2.2" stroke-linejoin="round" marker-end="url(#arrow)"/>
+<path d="M 1250 1648 L 1278 1648" fill="none" stroke="#8da0b8" stroke-width="2.2" stroke-linejoin="round" marker-end="url(#arrow)"/>
+<path d="M 920 1555 L 920 1518 L 1810 1518 L 1810 1018 L 1266 1018 L 1266 1130 L 1255 1130" fill="none" stroke="#315bd7" stroke-width="2.2" stroke-linejoin="round" stroke-dasharray="7 6" marker-end="url(#arrow)"/>
+<text x="993" y="1496" font-size="17" fill="#315bd7" font-weight="700" text-anchor="start" >还有动作 → 回到 B5</text>
+<rect x="56" y="1780" width="1728" height="64" rx="12" fill="#e8eef8" stroke="#d8e2f1" />
+<text x="80" y="1820" font-size="20" fill="#17263d" font-weight="700" text-anchor="start" >两种粒度必须分开：断言 / 子用例负责覆盖；原始需求负责版本进度。一条需求的三语检查仍只算一条需求。</text>
+</g>
+<g id="closure" class="phase" data-focus="closure" transform="translate(0,790)">
+<text x="56" y="1900" font-size="29" fill="#17263d" font-weight="700" text-anchor="start" >E  每项及时回写与播报，整轮达标后发布</text>
+<text x="56" y="1928" font-size="18" fill="#586b83" font-weight="400" text-anchor="start" >结果写回后即可检查清理条件；不等待全部需求通过，也不先删仍被台账引用的证据。</text>
+<g id="E1"><title>E1  每条需求：结果持久化 → 播报。开始需求记 running；按本轮范围形成最终结论。；先完成 B6 写回与回读，再 record 保存结论。；passed、failed、blocked 结论均触发播报。；消息包含标题、版本日、模式与进度数量。；同一结论重放不重复发；变化后的复验结论再发。；只适用于已关联完整进包表且机器人已获授权。</title>
+<rect x="56" y="1960" width="532" height="298" rx="16" fill="#fff" stroke="#dbe4ef" />
+<rect x="56" y="1960" width="6" height="298" rx="3" fill="#ac3b77" stroke="#ac3b77" />
+<text x="80" y="1995" font-size="23" fill="#ac3b77" font-weight="700" text-anchor="start" >E1  每条需求：结果持久化 → 播报</text>
+<text x="80" y="2025" font-size="18" fill="#17263d" font-weight="400" text-anchor="start" >开始需求记 running；按本轮范围形成最终结论。</text>
+<text x="80" y="2054" font-size="18" fill="#17263d" font-weight="400" text-anchor="start" >先完成 B6 写回与回读，再 record 保存结论。</text>
+<text x="80" y="2083" font-size="18" fill="#17263d" font-weight="400" text-anchor="start" >passed、failed、blocked 结论均触发播报。</text>
+<text x="80" y="2112" font-size="18" fill="#17263d" font-weight="400" text-anchor="start" >消息包含标题、版本日、模式与进度数量。</text>
+<text x="80" y="2141" font-size="18" fill="#17263d" font-weight="400" text-anchor="start" >同一结论重放不重复发；变化后的复验结论再发。</text>
+<text x="80" y="2170" font-size="18" fill="#17263d" font-weight="400" text-anchor="start" >只适用于已关联完整进包表且机器人已获授权。</text>
+<text x="80" y="2241" font-size="15" fill="#586b83" font-weight="400" text-anchor="start" >不是定时任务；子用例通过不触发需求完成播报。</text>
+</g>
+<g id="E2"><title>E2  整轮：收尾校验 → publish。恢复本轮可恢复前置和原语言，注销探针 / 拦截。；回读实际身份、版本、时间与保留状态。；检查基线不漂移、范围不丢项、证据有效。；可继续项为零且收尾证据满足，才可发布报告。；产出 summary.html + runtime-result.json。；区分玩家回归与开发详细验收，披露问题和缺口。</title>
+<rect x="620" y="1960" width="600" height="298" rx="16" fill="#fff" stroke="#dbe4ef" />
+<rect x="620" y="1960" width="6" height="298" rx="3" fill="#315bd7" stroke="#315bd7" />
+<text x="644" y="1995" font-size="23" fill="#315bd7" font-weight="700" text-anchor="start" >E2  整轮：收尾校验 → publish</text>
+<text x="644" y="2025" font-size="18" fill="#17263d" font-weight="400" text-anchor="start" >恢复本轮可恢复前置和原语言，注销探针 / 拦截。</text>
+<text x="644" y="2054" font-size="18" fill="#17263d" font-weight="400" text-anchor="start" >回读实际身份、版本、时间与保留状态。</text>
+<text x="644" y="2083" font-size="18" fill="#17263d" font-weight="400" text-anchor="start" >检查基线不漂移、范围不丢项、证据有效。</text>
+<text x="644" y="2112" font-size="18" fill="#17263d" font-weight="400" text-anchor="start" >可继续项为零且收尾证据满足，才可发布报告。</text>
+<text x="644" y="2141" font-size="18" fill="#17263d" font-weight="400" text-anchor="start" >产出 summary.html + runtime-result.json。</text>
+<text x="644" y="2170" font-size="18" fill="#17263d" font-weight="400" text-anchor="start" >区分玩家回归与开发详细验收，披露问题和缺口。</text>
+<text x="644" y="2241" font-size="15" fill="#586b83" font-weight="400" text-anchor="start" >校验器验证记录合同；Agent 仍须判断真实业务表现。</text>
+</g>
+<g id="E3"><title>E3  文档核验后：归档 → 按文件清理。先回读结果、逐图核验在线附件，保留归档清单。；迁移可迁移的人工文档 / 经验引用，再复核。；删除本轮无依赖、不可复用的上传源和中间文件。；待补验、机器校验原件、正式台账和用户原件保留。；本地 path 不能直接用 URL 或链接说明文件替代。；逐文件核验路径与哈希；不清空整个运行目录。</title>
+<rect x="1252" y="1960" width="532" height="298" rx="16" fill="#fff" stroke="#dbe4ef" />
+<rect x="1252" y="1960" width="6" height="298" rx="3" fill="#52677e" stroke="#52677e" />
+<text x="1276" y="1995" font-size="23" fill="#52677e" font-weight="700" text-anchor="start" >E3  文档核验后：归档 → 按文件清理</text>
+<text x="1276" y="2025" font-size="18" fill="#17263d" font-weight="400" text-anchor="start" >先回读结果、逐图核验在线附件，保留归档清单。</text>
+<text x="1276" y="2054" font-size="18" fill="#17263d" font-weight="400" text-anchor="start" >迁移可迁移的人工文档 / 经验引用，再复核。</text>
+<text x="1276" y="2083" font-size="18" fill="#17263d" font-weight="400" text-anchor="start" >删除本轮无依赖、不可复用的上传源和中间文件。</text>
+<text x="1276" y="2112" font-size="18" fill="#17263d" font-weight="400" text-anchor="start" >待补验、机器校验原件、正式台账和用户原件保留。</text>
+<text x="1276" y="2141" font-size="18" fill="#17263d" font-weight="400" text-anchor="start" >本地 path 不能直接用 URL 或链接说明文件替代。</text>
+<text x="1276" y="2170" font-size="18" fill="#17263d" font-weight="400" text-anchor="start" >逐文件核验路径与哈希；不清空整个运行目录。</text>
+<text x="1276" y="2241" font-size="15" fill="#586b83" font-weight="400" text-anchor="start" >这是 Agent 的后续动作，publish 不会自动删除文件。</text>
+</g>
+</g>
+<g id="continuity" class="phase" data-focus="continuity" transform="translate(0,790)">
+<g id="F1"><title>F1  需求级统计与通知恢复。总需求 = 已完成 + 待验收 + 正在验收 + 未完成；已完成：passed；未完成：failed / blocked。恢复补验 → running。；按稳定需求 ID 去重；同版本日 / 源表 / 模式共用一个台账，不报百分比。；发送明确成功才算送达；unknown 先查群消息与回执，不能盲目重发。；续跑和收尾执行 status / flush；发送失败不回滚业务验收结论。</title>
+<rect x="56" y="2300" width="832" height="260" rx="16" fill="#fff" stroke="#dbe4ef" />
+<rect x="56" y="2300" width="6" height="260" rx="3" fill="#ac3b77" stroke="#ac3b77" />
+<text x="80" y="2335" font-size="23" fill="#ac3b77" font-weight="700" text-anchor="start" >F1  需求级统计与通知恢复</text>
+<text x="80" y="2365" font-size="19" fill="#17263d" font-weight="400" text-anchor="start" >总需求 = 已完成 + 待验收 + 正在验收 + 未完成</text>
+<text x="80" y="2396" font-size="19" fill="#17263d" font-weight="400" text-anchor="start" >已完成：passed；未完成：failed / blocked。恢复补验 → running。</text>
+<text x="80" y="2427" font-size="19" fill="#17263d" font-weight="400" text-anchor="start" >按稳定需求 ID 去重；同版本日 / 源表 / 模式共用一个台账，不报百分比。</text>
+<text x="80" y="2458" font-size="19" fill="#17263d" font-weight="400" text-anchor="start" >发送明确成功才算送达；unknown 先查群消息与回执，不能盲目重发。</text>
+<text x="80" y="2489" font-size="19" fill="#17263d" font-weight="400" text-anchor="start" >续跑和收尾执行 status / flush；发送失败不回滚业务验收结论。</text>
+<text x="80" y="2543" font-size="15" fill="#586b83" font-weight="400" text-anchor="start" >进度数字对应该结论保存时刻；重试保留原快照。</text>
+</g>
+<g id="F2"><title>F2  功能经验与中断续跑贯穿全程。开始先读经验；每阶段结束、交接或中断前保存本轮事实与下一步。；记录可复用入口、参数、完成信号、适用版本、易漏点与真实来源。；预检文档确认标记仅证明文档基线，不替代本轮 UI / 协议 / 服务端证据。；续跑核对已有 manifest / plan / state / 回执，再接下一动作，不盲目重发。；历史方法可复用；历史通过、账号分配和授权不能直接套成当前结论。</title>
+<rect x="920" y="2300" width="864" height="260" rx="16" fill="#fff" stroke="#dbe4ef" />
+<rect x="920" y="2300" width="6" height="260" rx="3" fill="#087e8b" stroke="#087e8b" />
+<text x="944" y="2335" font-size="23" fill="#087e8b" font-weight="700" text-anchor="start" >F2  功能经验与中断续跑贯穿全程</text>
+<text x="944" y="2365" font-size="19" fill="#17263d" font-weight="400" text-anchor="start" >开始先读经验；每阶段结束、交接或中断前保存本轮事实与下一步。</text>
+<text x="944" y="2396" font-size="19" fill="#17263d" font-weight="400" text-anchor="start" >记录可复用入口、参数、完成信号、适用版本、易漏点与真实来源。</text>
+<text x="944" y="2427" font-size="19" fill="#17263d" font-weight="400" text-anchor="start" >预检文档确认标记仅证明文档基线，不替代本轮 UI / 协议 / 服务端证据。</text>
+<text x="944" y="2458" font-size="19" fill="#17263d" font-weight="400" text-anchor="start" >续跑核对已有 manifest / plan / state / 回执，再接下一动作，不盲目重发。</text>
+<text x="944" y="2489" font-size="19" fill="#17263d" font-weight="400" text-anchor="start" >历史方法可复用；历史通过、账号分配和授权不能直接套成当前结论。</text>
+<text x="944" y="2543" font-size="15" fill="#586b83" font-weight="400" text-anchor="start" >CLI 发布不会自动写经验；写入失败交接待回写内容。</text>
+</g>
+</g>
+<g id="roles" class="phase" data-focus="roles" transform="translate(0,790)">
+<rect x="56" y="2600" width="1728" height="250" rx="18" fill="#17263d" stroke="#17263d" />
+<text x="82" y="2644" font-size="28" fill="#fff" font-weight="700" text-anchor="start" >谁来做什么 · 哪些地方需要停下来核实</text>
+<text x="82" y="2691" font-size="21" fill="#c8d9fa" font-weight="700" text-anchor="start" >Agent：判断与实际执行</text>
+<text x="82" y="2727" font-size="18" fill="#eff4fc" font-weight="400" text-anchor="start" >读原文与图片、理解规则、编排并执行队列。</text>
+<text x="82" y="2755" font-size="18" fill="#eff4fc" font-weight="400" text-anchor="start" >核对真实身份与业务证据，写文档、归档经验。</text>
+<text x="82" y="2783" font-size="18" fill="#eff4fc" font-weight="400" text-anchor="start" >按已确认范围处理隔离、通知和过程文件清理。</text>
+<text x="654" y="2691" font-size="21" fill="#c8d9fa" font-weight="700" text-anchor="start" >脚本：记录、校验与有限动作</text>
+<text x="654" y="2727" font-size="18" fill="#eff4fc" font-weight="400" text-anchor="start" >冻结版本、校验计划与证据合同、生成报告。</text>
+<text x="654" y="2755" font-size="18" fill="#eff4fc" font-weight="400" text-anchor="start" >按授权参数推进环境工作流，保存进度与发件箱。</text>
+<text x="654" y="2783" font-size="18" fill="#eff4fc" font-weight="400" text-anchor="start" >不会自动证明业务通过，也没有跨设备全局锁。</text>
+<text x="1226" y="2691" font-size="21" fill="#c8d9fa" font-weight="700" text-anchor="start" >用户：无法从事实推导的决定</text>
+<text x="1226" y="2727" font-size="18" fill="#eff4fc" font-weight="400" text-anchor="start" >需求差异、缺失部署分配、反馈来源选择。</text>
+<text x="1226" y="2755" font-size="18" fill="#eff4fc" font-weight="400" text-anchor="start" >同服例外、放弃验收项及扩大授权的操作。</text>
+<text x="1226" y="2783" font-size="18" fill="#eff4fc" font-weight="400" text-anchor="start" >已有有效确认不重问；只暂停受影响的动作。</text>
+</g>
+<text x="56" y="3682" font-size="16" fill="#586b83" font-weight="400" text-anchor="start" >依据：当前本地 review-k1-function / SKILL.md，以及反馈文档、需求对齐、运行验收、隔离、三语、进度、经验与清理规则。</text>
+<text x="56" y="3712" font-size="16" fill="#586b83" font-weight="400" text-anchor="start" >图中说明现行动作合同与适用边界；不表示已经执行真实验收。SVG 可无限放大，HTML 演示支持分步聚焦。</text>
+<text x="56" y="3742" font-size="16" fill="#315bd7" font-weight="700" text-anchor="start" >本次更新：A3 测试用例生成 / P 反馈来源与字段分支 / B6 逐项反馈维护。</text>
+</svg></div></section><aside><div id="tabs"></div><h2 id="step-title"></h2><ul id="notes"></ul><div class="nav"><button id="prev">← 上一步</button><button id="next">下一步 →</button></div><p class="muted">说明依据当前本地 Skill。没有连接游戏、Jenkins 或钉钉；这里仅展示既有动作合同。</p></aside></main>
+<script>const steps=[{"id": "all", "title": "完整动作流", "box": [0, 0, 1840, 3770], "notes": ["当前有三个入口：静态预检、直接运行验收、独立准备环境；版本进包表验收是在运行主线上叠加需求级进度。", "运行验收先走 P：查找反馈表、处理缺链接分支、补齐字段；再走 B 主线及 B6 逐项维护。静态预检走 A，其中 A3 明确生成或更新测试用例。", "可先选择下一个步骤，逐段放大。键盘左右箭头切换；总览可保存为单个 SVG。"]}, {"id": "overview", "title": "01 · 接收与恢复", "box": [24, 20, 1792, 300], "notes": ["读取用户的任务类型、已有交接、功能经验和授权范围。依赖按场景检查，凭证留在私有配置。", "版本任务必须完整读完该版本日需求清单；稳定需求 ID 是计数单位，各协作者共用一个台账。", "已确认的决定直接沿用，事实先查；不能把不确定的部署分配当作已授权。"]}, {"id": "feedback", "title": "02 · 反馈表准备与缺链接分支", "box": [24, 320, 1792, 585], "notes": ["两类运行验收先查提供链接、任务关联和私有经验。找到唯一适用表且已授权时直接复用；不可读或只读应补权限，不等于无表。", "确实找不到时问一个选择：补充已有链接，还是新建反馈表（推荐）。已有创建决定和目录直接执行；缺必要位置时再问，未回答不当作同意。", "准备八类信息：稳定反馈 ID、关联需求/用例、问题描述、问题截图、唯一验收状态、验收详情、环境/版本、最近验收时间。平台原生稳定记录 ID 可复用。", "同义字段直接映射；缺什么字段就在原表补建什么，不重建整张表。保留旧数据、图片、开发状态和下拉；新验收字段用待验收/验收中/未通过/已通过。", "建表/补列由 Agent 使用可用文档工具完成，回读后再做反馈快照；现有反馈 CLI 不会自动建表。待准备期间独立验收继续，待同步截图保留。"]}, {"id": "static", "title": "03 · 首次静态预检", "box": [24, 915, 556, 1124], "notes": ["从原文与三端冻结版本出发，双向检查文档需求和最终实现，不能只看 diff。", "A2 完成文档确认与回读后，A3 生成或更新测试用例：前置、操作、预期和需求关联。已有用例校准并补覆盖；缺覆盖时按 Skill 调用 slg-testcase-generator。A5 发布 testcases.md。", "静态检查覆盖调用链、协议、服务端与正式 Excel 配置，验证证据定位及合同一致性。", "发布预检并记录文档确认标记；预检不代表运行验收通过。只有用户请求实测时才转入 B。"]}, {"id": "runtime", "title": "04 · 运行验收主线", "box": [580, 915, 690, 1124], "notes": ["接续任务先核对预检后的文档确认标记；同版本直接沿用，变化只重对齐相关规则。", "开发分支按文档与反馈表详细验收；主分支按正常玩家路径体验，明确指定的反馈才做定向复验。", "两类模式都先确认每设备独占实例；有 UI 改动都要英、俄、阿三语，不因主分支回归跳过。", "先分析顺序影响、合并共享准备，再安排隔离资源下的并行批次。业务成功依赖和执行顺序要分开。", "next 只派发当前可执行动作；Agent 必须真正操作、采集最终状态并回填证据。", "B4 是对本轮范围编排顺序、依赖与协作，不等同于重新生成全量开发用例。B5 每项实际执行后都接 B6 反馈维护，不能等整轮结束才整理问题。"]}, {"id": "support", "title": "05 · 条件动作与隔离", "box": [1270, 915, 542, 1124], "notes": ["独占测试服可复用，不必每轮重建。不同账号、名称或容器不能单独证明时钟和存储隔离。", "缺环境才进入 prepare / advance：备份、匹配本次回执、内存使用 DownKey、部署并验证实际运行。单独建环境不用先做静态对齐。", "同服仅作为用户指定例外；服务器级 GM 由协调者安排，所有受影响台账都需核对，不能只看本机 check-advance。", "UI 检查限定受影响界面：英看排版、俄看长文案、阿看 RTL 与混排。详细验收另选代表屏幕端点，主分支不自动扩大全尺寸矩阵。", "C5 是主线 B6 的写入细则：反馈图追加到原格，保留原图、下拉与开发状态；上传成功不等于在线附件已验证。"]}, {"id": "feedback_write", "title": "06 · 逐项维护反馈文档", "box": [24, 2015, 1792, 205], "notes": ["B5 实际执行 → B6 更新已有反馈或新增真实问题 → 回读文字及所有图片 → 保存需求结论 → E1 播报。每项及时维护，不等整轮结束。", "新问题记录复现前置、步骤、预期与实际结果、环境/版本、真实时间及证据。已有反馈先看原图；本次图片追加到原截图单元格。", "只有一个验收字段，必要说明放验收详情。开发处理状态与验收结论独立，原图、下拉和非目标内容保留。", "没有新增问题的正常项维护需求报告和台账，不制造问题行。缺表、字段未就绪、上传失败均记录待同步；本地保存不等于在线维护完成。", "未完成相关反馈维护不能给整项完整通过；业务断言结果如实保留。附件验证并解除依赖后才清理临时文件，机器证据与待补验材料继续保留。"]}, {"id": "loop", "title": "07 · 自动补验循环", "box": [24, 2225, 1792, 435], "notes": ["pending / partial 仍需继续；waiting 处理真实业务依赖，暂缓批次不等于已完成。", "已授权范围内先利用现有条件，再评估 GM / 模拟及独立环境；存在可行方案就继续。", "失败项不阻断其他独立项。真实阻塞须记录尝试、剩余方案和补验条件。", "无可继续动作才能进入整轮收尾；结束本轮与完整通过是两个结论。", "每条原始需求形成终态时即可进入播报，不要等整轮结束。三语断言不会把需求数量乘三。"]}, {"id": "closure", "title": "08 · 结果、播报与清理", "box": [24, 2660, 1792, 410], "notes": ["每项：完成本轮必要反馈写回与回读，再 record 保存需求结论并通知。相关维护可继续时保持 running；真实受阻记 blocked，确定缺陷记 failed 并披露同步缺口；未闭环不能播报通过。正常无问题项不虚构反馈行。", "整轮：确认可继续项为零、计划不漂移、证据和收尾有效，再 publish。主分支回归结论只代表本轮玩家范围。", "结果文档和附件已核验后，可以处理该项临时文件，不必等待所有需求通过。", "可迁移的人工引用先迁移；机器台账仍按路径或哈希依赖的原始证据必须保留。当前脚本不支持 URL 直接替代本地证据。", "保留正式台账、用户原件、可复用脚本和待补验材料，只按清单删除本轮无依赖过程文件。"]}, {"id": "continuity", "title": "09 · 进度与续跑", "box": [24, 3060, 1792, 320], "notes": ["版本总数等于已完成、待验收、正在验收和未完成之和；不输出完成百分比，不用子用例数代替需求数。", "重复同一结论保持安静；复验后结论变化才再次播报。发送失败不改变业务结果。", "发送结果 unknown 时先核对群消息和回执，不能盲目重发。当前机器人链路没有自动查询群消息的能力。", "经验在开始、阶段结束、交接和中断时维护；方法可以复用，历史结论不能替代本轮证据。"]}, {"id": "roles", "title": "10 · 执行分工与确认点", "box": [24, 3365, 1792, 300], "notes": ["Agent 负责理解规则、实际执行和读图；脚本负责可校验合同、持久记录与有限的外部动作。", "证据文件存在、构建成功或脚本校验通过，都不直接证明功能正确。", "用户负责需求调整、缺失的目标分配、同服例外、排除验收项等无法从环境事实推导的决定。", "有效授权持续生效；只暂停依赖缺失信息的动作，其他独立工作继续。"]}];let current=0,scale=1;const svg=document.querySelector('svg'),canvas=document.querySelector('#canvas'),stage=document.querySelector('#stage');const tabs=document.querySelector('#tabs');steps.forEach((s,i)=>{const b=document.createElement('button');b.textContent=s.title;b.onclick=()=>show(i);tabs.append(b)});function zoom(){canvas.style.width=(scale*100)+'%';document.querySelector('#zoom').textContent=Math.round(scale*100)+'%'}function show(i){current=(i+steps.length)%steps.length;const s=steps[current];svg.setAttribute('viewBox',s.box.join(' '));svg.setAttribute('width',s.box[2]);svg.setAttribute('height',s.box[3]);document.querySelector('#step-title').textContent=s.title;const n=document.querySelector('#notes');n.replaceChildren();s.notes.forEach(t=>{const li=document.createElement('li');li.textContent=t;n.append(li)});[...tabs.children].forEach((b,j)=>b.classList.toggle('active',j===current));scale=1;zoom();stage.scrollTo(0,0)}document.querySelector('#prev').onclick=()=>show(current-1);document.querySelector('#next').onclick=()=>show(current+1);document.querySelector('#plus').onclick=()=>{scale=Math.min(3,scale+.2);zoom()};document.querySelector('#minus').onclick=()=>{scale=Math.max(.5,scale-.2);zoom()};document.querySelector('#fit').onclick=()=>{scale=1;zoom()};document.addEventListener('keydown',e=>{if(e.key==='ArrowRight'){show(current+1);e.preventDefault()}if(e.key==='ArrowLeft'){show(current-1);e.preventDefault()}});show(0);</script></body></html>

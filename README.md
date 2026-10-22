@@ -4,6 +4,8 @@ K1 功能审核 skill：需求对齐、静态预检、运行验收，以及线�
 
 完整入口：[review-k1-function/SKILL.md](review-k1-function/SKILL.md)。
 
+流程讲解：[完整 SVG 动作流](docs/workflow/k1-skill-workflow.svg) · [分步演示 HTML](docs/workflow/k1-skill-workflow-demo.html)。演示包含测试用例生成、反馈表查找与新建、缺字段补建、逐项反馈维护及验收收尾；下载 HTML 与同目录 SVG 后用浏览器打开，支持步骤切换与缩放。
+
 ## 内容
 
 - `review-k1-function/scripts/`：完整工作流、Jenkins/钉钉结果关联、运行探针、验收与证据处理脚本。

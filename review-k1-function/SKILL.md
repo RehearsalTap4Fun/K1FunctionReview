@@ -31,6 +31,7 @@ description: Align K1 requirements and run static prechecks or runtime acceptanc
 - 每次功能任务先按 [经验读写规则](references/feature-experience.md) 查询 [功能索引](features/index.md)，读取对应档案及需要的脚本说明；每阶段结束、交接或中断前自动合并有证据的新经验，并报告回写结果。版本变化先核对适用性，历史验收结论不直接沿用。黄金矿工使用 [独立档案](features/k1-gold-miner/experience.md)。
 - 重复运行操作先查 [已学习流程](references/learned-runtime-flows.md)：首次学习入口与成功条件，后续复用有时限的状态流程，用回包/权威状态确认；新界面、异常和视觉断言再看图。固定导航可复用，关卡策略与本轮授权不能盲目沿用。
 - 反馈表复验必须逐项查看原问题截图及预期/参考图，记录原图与本次实测的对应关系；新增反馈附本次问题截图，并验证在线附件可打开。图片读取为空不代表无图，未查看原图不得认定原问题已复现或已修复；具体记录和附件核验见运行验收规则。
+- 两类运行验收先按 [反馈文档准备与维护](references/feedback-document.md) 查找反馈表并检查必需字段。未提供链接先查任务与功能经验，确实找不到才确认“补链接或新建（推荐）”；已有授权直接沿用。字段有则语义映射，缺则在原表补建；没有整表才走新建表分支。逐项验收后维护反馈、回读及核验附件，再进入需求结论播报与归档清理；待同步时保留证据，独立验收继续。
 - 同步或整理反馈表时，截图统一追加到对应行的“问题截图”单元格，保留原图并支持多图；验收只保留一个状态字段，必要说明合并到“验收详情”。按 [运行验收规则 §4.2](references/runtime-acceptance.md#42-反馈表字段整理与格式保留) 做最小范围写入，并回读核对原有下拉验证、选项、颜色与适用范围。
 - 结果已写入文档并回读、逐图核验后，按 [过程文件归档与清理](references/runtime-artifact-cleanup.md) 自动删除本轮不可复用且无依赖的临时文件；先迁移可迁移的引用，保留未同步、待补验、机器校验依赖的证据及正式台账，不清空整个工作区。
 - 运行阶段缺环境：读取 [references/jenkins-test-environment.md](references/jenkins-test-environment.md)，从 Jira 关联、远端分支及 Jenkins 历史分别解析代码和配置来源，在已授权测试服范围内准备并部署。部署成功后验证实际运行状态，再继续原补验队列。
@@ -111,7 +112,7 @@ description: Align K1 requirements and run static prechecks or runtime acceptanc
 - 写入前复读，写入后回读；保存前后文档版本、确认依据、已应用条目和待查项。原文未更新、写入失败或有未确认条目时，前置工作流尚未完成，不能进入后续工作流。
 - 用 `scripts/requirement_alignment.py --input <handoff.json>` 校验完成记录。无差异也要保留覆盖说明、同版本回读和空清单，无需空清单确认。
 
-### 4. 以对齐后的文档归一需求与用例
+### 4. 生成／更新测试用例，绑定需求与文档版本
 
 - 按更新后的开发文档顺序保留每项需求和定位；删除需求保留对齐清单记录，移除或校准过时用例，不继续作为验收要求。
 - 校准已有用例的前置条件、操作和期望，补齐覆盖，建立 requirement ↔ testcase 双向关联；记录 `testcaseDocumentVersion` 等于回读后的文档版本。
