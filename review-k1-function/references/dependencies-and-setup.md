@@ -12,14 +12,14 @@
 |---|---|---|
 | 线上服备份 → DownKey → 个人测试服部署 → 运行校验 | 建议同时提供 `dws`，便于认证和故障排查；正常整链由本 skill 脚本执行，无须其他 skill 才能运行 | Python、PowerShell、Git；已登录的 DWS CLI；Node.js + mcporter；名为 `k1-mcp` 的 MCP 服务及 `ssh_exec`；个人 Jenkins API Token；代码/配表 Git 读取权限；公司内网/VPN |
 | 正式 K1 配置检查 | `config-table-editor`，检查正式 `.xlsx` 时需要 | 配置仓库读取权限；需要时 Git LFS；Excel 解析环境，例如 `openpyxl`。只读导出副本，不修改正式配置 |
-| 缺少用例、需要从需求生成用例 | `slg-testcase-generator` | 可访问需求文档及必要项目知识；本地 Markdown 交付不要求 Google Drive/API Key |
+| 缺少用例、需要从需求生成用例 | 仓库内 `slg-testcase-generator/`，需将完整目录注册到 Agent skills | 可访问已确认并回读的需求文档；K1 静态 Markdown 用例无累计时间或数量上限，不要求 Google Drive/API Key。独立在线写表流程才需该 Skill 的额外依赖 |
 | Unity 客户端实测/GM/故障模拟 | 建议 `unity-mcp-orchestrator`（目录也可能名为 `unity-mcp-skill`） | 对应版本 Unity Editor、打开的 K1 客户端项目、MCP for Unity 连接和实际可用的项目工具、授权测试账号 |
 | 钉钉需求文档、反馈表 | 走 CLI 时使用 `dws`；已连接的文档工具也可按原路由使用 | 本人的钉钉登录态和目标文档/表格权限；维护时需要编辑权限；图片追加等浏览器步骤还需可用的浏览器工具及登录态 |
 | 版本进包项进度播报 | 本 skill 的 Python 脚本 | 用户指定并授权的自定义机器人 Webhook；按 [播报配置](acceptance-progress.md#机器人私有配置) 存本地私有文件，不随 Skill 分享 |
 | Word / PDF 需求材料 | 分别按文档路由使用 `documents:documents` / `pdf:pdf` | 对应 skill 自身运行依赖；本地文件不需要统一的额外 API Key |
 | Jira 单号定位 / Confluence 文档 | 按实际来源选择已配置连接；用 Confluence 时可配 `confluence` | 本人的 Jira/Confluence 访问凭证或有效登录态。直接提供分支与可读本地需求时，不强制配置这两项 |
 
-`jenkins-hotfix` 不是测试环境链的依赖；不得用正式热更任务代替个人测试服部署。K1 配置检查不使用 `xcfg-tool`。这些外部 skill 不包含在当前 skill 文件夹内，分享时应列出名称并让接收者从团队维护来源安装；不要假设对方已有本机全部 skill。
+`jenkins-hotfix` 不是测试环境链的依赖；不得用正式热更任务代替个人测试服部署。K1 配置检查不使用 `xcfg-tool`。`slg-testcase-generator` 与本 skill 一同包含在 K1FunctionReview 仓库中，但仍需分别注册到 Agent skills 目录。其余外部 skill 不包含在当前 skill 文件夹内，分享时应列出名称并让接收者从团队维护来源安装；不要假设对方已有本机全部 skill。
 
 ## 自动建环境所需凭证
 
@@ -279,7 +279,7 @@ python -X utf8 ./review-k1-function/scripts/jenkins_test_environment.py inspect 
 - 远程测试节点需可用的 `python3`（当前探针使用 Python 3.6+ 标准库）、Docker CLI 和前述读取权限。仅本地安装 Docker 不能替代远程节点权限。
 - 源码目录约定为 `C:/Project/K1Client/k1_client`、`C:/Project/K1Game/game`、`C:/Project/K1Dataconfig/dataconfig`，各自存在可用的 `origin`。仅部署环境需要 server/config 两端；完整审核按三端准备。
 - 默认项目位置为 `C:/Project/FunctionPreview`，skill 位于其中的 `review-k1-function/`。脚本包含固定 K1 仓库路径、由脚本位置推导的项目根目录和写入边界，**不是复制到任意 skills 目录就能直接运行的通用包**。接收者可按此布局放置项目，再把 skill 注册/链接到自己的 skills 目录；不同目录或平台需同时适配脚本、合同和验证，不能只改说明中的路径。
-- 分享完整 `review-k1-function/` 实体内容，包括 `SKILL.md`、`agents/`、`scripts/`、`references/`、`assets/`。本机安装入口是 Junction，不能只发这个链接，也不能只发 `SKILL.md`。若分享整个 FunctionPreview 项目，不包括 `.tmp`、`.cache`、`reports` 和用户配置；运行记录可能含内部数据与访问定位。
+- 分享完整 `review-k1-function/` 与 `slg-testcase-generator/` 实体内容，包括各自的 `SKILL.md`、脚本、引用和资源。本机安装入口是 Junction，不能只发这个链接，也不能只发 `SKILL.md`。若分享整个 FunctionPreview 项目，不包括 `.tmp`、`.cache`、`reports` 和用户配置；运行记录可能含内部数据与访问定位。
 
 ## 首次使用的提示与只读检查
 

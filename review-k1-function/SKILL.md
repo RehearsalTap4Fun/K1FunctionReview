@@ -9,7 +9,7 @@ description: Align K1 requirements and run static prechecks or runtime acceptanc
 
 向他人分享、迁移到新机器或首次使用时，先读取 [references/dependencies-and-setup.md](references/dependencies-and-setup.md)，按本次场景说明必需的外部 skill、CLI/MCP、凭证和权限；只核对存在性与可用性，不显示密钥内容。缺少依赖时指出影响的具体阶段及补齐方式，不把所有可选依赖都当成前置，也不把只读连接成功当作具备构建权限。
 
-分享完整 skill 目录及被调用的脚本/资源，提醒接收者配置自己的账号和本地路径。Jenkins Token、DWS 登录态、Git/SSH 私钥、MCP 连接密钥和运行回执不随 skill 分发；不得让接收者在聊天中粘贴密钥。
+分享完整 `review-k1-function/` 与仓库内的 `slg-testcase-generator/` 目录及被调用的脚本/资源，提醒接收者分别注册 Skill，并配置自己的账号和本地路径。Jenkins Token、DWS 登录态、Git/SSH 私钥、MCP 连接密钥和运行回执不随 skill 分发；不得让接收者在聊天中粘贴密钥。
 
 ## 定位
 
@@ -54,7 +54,7 @@ description: Align K1 requirements and run static prechecks or runtime acceptanc
 - 每次完整工作流开始时实时联系 `origin`，在 FunctionPreview 隔离缓存中精确 fetch base/target，并立即冻结完整 SHA。对齐、确认、文档维护、用例和预审沿用同一 manifest；交接时不刷新移动分支。纳入新提交必须重新对齐。
 - 完整 40 位 SHA 或显式 `source=local` 才走离线/冻结本地对象模式。
 - 远端失败绝不回退本地 `refs/remotes/origin/*`、当前 `HEAD` 或当前工作区；只把受影响端降级为 `无法确认`。
-- 完成对齐后，依据更新后文档校准已有用例；缺少覆盖时使用 `$slg-testcase-generator` 生成 Markdown 用例。覆盖所有需求、主流程、边界和异常，无用例数量上限，不使用旧快速模式的限额。
+- 完成对齐后，依据更新后文档校准已有用例；缺少覆盖时使用仓库内已注册的 `$slg-testcase-generator`，按其 `references/static_acceptance.md` 生成本地 Markdown 用例。覆盖所有需求、主流程、边界和异常，无累计时间或用例数量上限；不使用旧快速模式的限额。QA Skill 的标准在线流程（`testcase-config`、七步写表、预计数量）不属于本静态预审步骤；本步骤仅按该 Skill 的 K1 静态用例规则执行。
 - 用户确认并回读核验后的开发文档定义需求。三端实现用于发现差异，不能自行覆盖文档；已有用例也不能覆盖开发文档。
 - 配置 target SHA 上的正式 `.xlsx` 是最终状态。生成 JSON/TSV 是次级证据，《配置表结构》等文档仅用于定位。
 
