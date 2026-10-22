@@ -40,3 +40,4 @@ id_ed25519*
 # Acceptance progress ledgers and private robot configuration
 .local/
 *.private.json
+jira-bug-creator/data/

@@ -1,0 +1,14 @@
+{
+  "summary": "【示例功能】操作后按钮文字被截断",
+  "feature": "示例功能",
+  "department": "客户端",
+  "bug_level": "C",
+  "version": "填写 Jira 中当前修复版本",
+  "affect_version": "填写 Jira 中实际影响版本",
+  "description": "测试包、服务器、角色、语言和测试前置条件",
+  "expected": "完整显示按钮文字",
+  "actual": "按钮文字右侧被截断",
+  "assignee": "填写明确确认的 Jira 用户名",
+  "reproduce_rate": "Always",
+  "attachment": []
+}
