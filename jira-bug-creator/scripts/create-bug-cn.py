@@ -1329,6 +1329,7 @@ class SmartBugCreator:
         media_from_issue: str = '',  # 客诉单号（如 CS-299536）；留空则自动从描述/预期/实际里识别
         auto_media: bool = True,  # 未显式指定时，是否自动识别描述里的客诉单号并转存媒体
         affect_version: str = '',  # 影响版本；留空则线上bug取修复版本的上一个、否则同修复版本
+        priority: str = '',  # Jira 优先级；显式指定时覆盖旧关键词推断
     ) -> Dict[str, Any]:
         """创建 Bug"""
 
@@ -1407,9 +1408,10 @@ class SmartBugCreator:
                 reproduce_rate = 'Always'
                 print(f"  [重现概率] Always (默认)")
 
-        # 自动识别优先级
-        # 默认非常高，根据关键词识别其他优先级
-        if '优先级最低' in text or '最低优先' in text:
+        # 调用方显式指定优先级时直接使用；旧调用方仍可按文本关键词推断。
+        if priority:
+            print(f"  [优先级] {priority} (显式指定)")
+        elif '优先级最低' in text or '最低优先' in text:
             priority = '最低'
             print(f"  [优先级] 最低")
         elif '优先级低' in text or '低优先' in text:

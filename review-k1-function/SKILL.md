@@ -24,6 +24,7 @@ description: Align K1 requirements and run static prechecks or runtime acceptanc
 - “版本进包内容表验收 / 版本进包项进度播报”：读取 [版本需求进度与钉钉播报](references/acceptance-progress.md)。同一版本日完整需求清单共用台账，先记录开始状态，每项需求形成结论后调用 `python scripts/acceptance_progress.py record` 保存并立即播报标题、结果与总数/已完成/待验收/正在验收/未完成；子用例不计为需求，验收结果与通知送达分别记录。续跑与收尾检查待发送、失败和待核对消息。仅向用户已指定并授权的机器人发送，Webhook 留在私有配置。
 - “备份线上服并建测试环境 / 复制战场服 / 指定线上 SID、代码分支、配表分支部署”：直接读取 [references/jenkins-test-environment.md](references/jenkins-test-environment.md) 的整链入口，使用 `scripts/jenkins_environment_workflow.py`。这是独立环境任务，不要求先做策划文档对齐或静态预审。默认本人同 SID；战场服同样先备份，部署 `app=battle`；未指定保留列表则全量恢复，指定列表则按列表保留。沿用明确的备份、导入与重建授权，禁止覆盖他人实例。
 - “预检 / 静态预审 / 需求对齐”：执行下述静态流程。仅提供 Jira 单号或分支名，不自动授权部署。
+- “提 Bug / 提交 Jira 缺陷”：仅用户明确要求建单时，调用仓库内已注册的 `$jira-bug-creator`，按其 NK 规则整理证据、提交并回读；验收发现问题或维护反馈表不自动创建 Jira 单。
 - “运行验收 / 测试 / 继续补验”：继承已确认的需求、操作范围和已有证据，完整读取 [references/runtime-acceptance.md](references/runtime-acceptance.md)。先核对文档确认标记，再按已明确的验收模式生成范围与计划；已有有效交接直接续跑，不重问旧决定。开发分支按文档及反馈表详细验收；主分支按文档规则进行正常玩家体验，不自动套用全量开发用例或反馈复验。模式不能仅凭分支名猜测。
 - 两类运行验收开测前均执行 [设备与测试服隔离](references/device-server-isolation.md)：默认一设备一独占实例，可复用满足条件的已有实例；先查已知参数，缺分配或必要部署信息时向用户确认，受影响设备暂不部署或执行游戏操作。同服例外需用户明确指定，服务器级 GM 统一协调。
 - 已有明确验收列表时，开测前先输出有序计划：检查状态和时间依赖、合并可共享准备与操作的项目、保留逐项结果和证据，再按资源隔离情况安排协作者分批并发。具体字段和派发规则见 [运行验收 §3](references/runtime-acceptance.md#3-冻结可执行断言计划)。

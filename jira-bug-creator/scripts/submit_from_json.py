@@ -12,13 +12,13 @@ from pathlib import Path
 
 
 ALLOWED = {
-    "summary", "feature", "department", "bug_level", "version",
+    "summary", "feature", "department", "bug_level", "priority", "version",
     "affect_version", "description", "expected", "actual", "assignee",
     "related_function", "attachment", "is_online_bug", "feedback_source",
     "reproduce_rate", "verify", "media_from_issue", "auto_media",
 }
 REQUIRED = {
-    "summary", "feature", "department", "bug_level", "version",
+    "summary", "feature", "department", "bug_level", "priority", "version",
     "affect_version", "description", "expected", "actual", "assignee",
     "reproduce_rate",
 }
@@ -37,6 +37,8 @@ def read_payload(path: Path) -> dict:
         raise ValueError("department must be a K1 Jira department")
     if payload["bug_level"] not in {"A", "B", "C", "D"}:
         raise ValueError("bug_level must be A, B, C or D")
+    if payload["priority"] not in {"非常高", "高", "普通", "一般", "最低", "低", "最高", "较高", "较低"}:
+        raise ValueError("invalid Jira priority")
     if payload["reproduce_rate"] not in {"Always", "High", "Medium", "Low", "Once"}:
         raise ValueError("invalid reproduce_rate")
     attachments = payload.get("attachment", [])

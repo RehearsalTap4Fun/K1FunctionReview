@@ -18,8 +18,9 @@
 | 版本进包项进度播报 | 本 skill 的 Python 脚本 | 用户指定并授权的自定义机器人 Webhook；按 [播报配置](acceptance-progress.md#机器人私有配置) 存本地私有文件，不随 Skill 分享 |
 | Word / PDF 需求材料 | 分别按文档路由使用 `documents:documents` / `pdf:pdf` | 对应 skill 自身运行依赖；本地文件不需要统一的额外 API Key |
 | Jira 单号定位 / Confluence 文档 | 按实际来源选择已配置连接；用 Confluence 时可配 `confluence` | 本人的 Jira/Confluence 访问凭证或有效登录态。直接提供分支与可读本地需求时，不强制配置这两项 |
+| 用户明确要求提交 K1 Jira Bug | 仓库内 `jira-bug-creator/`，需将完整目录注册到 Agent skills | 本人 Jira Token、NK 创建与附件权限、Python/uv、原始问题证据；建单前确认版本、经办人与优先级 |
 
-`jenkins-hotfix` 不是测试环境链的依赖；不得用正式热更任务代替个人测试服部署。K1 配置检查不使用 `xcfg-tool`。`slg-testcase-generator` 与本 skill 一同包含在 K1FunctionReview 仓库中，但仍需分别注册到 Agent skills 目录。其余外部 skill 不包含在当前 skill 文件夹内，分享时应列出名称并让接收者从团队维护来源安装；不要假设对方已有本机全部 skill。
+`jenkins-hotfix` 不是测试环境链的依赖；不得用正式热更任务代替个人测试服部署。K1 配置检查不使用 `xcfg-tool`。`slg-testcase-generator`、`jira-bug-creator` 与本 skill 一同包含在 K1FunctionReview 仓库中，但仍需分别注册到 Agent skills 目录。其余外部 skill 不包含在当前 skill 文件夹内，分享时应列出名称并让接收者从团队维护来源安装；不要假设对方已有本机全部 skill。
 
 ## 自动建环境所需凭证
 
