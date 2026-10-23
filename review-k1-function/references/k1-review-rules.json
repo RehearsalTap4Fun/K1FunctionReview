@@ -152,7 +152,7 @@
       "title": "状态流转",
       "rolesAny": ["server"],
       "pathGlobsAny": ["**/*State*.*", "**/*Status*.*", "**/*Machine*.*", "**/*Handler*.*"],
-      "requirementTermsAny": ["状态", "流转", "阶段", "变更为", "转换"],
+      "requirementTermsAny": ["状态", "流转", "阶段", "变更为", "转换", "活动生命周期"],
       "trigger": "any",
       "evidenceExpectation": "定位带前置守卫的状态赋值，并核对允许的前后状态。",
       "notApplicableWhen": "需求不改变服务端状态。"
@@ -163,7 +163,7 @@
       "title": "持久化",
       "rolesAny": ["server"],
       "pathGlobsAny": ["**/*Repository*.*", "**/*Dao*.*", "**/*Storage*.*", "**/*Persistence*.*"],
-      "requirementTermsAny": ["持久化", "存档", "数据库", "保存", "落库", "重载"],
+      "requirementTermsAny": ["持久化", "存档", "数据库", "保存", "落库", "重载", "活动生命周期"],
       "trigger": "any",
       "evidenceExpectation": "定位状态的存储读写映射以及重载路径。",
       "notApplicableWhen": "状态明确为临时状态。"
@@ -174,9 +174,9 @@
       "title": "重置与时间边界",
       "rolesAny": ["server"],
       "pathGlobsAny": ["**/*Timer*.*", "**/*Time*.*", "**/*Reset*.*", "**/*Expire*.*", "**/*Schedule*.*"],
-      "requirementTermsAny": ["重置", "过期", "时间窗口", "时区", "截止时间", "刷新时间"],
+      "requirementTermsAny": ["重置", "过期", "时间窗口", "时区", "截止时间", "刷新时间", "活动生命周期"],
       "trigger": "any",
-      "evidenceExpectation": "定位重置调度或边界计算，并核对单位和时区。",
+      "evidenceExpectation": "定位重置调度或边界计算，并核对单位和时区。活动结束检查自然到期、在途请求、发奖/回收/关闭顺序；不能只引用 OnEnd 入口。",
       "notApplicableWhen": "需求没有重置、过期或时间窗口。"
     },
     {
@@ -185,9 +185,9 @@
       "title": "幂等性",
       "rolesAny": ["server"],
       "pathGlobsAny": ["**/*Idempotent*.*", "**/*Dedup*.*", "**/*Transaction*.*", "**/*Handler*.*"],
-      "requirementTermsAny": ["幂等", "重复请求", "重复领取", "重复提交", "防重"],
+      "requirementTermsAny": ["幂等", "重复请求", "重复领取", "重复提交", "防重", "活动生命周期"],
       "trigger": "any",
-      "evidenceExpectation": "定位防重令牌、先前状态守卫或重复执行仍安全的证明。",
+      "evidenceExpectation": "定位防重令牌、先前状态守卫或重复执行仍安全的证明。活动结算同时检查领取标记、邮件投递、失败恢复和重启重试的顺序，逐副作用提供独立断言。",
       "notApplicableWhen": "操作只读，或明确允许重复执行。"
     },
     {

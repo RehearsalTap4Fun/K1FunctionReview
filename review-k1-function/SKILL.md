@@ -24,6 +24,7 @@ description: Align K1 requirements and run static prechecks or runtime acceptanc
 - “版本进包内容表验收 / 版本进包项进度播报”：读取 [版本需求进度与钉钉播报](references/acceptance-progress.md)。同一版本日完整需求清单共用台账，先记录开始状态，每项需求形成结论后调用 `python scripts/acceptance_progress.py record` 保存并立即播报标题、结果与总数/已完成/待验收/正在验收/未完成；子用例不计为需求，验收结果与通知送达分别记录。续跑与收尾检查待发送、失败和待核对消息。仅向用户已指定并授权的机器人发送，Webhook 留在私有配置。
 - “备份线上服并建测试环境 / 复制战场服 / 指定线上 SID、代码分支、配表分支部署”：直接读取 [references/jenkins-test-environment.md](references/jenkins-test-environment.md) 的整链入口，使用 `scripts/jenkins_environment_workflow.py`。这是独立环境任务，不要求先做策划文档对齐或静态预审。默认本人同 SID；战场服同样先备份，部署 `app=battle`；未指定保留列表则全量恢复，指定列表则按列表保留。沿用明确的备份、导入与重建授权，禁止覆盖他人实例。
 - “预检 / 静态预审 / 需求对齐”：执行下述静态流程。仅提供 Jira 单号或分支名，不自动授权部署。
+- 活动类功能必须执行 [活动生命周期与补验合同](references/activity-lifecycle.md)：记录开启、进行、结束、结算、回收、关闭清理和下一期；结算按六类独立副作用拆断言，未充分需求、风险和历史补验都进入可校验台账。原文没有写“幂等”也要检查结束发奖防重与失败恢复。
 - “提 Bug / 提交 Jira 缺陷”：仅用户明确要求建单时，调用仓库内已注册的 `$jira-bug-creator`，按其 NK 规则整理证据、提交并回读；验收发现问题或维护反馈表不自动创建 Jira 单。
 - “运行验收 / 测试 / 继续补验”：继承已确认的需求、操作范围和已有证据，完整读取 [references/runtime-acceptance.md](references/runtime-acceptance.md)。先核对文档确认标记，再按已明确的验收模式生成范围与计划；已有有效交接直接续跑，不重问旧决定。开发分支按文档及反馈表详细验收；主分支按文档规则进行正常玩家体验，不自动套用全量开发用例或反馈复验。模式不能仅凭分支名猜测。
 - 两类运行验收开测前均执行 [设备与测试服隔离](references/device-server-isolation.md)：默认一设备一独占实例，可复用满足条件的已有实例；先查已知参数，缺分配或必要部署信息时向用户确认，受影响设备暂不部署或执行游戏操作。同服例外需用户明确指定，服务器级 GM 统一协调。
@@ -118,6 +119,7 @@ description: Align K1 requirements and run static prechecks or runtime acceptanc
 - 按更新后的开发文档顺序保留每项需求和定位；删除需求保留对齐清单记录，移除或校准过时用例，不继续作为验收要求。
 - 校准已有用例的前置条件、操作和期望，补齐覆盖，建立 requirement ↔ testcase 双向关联；记录 `testcaseDocumentVersion` 等于回读后的文档版本。
 - 「实现有问题」「证据不足」通过 `requirementIds` 交给预审逐项核查，不能在文档对齐中消失。
+- 活动类在同一 PrecheckResult 建立 `activityLifecycle` 和 `followupObligations`，按 [合同](references/activity-lifecycle.md) 填全阶段、独立断言与来源 ID；每个待补验项绑定具体动作及关闭标准。未进入产品缺陷反馈表的测试覆盖不足仍须独立跟踪。
 
 ### 5. 需求驱动的静态预审
 
@@ -147,12 +149,14 @@ description: Align K1 requirements and run static prechecks or runtime acceptanc
 - 将 `collect-git-evidence.ps1` 的原始冻结输出通过 `--git-evidence` 传给 renderer；规则目录默认使用 `references/k1-review-rules.json`，需要显式重放时才传 `--review-rules`。
 - 每条代码定位校验独立默认 30 秒，与工作流累计耗时无关，不触发 lazy fetch；缓存缺少对象时明确降级。正式 Excel 仍走原有表格核对。定位通过不代表业务判断成立。
 - renderer 必须校验已完成的 `alignment`、三端版本、文档回读版本和 `testcaseDocumentVersion` 一致，未决差异或未完成回写不能发布预审报告。
+- 活动发布还须通过生命周期结构、调用链引用、独立副作用断言和补验来源覆盖门槛。unknown 有明确承接时可发布带缺口报告；不能用入口存在或正确行号冒充业务闭环。旧活动 JSON 重新发布须在新副本补合同，旧报告不覆盖。
 - 调用 renderer 只在新目录发布 `summary.html`、`review.md`、`testcases.md`；HTML 是默认阅读入口。旧 HTML/Markdown 保持可读，不重写；旧 JSON 若重新发布则必须符合新的校验合同。
 - 预检结束且文档已确认、回读通过后，按 [文档确认标记](references/feature-experience.md#预检后文档确认标记) 更新本功能经验档案，保存文档来源、版本/内容哈希、确认时间与预检批次/证据。预检存在实现问题不等于文档未确认；文档标记也不代表功能验收通过。
 
 ### 7. 交接运行验收（用户请求时）
 
 - 保存本次 `PrecheckResult` 输入 JSON，交接文档版本、完整用例及稳定 ID、冻结三端 manifest、已确认决定、发现和未知项；不要仅交 HTML 摘要。
+- 活动运行计划以 `lifecycleAssertionId` 逐条承接基线独立断言；passed 必须记录每项 `observedEffects` 和运行证据。补验结果由关联断言派生，阻塞、排除和遗漏仍保持 open，不通过精简基线或改验收模式删除义务。
 - 按 `references/runtime-acceptance.md` 先确定验收模式和文档状态，再建立对应范围的断言计划及状态台账，使用 `assets/runtime-plan.json`、`assets/jenkins-test-request.json` 填写实际数据。
 - 执行文档标记核验 → 模式与范围 → 设备独占实例与环境核验 → 依赖排序及分组计划 → 正常业务验证 → 自动补验 → 清理核对 → 按模式发布运行报告 → 文档回读与过程文件清理。Jenkins 与 GM 是环境准备路径，不能替代被测业务结果。
 - 最终交付前可继续补验项必须为零；剩余未验分支必须有真实阻塞、用户排除或执行遗漏记录。失败项仍需继续其他独立分支。

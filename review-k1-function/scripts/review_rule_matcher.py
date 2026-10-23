@@ -9,6 +9,7 @@ import re
 import sys
 from pathlib import Path
 from typing import Any
+from activity_lifecycle import lifecycle_signal
 
 
 ROLES = {"client", "server", "config"}
@@ -232,6 +233,8 @@ def resolve_rules(rules_value: Any, payload: Any, evidence: Any) -> dict[str, An
             require_string(requirement, field, "INVALID_RULE_REQUIREMENT")
             for field in ("title", "documentLocator", "expectation")
         ).casefold()
+        if lifecycle_signal(requirement, payload):
+            text += '\n活动生命周期'
         mapped_paths = requirement_paths(requirement, changed)
         for rule in rules:
             if rule["rolesAny"] and not changed_roles.intersection(rule["rolesAny"]):

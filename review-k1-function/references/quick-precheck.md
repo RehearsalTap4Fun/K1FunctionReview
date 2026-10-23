@@ -246,6 +246,8 @@ python C:/Project/FunctionPreview/review-k1-function/scripts/render-fast-prechec
 
 ## 8. 测试用例
 
+活动类同时执行 [活动全生命周期、独立结算断言与补验合同](activity-lifecycle.md)。同一 PrecheckResult 保存 `activityLifecycle`、`followupObligations`，历史待验来源另以 `followupSources` 登记。发布器在写文件前校验全阶段、检查链、六类独立结算预期和未决来源去向；时间边界、状态、持久化和幂等由生命周期信号叠加触发。未完整核查可以明确 unknown 并绑定补验，不能靠一条“检查活动已结束”用例覆盖所有副作用。
+
 前置对齐完成后，逐条校准已有用例的前置条件、操作和期望，保留来源及稳定 ID；新增需求补用例、修改需求更新期望、已确认删除需求移出当前用例集合并保留变更记录。缺少覆盖时生成主流程、关键边界和明显异常 Markdown 用例，无时限或数量上限，只使用更新后文档支持的期望。记录 testcaseDocumentVersion 与回读后的文档版本相同；不能仅改版本号而沿用旧期望。
 
 用例是证据链一部分：requirement 通过 `testcaseIds` 关联用例，用例通过 `requirementIds` 反向关联需求。用例不能代替开发文档，也不能把运行时表现改写成静态确定性结论。

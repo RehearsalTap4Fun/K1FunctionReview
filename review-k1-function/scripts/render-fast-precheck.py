@@ -17,6 +17,7 @@ from typing import Any
 from evidence_anchors import AnchorError, NOTICE as ANCHOR_NOTICE, verify_report
 from review_rule_matcher import RuleMatchError, resolve_rules
 from requirement_alignment import AlignmentError, validate_alignment, validate_failure_manifest
+from activity_lifecycle import LifecycleError, validate_lifecycle, lifecycle_rows
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
@@ -39,7 +40,7 @@ TOP_LEVEL_FIELDS = {
     "limits",
     "reviewChecks",
 }
-OPTIONAL_TOP_LEVEL_FIELDS = {"configurationChecks"}
+OPTIONAL_TOP_LEVEL_FIELDS = {"configurationChecks", "activityLifecycle", "followupObligations", "followupSources"}
 
 
 class ContractError(Exception):
@@ -389,6 +390,7 @@ def validate_payload(value: Any) -> dict[str, Any]:
         validate_evidence(change["evidence"])
     if metadata.get("testcaseDocumentVersion") != metadata["documentVersion"]:
         raise AlignmentError("ALIGNMENT_TESTCASE_VERSION_MISMATCH")
+    validate_lifecycle(payload)
     return payload
 
 
@@ -660,6 +662,8 @@ def render_review(payload: dict[str, Any]) -> str:
 
 ## 7. 运行验收建议、限制与只读终检
 
+{markdown_table(['生命周期 / 断言 / 补验 ID', '状态', '依据 / 预期 / 关闭标准'], lifecycle_rows(payload)) if lifecycle_rows(payload) else ''}
+
 {markdown_table(['来源', '限制', '受影响需求'], limit_rows) if limit_rows else '未发现限制'}
 
 只读终检：**{readonly_label}**
@@ -877,6 +881,10 @@ def render_alignment_html(payload: dict[str, Any]) -> str:
 
 def render_html(payload: dict[str, Any]) -> str:
     metadata = payload["metadata"]
+    lifecycle_section = ('<section class="panel"><h2>活动生命周期与补验闭环</h2>'
+                         '<p>静态覆盖不代表运行通过；待补验项必须在运行计划中承接。</p><table>'
+                         + ''.join('<tr>' + ''.join('<td>' + html.escape(str(cell)) + '</td>' for cell in row) + '</tr>'
+                                   for row in lifecycle_rows(payload)) + '</table></section>') if lifecycle_rows(payload) else ''
     requirement_counts = Counter(item["result"] for item in payload["requirements"])
     finding_counts = Counter(item["type"] for item in payload["findings"])
     verdict_class = {
@@ -1006,6 +1014,7 @@ h1,h2,h3,p{{margin-top:0}}h1{{font-size:32px;line-height:1.25;margin-bottom:8px;
 </div><p class="storage-status" id="storage-status">审核选择与说明保存在当前浏览器，可修改或撤销。</p></section>
 <section class="panel priority-panel"><div class="section-head"><div><p class="kicker">优先处理</p><h2>阻断项</h2></div><p>{len(blockers)} 项需要在提测前处理</p></div><div class="toolbar"><button type="button" id="expand-findings">展开问题</button><button type="button" id="collapse-findings">收起问题</button></div><div class="findings">{blocker_cards}</div></section>
 {supporting_section}
+{lifecycle_section}
 {configuration_section}
 <section class="panel requirement-panel"><div class="section-head"><div><p class="kicker">完整追踪</p><h2>需求—用例—证据矩阵</h2></div><p>默认收起，按需查看</p></div><div class="toolbar"><label>结果筛选 <select id="filter"><option value="">全部</option><option>静态证据充分</option><option>存在明显缺口</option><option>证据不完整</option><option>无法确认</option></select></label><button type="button" id="expand-requirements">展开可见项</button><button type="button" id="collapse-requirements">全部收起</button><button type="button" onclick="window.print()">打印</button></div>
 <div class="requirement-list">{requirement_cards}</div></section>
@@ -1180,6 +1189,7 @@ def write_report_file(path: Path, content: str) -> str:
 
 
 def publish(payload: dict[str, Any], reports_root: Path) -> dict[str, Any]:
+    validate_lifecycle(payload)
     metadata = payload["metadata"]
     timestamp = parse_finished_at(metadata["finishedAt"]).strftime("%Y%m%d-%H%M%S")
     leaf = f"{timestamp}-{safe_slug(metadata['feature'])}-{uuid.uuid4().hex[:8]}"
@@ -1248,7 +1258,7 @@ def main() -> int:
         receipt = publish(payload, reports_root)
         print(json.dumps(receipt, ensure_ascii=False, sort_keys=True))
         return 0
-    except (ContractError, AnchorError, RuleMatchError, AlignmentError) as error:
+    except (ContractError, AnchorError, RuleMatchError, AlignmentError, LifecycleError) as error:
         print(str(error), file=sys.stderr)
         return 4
     except PublishError as error:

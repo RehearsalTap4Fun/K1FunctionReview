@@ -80,6 +80,7 @@
 复制 `assets/runtime-plan.json`（`schemaVersion=2`）到 `.tmp/<run-id>/plan.json`，填入本轮模式、`documentBaseline`、实际基线路径及 SHA256。按本轮基线拆独立断言，每条写期望、操作、依赖、最晚可执行阶段 `phase`、证据类型。保留原用例 ID 和 requirementIds，不通过合并丢失验收项。
 
 - `baselineFile` 指向保存的基线 JSON，至少包含 `metadata.documentVersion`、同值 `testcaseDocumentVersion` 和非空 `testcases`（每条含 id、requirementIds、expected）。开发分支优先沿用并补齐 PrecheckResult；主分支回归按 §1 生成玩家旅程基线，保留文档规则引用及实际指定的定向复验。
+- 活动 baseline 还必须保留 [生命周期合同](activity-lifecycle.md) 的完整需求、阶段、独立断言和补验义务。用 `lifecycleAssertionId` 一对一承接 required 断言；expected/action 与基线一致，证据范围不得缩减。运行 passed 逐项填写 `observedEffects`；状态变更和 Ack 成功不能替代邮件、附件、资产和跨期结果。非结算问题用 kind=requirement 的独立断言承接。
 - `acceptanceMode` 只允许 `development / mainline_regression`。`documentBaseline.status=precheck_confirmed` 需要来源、确认版本/时间、预检批次、当前版本/核对时间和存在的证据文件，确认版本、当前版本、基线文档版本必须相同；`needs_review` 写来源、核对时间、原因和已取得证据，不得宣称完整通过。CLI 只核验记录，不替代读取原文或自动写回经验。
 - `requiredEvidence` 只能选 `ui / protocol / server / runtime / platform / isolated / static / gm`。按原需求确定，正常业务验收不以 gm/isolated/static 代替 runtime/protocol/server；界面和原生 SDK 还需相应 UI/平台证据。
 - 新增或改动界面的英、俄、阿检查在冻结前加入原需求的独立断言，写明界面/状态、语言、显示预期和含 `ui` 的证据要求。按 [三语排程](ui-language-and-screen-adaptation.md#纳入验收计划与协作) 处理共享客户端/账号的语言写操作，不能并发切换同一环境；语言间只有顺序关系时不设置成功依赖。没有新增机器字段，沿用现有断言和分组合同。
@@ -185,6 +186,8 @@ python scripts/runtime_acceptance.py publish --plan <plan.json> --state <state.j
 ```
 
 发布入口强制检查基线/计划未漂移、本轮模式内用例与断言未丢失、证据范围及文件、可继续项为零、清理和环境记录。可继续项存在时失败且不生成报告目录。真实阻塞、已明确排除、执行遗漏或文档待复核可结束本轮，但不能给完整通过；版本 2 只有文档已确认、全部断言 passed 且收尾完成才 fullyAccepted=true，此字段仅针对当前模式及计划范围。
+
+活动发布额外校验生命周期独立断言和逐副作用观察。`followupResults` 保留每项补验来源及关闭标准，仅关联断言全部 passed 才 verified；排除、阻塞或遗漏保持 open。旧 schemaVersion=1 活动计划须在新副本补合同后重新交接，旧报告仍可读；不得用旧计划兼容通道绕过活动门槛。产品缺陷表不收录测试不足，不代表相应补验义务被关闭。
 
 结果输出 `summary.html` 与 `runtime-result.json`，明确验收模式、文档确认状态、计划分组与逐断言观察、证据和剩余动作。主分支回归结论限定玩家体验范围，不描述为开发分支全量详细验收通过。报告区分用例数量、唯一缺陷数量和验证方式；同一缺陷影响多条用例不重复计数。用户修正设计/归因时保留原证据和决定，不冒充又做了一次实测。
 

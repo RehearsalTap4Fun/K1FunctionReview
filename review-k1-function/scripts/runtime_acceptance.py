@@ -12,6 +12,8 @@ import html
 import json
 from pathlib import Path
 import sys
+from activity_lifecycle import (LifecycleError, validate_runtime_handoff,
+                                validate_runtime_observations)
 
 
 class RuntimeContractError(ValueError):
@@ -85,6 +87,7 @@ def validate_plan(plan, root):
         visit(aid)
     if plan['schemaVersion'] == 2:
         validate_planning(plan, baseline, root)
+    validate_runtime_handoff(baseline, plan)
     return baseline
 
 
@@ -268,10 +271,12 @@ def evaluate(plan, state, root):
     dispatch, deferred = [], []
     if plan['schemaVersion'] == 2:
         next_actions, dispatch, deferred = dispatch_groups(plan, state, next_actions, unfinished)
+    followups = validate_runtime_observations(baseline, plan, state, root, evidence_kinds)
     return {'runId': plan['runId'], 'nextActions': next_actions, 'waiting': waiting,
             'acceptanceMode': mode, 'documentStatus': doc_status,
             'dispatchGroups': dispatch, 'deferredActions': deferred,
             'unfinished': unfinished, 'canFinalize': ready,
+            'followupResults': followups,
             'fullyAccepted': ready and (doc_ready or plan['schemaVersion'] == 1) and all(r['status'] == 'passed' for r in results.values()),
             'caseResults': case_results, 'counts': dict(Counter(case_results.values())),
             'missingClosure': [k for k, ok in [('environmentEvidence', bool(env)), ('cleanup', cleanup_ready)] if not ok]}
@@ -302,6 +307,11 @@ def publish(plan, state, root, output):
     verdict = mode_label + '通过' if result['fullyAccepted'] else mode_label + '：本轮结束，未完整通过'
     document = '<!doctype html><meta charset="utf-8"><title>运行验收</title><style>body{font:16px sans-serif;margin:32px}table{border-collapse:collapse}td,th{border:1px solid #ccc;padding:10px;text-align:left}</style>'
     document += '<h1>' + h(verdict) + '</h1><p>' + h(result['documentStatus']) + '</p><p>' + h(json.dumps(result['counts'], ensure_ascii=False)) + '</p><p>通过结论仅适用于本轮模式和计划范围。用例与断言分别统计；隔离、GM、静态证据不能替代所需运行证据。台账校验不证明证据真实性。</p>'
+    if result['followupResults']:
+        document += '<h2>补验义务</h2><table>' + ''.join(
+            '<tr>' + ''.join('<td>' + h(str(value)) + '</td>' for value in
+                            (oid, item['status'], ', '.join(item['sourceRefs']), item['nextAction'], item['closureCriteria'])) + '</tr>'
+            for oid, item in result['followupResults'].items()) + '</table>'
     if plan['schemaVersion'] == 2:
         doc = plan['documentBaseline']
         document += '<h2>文档基线</h2><p>' + h('；'.join(str(doc.get(k, '')) for k in

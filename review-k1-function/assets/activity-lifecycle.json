@@ -1,0 +1,222 @@
+{
+  "activityLifecycle": {
+    "schemaVersion": 1,
+    "stages": [
+      {
+        "id": "start",
+        "status": "unknown",
+        "requirementIds": [
+          "REQ-ACTIVITY-END"
+        ],
+        "reason": "待补齐：追踪该阶段完整调用链并说明当前缺失证据"
+      },
+      {
+        "id": "active",
+        "status": "unknown",
+        "requirementIds": [
+          "REQ-ACTIVITY-END"
+        ],
+        "reason": "待补齐：追踪该阶段完整调用链并说明当前缺失证据"
+      },
+      {
+        "id": "end",
+        "status": "unknown",
+        "requirementIds": [
+          "REQ-ACTIVITY-END"
+        ],
+        "reason": "待补齐：追踪该阶段完整调用链并说明当前缺失证据"
+      },
+      {
+        "id": "settlement",
+        "status": "unknown",
+        "requirementIds": [
+          "REQ-ACTIVITY-END"
+        ],
+        "reason": "待补齐：追踪该阶段完整调用链并说明当前缺失证据"
+      },
+      {
+        "id": "recovery",
+        "status": "unknown",
+        "requirementIds": [
+          "REQ-ACTIVITY-END"
+        ],
+        "reason": "待补齐：追踪该阶段完整调用链并说明当前缺失证据"
+      },
+      {
+        "id": "close",
+        "status": "unknown",
+        "requirementIds": [
+          "REQ-ACTIVITY-END"
+        ],
+        "reason": "待补齐：追踪该阶段完整调用链并说明当前缺失证据"
+      },
+      {
+        "id": "next_cycle",
+        "status": "unknown",
+        "requirementIds": [
+          "REQ-ACTIVITY-END"
+        ],
+        "reason": "待补齐：追踪该阶段完整调用链并说明当前缺失证据"
+      }
+    ],
+    "assertions": [
+      {
+        "id": "END-RANK-REWARD",
+        "kind": "rank_reward",
+        "applicability": "required",
+        "requirementIds": [
+          "REQ-ACTIVITY-END"
+        ],
+        "testcaseIds": [
+          "TC-END-RANK-REWARD"
+        ],
+        "expected": "待替换：从已确认文档填写该场景各副作用与异常预期",
+        "action": "待替换：填写前置状态、触发结束及读取权威结果的步骤",
+        "observables": [
+          "asset_delta",
+          "attachments",
+          "duplicate_delivery",
+          "mail_count"
+        ],
+        "requiredEvidence": [
+          "server"
+        ]
+      },
+      {
+        "id": "END-UNCLAIMED-REWARD",
+        "kind": "unclaimed_reward",
+        "applicability": "required",
+        "requirementIds": [
+          "REQ-ACTIVITY-END"
+        ],
+        "testcaseIds": [
+          "TC-END-UNCLAIMED-REWARD"
+        ],
+        "expected": "待替换：从已确认文档填写该场景各副作用与异常预期",
+        "action": "待替换：填写前置状态、触发结束及读取权威结果的步骤",
+        "observables": [
+          "asset_delta",
+          "attachments",
+          "duplicate_delivery",
+          "eligibility",
+          "mail_count"
+        ],
+        "requiredEvidence": [
+          "server"
+        ]
+      },
+      {
+        "id": "END-PERIPHERAL-REWARD",
+        "kind": "peripheral_reward",
+        "applicability": "required",
+        "requirementIds": [
+          "REQ-ACTIVITY-END"
+        ],
+        "testcaseIds": [
+          "TC-END-PERIPHERAL-REWARD"
+        ],
+        "expected": "待替换：从已确认文档填写该场景各副作用与异常预期",
+        "action": "待替换：填写前置状态、触发结束及读取权威结果的步骤",
+        "observables": [
+          "asset_delta",
+          "attachments",
+          "duplicate_delivery",
+          "eligibility",
+          "mail_count"
+        ],
+        "requiredEvidence": [
+          "server"
+        ]
+      },
+      {
+        "id": "END-ASSET-RECOVERY",
+        "kind": "asset_recovery",
+        "applicability": "required",
+        "requirementIds": [
+          "REQ-ACTIVITY-END"
+        ],
+        "testcaseIds": [
+          "TC-END-ASSET-RECOVERY"
+        ],
+        "expected": "待替换：从已确认文档填写该场景各副作用与异常预期",
+        "action": "待替换：填写前置状态、触发结束及读取权威结果的步骤",
+        "observables": [
+          "before_after_inventory",
+          "late_delivery"
+        ],
+        "requiredEvidence": [
+          "server"
+        ]
+      },
+      {
+        "id": "END-PROGRESS-CLEANUP",
+        "kind": "progress_cleanup",
+        "applicability": "required",
+        "requirementIds": [
+          "REQ-ACTIVITY-END"
+        ],
+        "testcaseIds": [
+          "TC-END-PROGRESS-CLEANUP"
+        ],
+        "expected": "待替换：从已确认文档填写该场景各副作用与异常预期",
+        "action": "待替换：填写前置状态、触发结束及读取权威结果的步骤",
+        "observables": [
+          "before_after_progress",
+          "next_cycle"
+        ],
+        "requiredEvidence": [
+          "server"
+        ]
+      },
+      {
+        "id": "END-UNFINISHED-ROUND",
+        "kind": "unfinished_round",
+        "applicability": "required",
+        "requirementIds": [
+          "REQ-ACTIVITY-END"
+        ],
+        "testcaseIds": [
+          "TC-END-UNFINISHED-ROUND"
+        ],
+        "expected": "待替换：从已确认文档填写该场景各副作用与异常预期",
+        "action": "待替换：填写前置状态、触发结束及读取权威结果的步骤",
+        "observables": [
+          "no_new_rewards",
+          "result_state"
+        ],
+        "requiredEvidence": [
+          "server"
+        ]
+      }
+    ]
+  },
+  "followupObligations": [
+    {
+      "id": "FOLLOWUP-ACTIVITY-END",
+      "sourceRefs": [
+        "stage:start",
+        "stage:active",
+        "stage:end",
+        "stage:settlement",
+        "stage:recovery",
+        "stage:close",
+        "stage:next_cycle",
+        "requirement:REQ-ACTIVITY-END"
+      ],
+      "requirementIds": [
+        "REQ-ACTIVITY-END"
+      ],
+      "assertionIds": [
+        "END-RANK-REWARD",
+        "END-UNCLAIMED-REWARD",
+        "END-PERIPHERAL-REWARD",
+        "END-ASSET-RECOVERY",
+        "END-PROGRESS-CLEANUP",
+        "END-UNFINISHED-ROUND"
+      ],
+      "nextAction": "待替换：按实际场景拆分来源与独立断言，补齐阶段链和运行副作用证据",
+      "closureCriteria": "每条适用断言均执行通过且有各项观察证据；阶段未知项明确核对"
+    }
+  ],
+  "followupSources": []
+}
