@@ -56,6 +56,7 @@ def test_counts_are_requirement_level_and_result_enqueue_is_atomic(store, tmp_pa
     assert data['outbox'][0]['counts']['pending'] == 2
     assert data['outbox'][1]['counts']['incomplete'] == 1
     assert '进度播报' in data['outbox'][0]['payload']['markdown']['text']
+    assert '版本日验收' in data['outbox'][0]['payload']['markdown']['text']
     assert '需求B' in data['outbox'][0]['payload']['markdown']['text']
     assert data['outbox'][0]['payload']['at']['isAtAll'] is False
 

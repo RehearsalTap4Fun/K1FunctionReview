@@ -251,7 +251,7 @@ def test_regression_report_scopes_pass_to_player_experience(runtime, scheduled):
     assert result['acceptanceMode'] == 'mainline_regression'
     assert result['fullyAccepted'] is True
     report = (root / 'report/summary.html').read_text(encoding='utf-8')
-    assert '主分支回归' in report and '玩家体验' in report
+    assert '版本日验收' in report and '玩家体验' in report
     assert '当前文档已是预检确认后的版本' in report
 
 

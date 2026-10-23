@@ -13,7 +13,7 @@
 | 线上服备份 → DownKey → 个人测试服部署 → 运行校验 | 建议同时提供 `dws`，便于认证和故障排查；正常整链由本 skill 脚本执行，无须其他 skill 才能运行 | Python、PowerShell、Git；已登录的 DWS CLI；Node.js + mcporter；名为 `k1-mcp` 的 MCP 服务及 `ssh_exec`；个人 Jenkins API Token；代码/配表 Git 读取权限；公司内网/VPN |
 | 正式 K1 配置检查 | `config-table-editor`，检查正式 `.xlsx` 时需要 | 配置仓库读取权限；需要时 Git LFS；Excel 解析环境，例如 `openpyxl`。只读导出副本，不修改正式配置 |
 | 缺少用例、需要从需求生成用例 | 仓库内 `slg-testcase-generator/`，需将完整目录注册到 Agent skills | 可访问已确认并回读的需求文档；K1 静态 Markdown 用例无累计时间或数量上限，不要求 Google Drive/API Key。独立在线写表流程才需该 Skill 的额外依赖 |
-| Unity 客户端实测/GM/故障模拟 | 建议 `unity-mcp-orchestrator`（目录也可能名为 `unity-mcp-skill`） | 对应版本 Unity Editor、打开的 K1 客户端项目、MCP for Unity 连接和实际可用的项目工具、授权测试账号 |
+| 功能开发完成时或版本日运行验收（均含真机包与 Unity） | Unity 路径建议 `unity-mcp-orchestrator`（目录也可能名为 `unity-mcp-skill`）；钉钉出包通知走 `dws` | 客户端 Jenkins 的配置/多语言转换任务权限（优先 `K1_Build_Config_I18N_Mac`）；真机路径另需目标平台出包任务、通知群读取权限、APK 下载内网、Android SDK 的 ADB/包校验工具与已授权设备；Unity 路径需对应版本 Editor、打开的 K1 客户端项目、MCP for Unity 连接和授权测试账号；两者均需专属测试服，详见 [真机包安装链](android-package-install.md) |
 | 钉钉需求文档、反馈表 | 走 CLI 时使用 `dws`；已连接的文档工具也可按原路由使用 | 本人的钉钉登录态和目标文档/表格权限；维护时需要编辑权限；图片追加等浏览器步骤还需可用的浏览器工具及登录态 |
 | 版本进包项进度播报 | 本 skill 的 Python 脚本 | 用户指定并授权的自定义机器人 Webhook；按 [播报配置](acceptance-progress.md#机器人私有配置) 存本地私有文件，不随 Skill 分享 |
 | Word / PDF 需求材料 | 分别按文档路由使用 `documents:documents` / `pdf:pdf` | 对应 skill 自身运行依赖；本地文件不需要统一的额外 API Key |
@@ -26,14 +26,17 @@
 
 | 项目 | 接收者需要准备什么 | 保存位置与说明 |
 |---|---|---|
-| Jenkins | 自己的 `username` 和 `apiToken`，以及服务 `baseUrl` | 默认读取 `C:/Project/K1Game/.jenkins.local.json`；也可每次通过 `--config <本地文件>` 指定。用户名同时决定个人测试容器归属，不能照抄分享者账号 |
+| 测试服 Jenkins | 自己的 `username`、`apiToken` 与包含 `/jenkins` 等实际上下文的 `baseUrl` | 环境脚本默认读取 `C:/Project/K1Game/.jenkins.local.json`，也可用 `--config <本地文件>` 指定；用户名同时决定个人测试容器归属，不照抄分享者账号 |
+| 客户端构建 Jenkins | 对转换任务与目标平台打包任务有读取、构建权限的本人账号和 API Token | 与测试服 Jenkins 分开核验地址、账号和 Token；私有配置存仓库外，不把凭证写入请求、报告或分享包 |
 | Git | 服务端、配表仓库的读取凭证；完整审核还需客户端仓库 | 使用个人 SSH key/agent 或 Git credential helper，包含必要的 LFS 读取权限。远端快照是非交互式执行，凭证必须预先可用 |
-| DWS | 本人钉钉 OAuth 登录及读取备份通知群历史消息的权限 | DWS 管理登录态，按 `dws auth --help` / `dws auth login --help` 配置。正常使用无需把 access token 填进本 skill；组织使用自建 OAuth 应用时，另由管理员提供对应 AppKey/AppSecret 配置 |
+| DWS | 本人钉钉 OAuth 登录及读取备份通知群、客户端打包通知群历史消息的权限 | DWS 管理登录态，按 `dws auth --help` / `dws auth login --help` 配置。正常使用无需把 access token 填进本 skill；组织使用自建 OAuth 应用时，另由管理员提供对应 AppKey/AppSecret 配置 |
 | K1 MCP | 被授权访问团队 `k1-mcp` 服务的个人连接配置；服务端能执行目标测试节点的只读 SSH 探针 | 配置在接收者自己的 MCP/mcporter 中。若网关要求 API Key/Token，在该连接的本地配置中填写；本脚本没有独立的 K1 API Key 字段，不猜测网关字段名 |
 
 当前脚本调用的是 **`mcporter call k1-mcp.ssh_exec`**。仅在 Codex 工具列表看到同名 MCP 不保证 mcporter 能发现它，须核验接收者本地 mcporter 配置；服务名称也必须匹配。SSH 认证由既有 MCP 服务管理，通常不需要再把服务器私钥交给 skill。
 
-Jenkins 至少需可读取“指定备份线上服”“自定义代码配表分支启动个人远程服”及实际下游“个人远程服务器部署”的参数、队列、构建记录和日志，并具备前两项的构建权限。测试节点的 MCP 账号需能执行 `hostname`、`docker ps -a`、`docker inspect`、`docker top`、`docker logs` 和 Python 只读探针。依赖清单不替代对具体线上 SID 备份、测试数据导入与本人实例重建的用户授权。
+运行验收所用客户端 Jenkins 账号需能读取并构建配置/多语言转换任务（优先 `K1_Build_Config_I18N_Mac`），真机包路径另需目标平台出包任务（Android 优先适用的 Mac 任务）的读取与构建权限。客户端构建 Jenkins 与测试服 Jenkins 可为不同实例，不能因一端认证成功推定另一端可用。测试服 Jenkins 至少需可读取“指定备份线上服”“自定义代码配表分支启动个人远程服”及实际下游“个人远程服务器部署”的参数、队列、构建记录和日志，并具备前两项的构建权限。测试节点的 MCP 账号需能执行 `hostname`、`docker ps -a`、`docker inspect`、`docker top`、`docker logs` 和 Python 只读探针。依赖清单不替代对具体线上 SID 备份、测试数据导入与本人实例重建的用户授权。
+
+Android 真机路径还需 Android SDK `platform-tools/adb`（不在 PATH 时使用已安装 SDK 的绝对路径）、`build-tools` 中的 `aapt` / `apksigner` 等包校验工具、已开启 USB 调试并在本机授权的目标手机、足够下载/安装空间，以及访问钉钉通知内 APK HTTP 地址的内网/VPN。先只读确认 `adb devices -l` 显示目标序列号为 `device`、APK 链接可访问；是否真的完成安装和登录须按 [真机包安装链](android-package-install.md) 留本轮证据。
 
 本 skill 的脚本不直接调用 OpenAI API，因此不额外要求 OpenAI API Key。运行它的宿主本身如何登录/计费，由接收者自己的环境决定。**DownKey 是每次备份产生的临时结果，不是安装时应共享或预填的 API Key**；本地不需要另装 `file-ladder` 来取得它。
 

@@ -13,7 +13,7 @@ import time
 
 from .core import WorkflowError, atomic_json, canonical_hash, file_hash, read_json, reject_formal_write, require
 
-MODES = {'development': '开发分支详细验收', 'mainline_regression': '主分支回归'}
+MODES = {'development': '功能开发完成时验收', 'mainline_regression': '版本日验收'}
 STATUSES = {'pending', 'running', 'passed', 'failed', 'blocked'}
 FINAL = {'passed', 'failed', 'blocked'}
 LABELS = {'passed': '通过', 'failed': '未通过', 'blocked': '阻塞'}
