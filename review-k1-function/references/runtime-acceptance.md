@@ -17,6 +17,8 @@
 
 版本日验收不因未重跑完整静态预检或全部开发用例而扩大任务。它仍需理解当前规则、核实实际部署版本、保留实际业务证据和真实异常；发现问题后保留证据并继续其他玩家路径。GM 仅用于本轮已授权的必要前置，不自动为回归安排大规模边界造数。
 
+**通用 ESC / 返回键检查：**功能开发完成时和版本日都将本轮涉及的可返回界面或玩法状态纳入冻结计划，覆盖适用的主界面、玩法 HUD 与弹窗叠加状态。Unity 路径触发一次 ESC；真机路径按设备返回键，或在同一真机上经核对后模拟返回键（Android 可用 `adb shell input keyevent KEYCODE_BACK`）；真机外接键盘 ESC 仅在该输入条件适用时追加。每次先记录页面、HUD、玩法/计时状态及按键前画面，再核对弹窗或页面是否按本轮交互规则关闭、底层 HUD 与操作是否保持一致、是否出现仅 HUD 消失而玩法仍运行的半退出状态，必要时正常重进确认恢复。Unity 与真机分别建立断言、记录输入方式和按键后截图/视频及实际结果；一条路径不能替代另一条。无相关界面/返回行为时写明不适用依据；应测而缺包、缺输入能力或缺环境时保留待验/阻塞，不能按完整通过结案。
+
 两个时间节点的 Unity 和真机路径均需先判断本轮是否新增或改动玩家可见界面；命中时按 [UI 多语言规则](ui-language-and-screen-adaptation.md) 对受影响界面实际切换英语、俄语、阿拉伯语并逐语言留截图。这也属于版本日正常玩家体验中的界面验收范围，不自动扩展无关功能或完整屏幕组合。无 UI 变化记依据，待判定先补查，不从缺少客户端 diff 推导不适用。
 
 两个时间节点都保留旧决定出处和适用性；需求文档版本写入 `metadata.documentVersion` 与同值 `testcaseDocumentVersion`。反馈表另存来源、稳定行 ID 和自身版本（如 `metadata.feedbackVersion`），不能用反馈表更新时间代替需求文档确认版本。反馈原图规则只适用于本轮纳入的复验项及新增问题。
@@ -81,7 +83,7 @@
 
 复制 `assets/runtime-plan.json`（`schemaVersion=2`）到 `.tmp/<run-id>/plan.json`，填入本轮模式、`documentBaseline`、实际基线路径及 SHA256。按本轮基线拆独立断言，每条写期望、操作、依赖、最晚可执行阶段 `phase`、证据类型。保留原用例 ID 和 requirementIds，不通过合并丢失验收项。
 
-- `baselineFile` 指向保存的基线 JSON，至少包含 `metadata.documentVersion`、同值 `testcaseDocumentVersion` 和非空 `testcases`（每条含 id、requirementIds、expected）。功能开发完成时优先沿用并补齐 PrecheckResult；版本日验收按 `1 生成玩家旅程基线，保留文档规则引用及实际指定的定向复验。
+- `baselineFile` 指向保存的基线 JSON，至少包含 `metadata.documentVersion`、同值 `testcaseDocumentVersion` 和非空 `testcases`（每条含 id、requirementIds、expected）。功能开发完成时优先沿用并补齐 PrecheckResult；版本日验收按 §1 生成玩家旅程基线，保留文档规则引用及实际指定的定向复验。
 - 活动 baseline 还必须保留 [生命周期合同](activity-lifecycle.md) 的完整需求、阶段、独立断言和补验义务。用 `lifecycleAssertionId` 一对一承接 required 断言；expected/action 与基线一致，证据范围不得缩减。运行 passed 逐项填写 `observedEffects`；状态变更和 Ack 成功不能替代邮件、附件、资产和跨期结果。非结算问题用 kind=requirement 的独立断言承接。
 - `acceptanceMode` 只允许 `development / mainline_regression`，分别对应用户指定的功能开发完成时 / 版本日节点；这是沿用的机器 ID，不代表实际 Git 分支。`documentBaseline.status=precheck_confirmed` 需要来源、确认版本/时间、预检批次、当前版本/核对时间和存在的证据文件，确认版本、当前版本、基线文档版本必须相同；`needs_review` 写来源、核对时间、原因和已取得证据，不得宣称完整通过。CLI 只核验记录，不替代读取原文或自动写回经验。
 - 普通用例在 Unity 与真机都需要验证时，保留原 `testcaseId`，建立分别标明路径的断言 ID（例如 `TC-1/unity`、`TC-1/device`）并放入各自 `executionGroup`，明确不同客户端与服务器资源。活动生命周期的 required 断言必须遵守 `lifecycleAssertionId` 一对一绑定，不能复制同一绑定；需要双端验收时，在该断言的观察与证据中分别标明 Unity、真机的实测结果。两条路径的必要验证都须进入冻结计划；缺一条时不得借 `runtime publish` 的全部通过状态声称节点通过。

@@ -4,7 +4,7 @@
 
 | featureId | 功能 | 别名 / 搜索词 | 关联需求 / 历史分支 | 历史证据范围 | 档案 | 更新日期 |
 |---|---|---|---|---|---|---|
-| k1-gold-miner | 黄金矿工 | GoldMiner、Gold Miner、矿工、挖矿活动、特殊设备、矿工币 | NK-8062 / dev_NK-8062 | 玩家体验、反馈与运行片段；非全功能通过 | [黄金矿工验收档案](k1-gold-miner/experience.md) | 2026-10-21 |
+| k1-gold-miner | 黄金矿工 | GoldMiner、Gold Miner、矿工、挖矿活动、特殊设备、矿工币、ESC、返回键、HUD | NK-8062 / dev_NK-8062 | 玩家体验、反馈与运行片段；新增返回键后 HUD 消失待复验，非全功能通过 | [黄金矿工验收档案](k1-gold-miner/experience.md) | 2026-10-26 |
 | k1-world-map-rework | 大地图重构 | WorldMapV2、V2Fort、FogLayer、新大地图 | NK-8604 / dev_NK-8604 | 多批次静态预检；历史阻断待复核 | [大地图重构档案](k1-world-map-rework/experience.md) | 2026-10-21 |
 | k1-first-day-fog-spawn | 新服大地图出生与随机迁城首日迷雾一致性 | 首日迷雾、D0 出生区、随机迁城、FogLayer | 2026-08-11 专项请求；相关 NK-8604 / dev_NK-8604 | 静态可进入运行验收；未执行运行验证 | [出生与迷雾档案](k1-first-day-fog-spawn/experience.md) | 2026-10-21 |
 | k1-alliance-bi-recommendations | 联盟 BI 推荐场景 1–5 | 联盟BI推荐、union_bi_rec、BI 干预、AI 盟主、付费邀请 | NK-8728 / dev_NK-8728 | 静态预检及配置快照；历史阻断待复核 | [联盟 BI 档案](k1-alliance-bi-recommendations/experience.md) | 2026-10-21 |
