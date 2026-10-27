@@ -71,6 +71,8 @@ description: Align K1 requirements and run static prechecks or runtime acceptanc
 - Server：`C:/Project/K1Game/game`
 - Config：`C:/Project/K1Dataconfig/dataconfig`
 
+macOS 上 `C:/Project` 对应 `~/Project`（或 `$K1_PROJECT_ROOT`），FunctionPreview 指本仓库根目录，`.ps1` 由 `pwsh` 执行；见 [macOS 安装与首次配置](references/macos-setup.md)。
+
 所有 Git refs/objects、锁、LFS 对象、临时文件和报告只能写入 `C:/Project/FunctionPreview` 的 `.cache`、`.tmp` 或 `reports` 子目录。额外允许按用户逐项确认结果最小更新指定原策划文档及其变更记录；这不授权修改三端仓库、代码或配置。原文档位于正式 K1 仓库内时仍遵守仓库只读边界，明确请求可维护的文档来源。
 
 正式 K1 仓库禁止 `fetch`、`pull`、`checkout`、`switch`、`reset`、`clean`、`stash`、`add`、`commit`、`merge`、`rebase` 和任何 Git LFS 命令。静态阶段也禁止编译、测试、启动、运行验收、导表、配置/代码/资源生成、依赖安装、子模块更新和 Jenkins。

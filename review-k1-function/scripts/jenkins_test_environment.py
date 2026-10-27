@@ -24,7 +24,11 @@ import urllib.request
 JOB = '自定义代码配表分支启动个人远程服'
 JOB_PATH = '/job/' + urllib.parse.quote(JOB, safe='') + '/'
 ALLOWED_PARAMETERS = {'corebranch', 'branchName', 'app', 'server_id', 'ALIVE', 'DownKey', 'kvk_keep_servers'}
-DEFAULT_CONFIG = 'C:/Project/K1Game/.jenkins.local.json'
+# Windows keeps the original C:/Project contract; macOS/Linux default to
+# ~/Project with the same layout. K1_PROJECT_ROOT overrides either.
+K1_ROOT = Path(os.environ.get('K1_PROJECT_ROOT') or
+               ('C:/Project' if sys.platform == 'win32' else Path.home() / 'Project')).as_posix()
+DEFAULT_CONFIG = K1_ROOT + '/K1Game/.jenkins.local.json'
 
 
 class DeploymentError(ValueError):

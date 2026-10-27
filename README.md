@@ -22,7 +22,7 @@ K1 功能审核 skill：需求对齐、静态预检、运行验收，以及线�
 
 先读[外部依赖与首次配置](review-k1-function/references/dependencies-and-setup.md)。
 
-当前路径合同以 Windows 和 `C:/Project/FunctionPreview` 为项目根目录，三端仓库位置见 [K1 项目合同](review-k1-function/references/k1-project.md)。在尚未存在的目标目录可执行：
+当前路径合同以 Windows 和 `C:/Project/FunctionPreview` 为项目根目录，三端仓库位置见 [K1 项目合同](review-k1-function/references/k1-project.md)。macOS 使用 `~/Project` 作为 K1 根目录（可用 `K1_PROJECT_ROOT` 覆盖），安装步骤见 [macOS 安装与首次配置](review-k1-function/references/macos-setup.md)。在尚未存在的目标目录可执行：
 
 ```powershell
 git clone https://github.com/RehearsalTap4Fun/K1FunctionReview.git C:/Project/FunctionPreview

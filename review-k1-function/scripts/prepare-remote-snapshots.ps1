@@ -271,7 +271,7 @@ try {
                 [void]$childFiles.Add($childOutputPath)
 
                 $childStartInfo = New-Object System.Diagnostics.ProcessStartInfo
-                $childStartInfo.FileName = Join-Path $PSHOME 'powershell.exe'
+                $childStartInfo.FileName = if ([System.IO.Path]::DirectorySeparatorChar -eq [char]47) { Join-Path $PSHOME 'pwsh' } else { Join-Path $PSHOME 'powershell.exe' }
                 $childArguments = @(
                     '-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', $PSCommandPath,
                     '-RequestPath', $childRequestPath,
@@ -364,10 +364,18 @@ try {
         New-Item -ItemType Directory -Path $CacheRoot -Force | Out-Null
     }
 
+    # Windows keeps C:\Project; macOS/Linux default to ~/Project. K1_PROJECT_ROOT overrides either.
+    $k1Root = if (-not [string]::IsNullOrWhiteSpace($env:K1_PROJECT_ROOT)) {
+        $env:K1_PROJECT_ROOT
+    } elseif ([System.IO.Path]::DirectorySeparatorChar -eq [char]47) {
+        Join-Path $HOME 'Project'
+    } else {
+        'C:\Project'
+    }
     $officialPaths = @{
-        client = Get-FullPath 'C:\Project\K1Client\k1_client'
-        server = Get-FullPath 'C:\Project\K1Game\game'
-        config = Get-FullPath 'C:\Project\K1Dataconfig\dataconfig'
+        client = Get-FullPath (Join-Path $k1Root 'K1Client/k1_client')
+        server = Get-FullPath (Join-Path $k1Root 'K1Game/game')
+        config = Get-FullPath (Join-Path $k1Root 'K1Dataconfig/dataconfig')
     }
     $repositories = New-Object System.Collections.ArrayList
     $errors = New-Object System.Collections.ArrayList

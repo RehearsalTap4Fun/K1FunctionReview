@@ -19,7 +19,7 @@ import sys
 import urllib.parse
 
 from jenkins_test_environment import (Jenkins, DeploymentError, require, digest, timestamp,
-    read_json, write_new, save_receipt, validate_request, DEFAULT_CONFIG, JOB as DEPLOY_JOB)
+    read_json, write_new, save_receipt, validate_request, DEFAULT_CONFIG, K1_ROOT, JOB as DEPLOY_JOB)
 
 BACKUP_JOB = '指定备份线上服'
 CHILD_JOB = '个人远程服务器部署'
@@ -478,7 +478,7 @@ def capture_json(argv, code, timeout=60):
 
 class Services:
     def __init__(self):
-        self.dws = shutil.which('dws') or str(Path.home() / '.local/bin/dws.exe')
+        self.dws = shutil.which('dws') or str(Path.home() / ('.local/bin/dws.exe' if sys.platform == 'win32' else '.local/bin/dws'))
         # Windows npm .cmd wrappers need a shell; prefer the adjacent JS entry
         # with node so JSON arguments never pass through cmd.exe quoting.
         mcporter = shutil.which('mcporter')
@@ -537,14 +537,14 @@ class Services:
 
 
 def freeze_sources(request, root):
-    repos = {'server': 'C:/Project/K1Game/game', 'config': 'C:/Project/K1Dataconfig/dataconfig'}
+    repos = {'server': K1_ROOT + '/K1Game/game', 'config': K1_ROOT + '/K1Dataconfig/dataconfig'}
     entries = [{'role': role, 'localRepository': path, 'remote': 'origin', 'baseBranch': 'dev',
                 'targetBranch': request['codeBranch' if role == 'server' else 'configBranch'].removeprefix('origin/')}
                for role, path in repos.items()]
     request_path, manifest = root / 'source-request.json', root / 'source-manifest.json'
     write_new(request_path, {'repositories': entries})
     try:
-        process = subprocess.run(['powershell', '-NoProfile', '-File', str(SCRIPTS / 'prepare-remote-snapshots.ps1'),
+        process = subprocess.run(['powershell' if sys.platform == 'win32' else 'pwsh', '-NoProfile', '-File', str(SCRIPTS / 'prepare-remote-snapshots.ps1'),
             '-RequestPath', str(request_path), '-OutputPath', str(manifest)], capture_output=True, timeout=420)
         require(process.returncode == 0 and manifest.exists(), 'REMOTE_SOURCE_FREEZE_FAILED')
         data = read_json(manifest)
