@@ -537,6 +537,7 @@ class Services:
 
 
 def freeze_sources(request, root):
+    require(bool(K1_ROOT), 'K1_PROJECT_ROOT_REQUIRED')
     repos = {'server': K1_ROOT + '/K1Game/game', 'config': K1_ROOT + '/K1Dataconfig/dataconfig'}
     entries = [{'role': role, 'localRepository': path, 'remote': 'origin', 'baseBranch': 'dev',
                 'targetBranch': request['codeBranch' if role == 'server' else 'configBranch'].removeprefix('origin/')}
@@ -598,6 +599,7 @@ def main():
         root = Path(args.run_dir).resolve()
         require(root.is_relative_to(PROJECT / 'reports') or root.is_relative_to(PROJECT / '.tmp'), 'RUN_DIR_OUTSIDE_PROJECT')
         if args.command == 'prepare':
+            require(bool(K1_ROOT), 'K1_PROJECT_ROOT_REQUIRED')
             require(args.request, 'REQUEST_REQUIRED')
             config = read_json(args.config)
             request = read_json(args.request)

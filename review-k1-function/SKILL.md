@@ -46,7 +46,7 @@ description: Align K1 requirements and run static prechecks or runtime acceptanc
 
 1. 完整读取 `references/requirement-alignment.md`，执行必经的文档对齐、用户确认、原文维护和交接合同；使用 `assets/requirement-alignment.md` 展示增删改清单。
 2. 完整读取 `references/quick-precheck.md`，执行输入、远端快照、证据、降级和报告合同。
-3. 完整读取 `references/k1-project.md`，使用固定仓库路径、远端来源和文档路由。
+3. 完整读取 `references/k1-project.md`，使用本轮用户提供的仓库根目录、远端来源和文档路由。
 4. 使用 `references/k1-review-rules.json` 作为机器可读检查目录；不得凭记忆删减其中命中的规则。
 
 ## 默认决策
@@ -65,17 +65,11 @@ description: Align K1 requirements and run static prechecks or runtime acceptanc
 
 ## 只读与写入边界
 
-静态阶段正式 K1 仓库只读；运行阶段沿用源代码与正式配置只读边界，另按下述例外操作测试环境：
+静态阶段正式 K1 仓库只读；运行阶段沿用源代码与正式配置只读边界，另按下述例外操作测试环境。
 
-- Client：`C:/Project/K1Client/k1_client`
-- Server：`C:/Project/K1Game/game`
-- Config：`C:/Project/K1Dataconfig/dataconfig`
+每轮开始、读取功能经验或选择工程前，先从用户本轮明确提供的路径取得 K1 工程根目录；用户本轮明确要求沿用此前已确认的路径时才可复用。未取得时询问用户；在收到路径前只推进不依赖本地工程的工作。不得把技能仓库位置、当前工作目录、环境变量、历史报告或功能经验中的路径当成用户提供的工程路径，也不得自行采用系统默认目录。用户提供路径后，核验其下的 `K1Client/k1_client`、`K1Game/game`、`K1Dataconfig/dataconfig` 及所需 Unity 工程目录，并记录解析后的绝对路径；仅将确认的工程根目录作为 `K1_PROJECT_ROOT` 传给本轮脚本进程，不改写用户的持久环境配置。Unity 的 `-projectPath` 取确认的 Client 路径下的 `client` 目录。目标分支不在指定工程目录时，不得改用另一份本地克隆；继续可用远端快照完成的核查，将依赖目标分支 Unity 工程的操作标为待准备。报告列明用户提供的工程根目录、三端路径和实际 Unity `-projectPath`；不一致的运行结果不得记为本轮指定工程的验收证据。引用文档中的旧机器绝对路径仅为示例，不能覆盖本轮用户提供的路径。macOS 的 `.ps1` 脚本由 `pwsh` 执行；见 [macOS 安装与首次配置](references/macos-setup.md)。
 
-macOS 上 `C:/Project` 对应 `~/Project`（或 `$K1_PROJECT_ROOT`），FunctionPreview 指本仓库根目录，`.ps1` 由 `pwsh` 执行；见 [macOS 安装与首次配置](references/macos-setup.md)。
-
-每轮开始、读取功能经验或选择 Unity 工程前，先解析并记录本机实际 K1 根目录：macOS 优先用当前进程的 `K1_PROJECT_ROOT`，未设置才用 `~/Project`；确认其下 Client、Server、Config 三个上述路径真实存在，并记录各自的绝对路径。Unity 的 `-projectPath` 必须取该 Client 路径下的 `client` 目录。工作空间目录、技能仓库位置、功能经验中的历史路径、当前打开的 Unity 工程和其他同名仓库都不能代替这次解析结果。目标分支不在指定工程目录时，不得因此改用另一份本地克隆；继续可用远端快照完成的核查，将依赖目标分支 Unity 工程的操作标为待准备。若用户本轮明确指定其他工程目录，先按该目录重新核验并记录。报告写明本轮解析出的三端路径和实际 Unity `-projectPath`；不一致时不得把该运行结果记为本轮指定工程的验收证据。
-
-所有 Git refs/objects、锁、LFS 对象、临时文件和报告只能写入 `C:/Project/FunctionPreview` 的 `.cache`、`.tmp` 或 `reports` 子目录。额外允许按用户逐项确认结果最小更新指定原策划文档及其变更记录；这不授权修改三端仓库、代码或配置。原文档位于正式 K1 仓库内时仍遵守仓库只读边界，明确请求可维护的文档来源。
+所有 Git refs/objects、锁、LFS 对象、临时文件和报告只能写入本技能所在 FunctionPreview 项目根目录的 `.cache`、`.tmp` 或 `reports` 子目录。额外允许按用户逐项确认结果最小更新指定原策划文档及其变更记录；这不授权修改三端仓库、代码或配置。原文档位于正式 K1 仓库内时仍遵守仓库只读边界，明确请求可维护的文档来源。
 
 正式 K1 仓库禁止 `fetch`、`pull`、`checkout`、`switch`、`reset`、`clean`、`stash`、`add`、`commit`、`merge`、`rebase` 和任何 Git LFS 命令。静态阶段也禁止编译、测试、启动、运行验收、导表、配置/代码/资源生成、依赖安装、子模块更新和 Jenkins。
 
@@ -98,7 +92,7 @@ macOS 上 `C:/Project` 对应 `~/Project`（或 `$K1_PROJECT_ROOT`），Function
 
 ### 1. 创建运行边界并快照
 
-- 创建唯一的 `C:/Project/FunctionPreview/.tmp/<run-id>`。
+- 在本技能所在 FunctionPreview 项目根目录创建唯一的 `.tmp/<run-id>`。
 - 调用 `scripts/snapshot-repository-state.ps1` 记录三端 before digest。
 - 记录开始时间；检查 24 小时分析缓存，但不得用缓存跳过本次完整工作流的实时远端解析或文档对齐。
 - 读取本功能档案，在本轮 `experience-notes.md` 记录所用档案版本、可复用线索及待复核项；对齐、预审结束或中断时按经验规则回写增量。

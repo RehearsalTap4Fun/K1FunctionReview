@@ -26,7 +26,7 @@
 
 | 项目 | 接收者需要准备什么 | 保存位置与说明 |
 |---|---|---|
-| 测试服 Jenkins | 自己的 `username`、`apiToken` 与包含 `/jenkins` 等实际上下文的 `baseUrl` | 环境脚本默认读取 `C:/Project/K1Game/.jenkins.local.json`，也可用 `--config <本地文件>` 指定；用户名同时决定个人测试容器归属，不照抄分享者账号 |
+| 测试服 Jenkins | 自己的 `username`、`apiToken` 与包含 `/jenkins` 等实际上下文的 `baseUrl` | 从本轮用户提供的工程根目录下 `K1Game/.jenkins.local.json` 读取，或用 `--config <本地文件>` 指定；用户名同时决定个人测试容器归属，不照抄分享者账号 |
 | 客户端构建 Jenkins | 对转换任务与目标平台打包任务有读取、构建权限的本人账号和 API Token | 与测试服 Jenkins 分开核验地址、账号和 Token；私有配置存仓库外，不把凭证写入请求、报告或分享包 |
 | Git | 服务端、配表仓库的读取凭证；完整审核还需客户端仓库 | 使用个人 SSH key/agent 或 Git credential helper，包含必要的 LFS 读取权限。远端快照是非交互式执行，凭证必须预先可用 |
 | DWS | 本人钉钉 OAuth 登录及读取备份通知群、客户端打包通知群历史消息的权限 | DWS 管理登录态，按 `dws auth --help` / `dws auth login --help` 配置。正常使用无需把 access token 填进本 skill；组织使用自建 OAuth 应用时，另由管理员提供对应 AppKey/AppSecret 配置 |
@@ -253,7 +253,7 @@ notepad.exe $jenkinsConfig
 | `environmentWorkflow.senderId` | 同一机器人的消息字段 `senderOpenDingTalkId`，不是群 ID 或显示名 |
 | `environmentWorkflow.runtimeHost` | 维护者确认的个人测试部署节点，须与实际部署和 `k1-mcp.ssh_exec` 探针目标一致，不从 MCP URL 推测 |
 
-保持文件仅本人及必要的本机管理员可读，不放入共享/同步目录。本文使用仓库外位置，每次调用脚本都传 `--config`；如果使用默认 `C:/Project/K1Game/.jenkins.local.json`，同样不能提交该文件或覆盖已有配置。DownKey 留给每轮备份获取，不写进这里。
+保持文件仅本人及必要的本机管理员可读，不放入共享/同步目录。本文使用仓库外位置，每次调用脚本都传 `--config`；如果使用用户提供的工程根目录下的 `K1Game/.jenkins.local.json`，同样不能提交该文件或覆盖已有配置。DownKey 留给每轮备份获取，不写进这里。
 
 ### 4. 只读验证并维护 Token
 
@@ -281,8 +281,8 @@ python -X utf8 ./review-k1-function/scripts/jenkins_test_environment.py inspect 
 - 当前使用路径为 Windows：本地 Python **3.10 或以上**、可调用的 `powershell`、Git。需要读取 LFS 工作簿时还需 Git LFS。备份部署脚本使用 Python 标准库；正式 Excel 解析与 `acceptance/config_variants.py` 需要 `openpyxl`。`pytest`、skill 校验使用的 `PyYAML` 只在开发/验证 skill 时需要。
 - 自动建环境另需 DWS CLI、Node.js、mcporter；命令应可被当前进程发现。当前 Windows 适配器会寻找 mcporter 安装目录下的 `node_modules/mcporter/dist/cli.js`，可先核验入口存在；不兼容的安装布局须适配后再运行。
 - 远程测试节点需可用的 `python3`（当前探针使用 Python 3.6+ 标准库）、Docker CLI 和前述读取权限。仅本地安装 Docker 不能替代远程节点权限。
-- 源码目录约定为 `C:/Project/K1Client/k1_client`、`C:/Project/K1Game/game`、`C:/Project/K1Dataconfig/dataconfig`，各自存在可用的 `origin`。仅部署环境需要 server/config 两端；完整审核按三端准备。
-- 默认项目位置为 `C:/Project/FunctionPreview`，skill 位于其中的 `review-k1-function/`。脚本包含固定 K1 仓库路径、由脚本位置推导的项目根目录和写入边界，**不是复制到任意 skills 目录就能直接运行的通用包**。接收者可按此布局放置项目，再把 skill 注册/链接到自己的 skills 目录；不同目录或平台需同时适配脚本、合同和验证，不能只改说明中的路径。
+- 源码目录由用户提供 K1 工程根目录后确定，其下约定为 `K1Client/k1_client`、`K1Game/game`、`K1Dataconfig/dataconfig`，各自存在可用的 `origin`。仅部署环境需要 server/config 两端；完整审核按三端准备。未取得用户提供的工程根目录时先询问，不使用系统或脚本默认位置。
+- FunctionPreview 项目根目录由本技能脚本位置推导，skill 位于其中的 `review-k1-function/`。运行时将用户确认的 K1 工程根目录作为 `K1_PROJECT_ROOT` 传给脚本；脚本的缓存、临时文件和报告写入仍留在 FunctionPreview 项目内。接收者把完整 skill 注册/链接到自己的 skills 目录，不能只复制 `SKILL.md`。
 - 分享完整 `review-k1-function/` 与 `slg-testcase-generator/` 实体内容，包括各自的 `SKILL.md`、脚本、引用和资源。本机安装入口是 Junction，不能只发这个链接，也不能只发 `SKILL.md`。若分享整个 FunctionPreview 项目，不包括 `.tmp`、`.cache`、`reports` 和用户配置；运行记录可能含内部数据与访问定位。
 
 ## 首次使用的提示与只读检查

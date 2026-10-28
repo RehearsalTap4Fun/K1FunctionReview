@@ -9,15 +9,17 @@ official repositories or to publish production hotfixes.
 
 | Role | Project directory | Git root | Responsibility |
 |---|---|---|---|
-| Client | `C:/Project/K1Client` | `C:/Project/K1Client/k1_client` | Client logic, UI, presentation, protocol calls, and local state |
-| Server | `C:/Project/K1Game` | `C:/Project/K1Game/game` | Server authority, protocol handling, state transitions, and persistence |
-| Config | `C:/Project/K1Dataconfig` | `C:/Project/K1Dataconfig/dataconfig` | Formal `.xlsx` configuration, schema, constants, enums, localization, and exports |
+| Client | `<K1_PROJECT_ROOT>/K1Client` | `<K1_PROJECT_ROOT>/K1Client/k1_client` | Client logic, UI, presentation, protocol calls, and local state |
+| Server | `<K1_PROJECT_ROOT>/K1Game` | `<K1_PROJECT_ROOT>/K1Game/game` | Server authority, protocol handling, state transitions, and persistence |
+| Config | `<K1_PROJECT_ROOT>/K1Dataconfig` | `<K1_PROJECT_ROOT>/K1Dataconfig/dataconfig` | Formal `.xlsx` configuration, schema, constants, enums, localization, and exports |
+
+`K1_PROJECT_ROOT` is the project root supplied by the user for this run, not a path inferred from the environment or a prior report. Ask for it if absent, verify the three directories, and pass that value to scripts before resolving repositories.
 
 ## Default live-remote resolution
 
 - A normal named target branch always means `source=remote`, `remote=origin`, with base `dev` unless overridden per role.
 - Read the remote URL only with `git -C <official-root> remote get-url origin`; never accept an arbitrary user URL or refspec.
-- Invoke `scripts/prepare-remote-snapshots.ps1`. All fetch/ref/object writes occur in `C:/Project/FunctionPreview/.cache/fast-precheck/remote-git/<role>`.
+- Invoke `scripts/prepare-remote-snapshots.ps1`. All fetch/ref/object writes occur in the skill's FunctionPreview project root under `.cache/fast-precheck/remote-git/<role>`.
 - Freeze full `baseSha` and `targetSha` immediately at the start of the complete workflow. Document alignment, confirmation, maintenance, testcase calibration and static precheck share this manifest even if remote refs move later. Do not refresh movable refs at the handoff; new commits require new alignment.
 - Local checkout, local branch, dirty state, and local `refs/remotes/origin/*` never participate in named-branch remote resolution.
 - A missing/inaccessible remote branch is a per-role unknown. Never substitute current `HEAD`, a stale tracking ref, or another role's branch.
@@ -42,7 +44,7 @@ The preparer manifest feeds the collector as:
 ```json
 {
   "role": "client",
-  "path": "C:/Project/FunctionPreview/.cache/fast-precheck/remote-git/client",
+  "path": "<FunctionPreviewRoot>/.cache/fast-precheck/remote-git/client",
   "source": "remote",
   "remote": "origin",
   "baseSha": "1111111111111111111111111111111111111111",

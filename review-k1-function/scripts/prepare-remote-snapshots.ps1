@@ -232,6 +232,7 @@ if ([string]::IsNullOrWhiteSpace($CacheRoot)) {
 }
 
 try {
+    if ([string]::IsNullOrWhiteSpace($env:K1_PROJECT_ROOT)) { throw 'K1_PROJECT_ROOT_REQUIRED' }
     Assert-OwnedPath -Path $RequestPath -Boundary $projectTmp `
         -OutsideCode 'REQUEST_OUTSIDE_PROJECT_TMP' -ReparseCode 'REQUEST_REPARSE_POINT'
     Assert-OwnedPath -Path $OutputPath -Boundary $projectTmp `
@@ -364,14 +365,7 @@ try {
         New-Item -ItemType Directory -Path $CacheRoot -Force | Out-Null
     }
 
-    # Windows keeps C:\Project; macOS/Linux default to ~/Project. K1_PROJECT_ROOT overrides either.
-    $k1Root = if (-not [string]::IsNullOrWhiteSpace($env:K1_PROJECT_ROOT)) {
-        $env:K1_PROJECT_ROOT
-    } elseif ([System.IO.Path]::DirectorySeparatorChar -eq [char]47) {
-        Join-Path $HOME 'Project'
-    } else {
-        'C:\Project'
-    }
+    $k1Root = Get-FullPath $env:K1_PROJECT_ROOT
     $officialPaths = @{
         client = Get-FullPath (Join-Path $k1Root 'K1Client/k1_client')
         server = Get-FullPath (Join-Path $k1Root 'K1Game/game')

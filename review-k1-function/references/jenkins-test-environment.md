@@ -34,7 +34,7 @@
 
 全量恢复时**省略** `kvk_keep_servers`。其他可选字段：`targetSid`、`app`、`aliveDays`；分支支持 `dev` 或 `origin/dev`。
 
-脚本读取本人本地 `C:/Project/K1Game/.jenkins.local.json`（或 `--config` 指定文件）。DWS 使用当前登录账号；SSH 使用 mcporter 配置的 `k1-mcp.ssh_exec`。发布版不预填通知群、机器人身份或测试节点；先只读核验，再在私有配置的 `environmentWorkflow` 中填写 `groupId`、`sender`、`senderId`、`runtimeHost`。机器人名称和稳定 sender ID 必须同时匹配，不能从任意群搜索结果猜一个 Key。
+脚本读取本轮用户提供的工程根目录下 `K1Game/.jenkins.local.json`（或 `--config` 指定文件）。DWS 使用当前登录账号；SSH 使用 mcporter 配置的 `k1-mcp.ssh_exec`。发布版不预填通知群、机器人身份或测试节点；先只读核验，再在私有配置的 `environmentWorkflow` 中填写 `groupId`、`sender`、`senderId`、`runtimeHost`。机器人名称和稳定 sender ID 必须同时匹配，不能从任意群搜索结果猜一个 Key。
 
 请求文件放在已有 `.tmp` 下（例如 `.tmp/environment-request.json`）；`--run-dir` 必须是尚不存在的新目录，由 prepare 创建。在 `C:/Project/FunctionPreview` 执行：
 
@@ -87,7 +87,7 @@ Agent 持续调用同一目录的 `advance`，每次最多一个 Jenkins POST。
 
 1. 查 Jira 开发关联/MR、三端远端分支和合入记录。单号和 `dev_NK-xxxx` 仅为检索线索，不硬拼为部署参数；服务端和配置分别解析，同名分支缺失时不默默回退 dev。
 2. 用现有远端快照脚本在 FunctionPreview 缓存精确冻结目标 SHA。复用既有基线；要纳入新提交就重新对齐受影响需求并校准用例。
-3. 读取项目本地 `C:/Project/K1Game/.jenkins.local.json`：baseUrl、username、apiToken、deploymentDefaults。不得打印凭证、复制到报告或写在命令行。环境变量里的数据导入 key 只在提交时读取。
+3. 读取本轮用户提供的工程根目录下 `K1Game/.jenkins.local.json`（或 `--config` 指定文件）：baseUrl、username、apiToken、deploymentDefaults。不得打印凭证、复制到报告或写在命令行。环境变量里的数据导入 key 只在提交时读取。
 4. 调用 `scripts/jenkins_test_environment.py inspect` 取得当前参数定义。当前专用任务为 **自定义代码配表分支启动个人远程服**；只读 query 成功或 buildable=true 不代表已验证部署权限。
 5. 必要时只读查看相关构建 `actions.parameters`，核对代码、配置分支与目标环境。历史仅作定位线索，不能自动复用旧 SHA、SID 或账号。
 

@@ -6,18 +6,18 @@
 
 | 项目 | Windows | macOS |
 |---|---|---|
-| K1 根目录 | `C:/Project` | `~/Project` |
-| Client | `C:/Project/K1Client/k1_client` | `~/Project/K1Client/k1_client` |
-| Server | `C:/Project/K1Game/game` | `~/Project/K1Game/game` |
-| Config | `C:/Project/K1Dataconfig/dataconfig` | `~/Project/K1Dataconfig/dataconfig` |
-| 默认 Jenkins 配置 | `C:/Project/K1Game/.jenkins.local.json` | `~/Project/K1Game/.jenkins.local.json` |
+| K1 根目录 | 用户提供的工程根目录 | 用户提供的工程根目录 |
+| Client | `<K1根目录>/K1Client/k1_client` | `<K1根目录>/K1Client/k1_client` |
+| Server | `<K1根目录>/K1Game/game` | `<K1根目录>/K1Game/game` |
+| Config | `<K1根目录>/K1Dataconfig/dataconfig` | `<K1根目录>/K1Dataconfig/dataconfig` |
+| Jenkins 配置 | `<K1根目录>/K1Game/.jenkins.local.json` 或 `--config` | `<K1根目录>/K1Game/.jenkins.local.json` 或 `--config` |
 | 推荐私有配置 | `%USERPROFILE%/.config/k1-function-review/jenkins.local.json` | `~/.config/k1-function-review/jenkins.local.json` |
 | DWS 二进制 | `~/.local/bin/dws.exe` | `~/.local/bin/dws` |
 | PowerShell | `powershell`（5.1） | `pwsh`（PowerShell 7） |
 
-三端仓库不在 `~/Project` 时，设置环境变量 `K1_PROJECT_ROOT` 指向其上级目录（目录结构须与上表一致），例如在 `~/.zshrc` 中写入 `export K1_PROJECT_ROOT="$HOME/work/K1"`。Python 与 PowerShell 脚本都读取该变量；FunctionPreview 项目根目录仍由脚本位置推导，`.cache`、`.tmp`、`reports` 写入边界不变。
+每轮先取得用户本轮明确提供的 K1 工程根目录；只有用户本轮明确要求沿用此前已确认路径时才可复用。不能从默认目录或环境变量自行决定。核验三端目录后，将此路径作为 `K1_PROJECT_ROOT` 传给本轮 Python 与 PowerShell 脚本进程；不要为此改写 `~/.zshrc`。FunctionPreview 项目根目录仍由脚本位置推导，`.cache`、`.tmp`、`reports` 写入边界不变。
 
-文档中其他 `C:/Project/...` 路径在 macOS 上按上表替换为 `~/Project/...` 或 `$K1_PROJECT_ROOT/...`。macOS 默认文件系统不区分大小写，与 Windows 一致，脚本中的路径比较行为不变。
+文档中其他固定路径仅为旧示例，执行时都以本轮用户提供的工程根目录或本技能所在 FunctionPreview 项目根目录替换。macOS 默认文件系统不区分大小写，与 Windows 一致，脚本中的路径比较行为不变。
 
 ## 安装基础工具
 
