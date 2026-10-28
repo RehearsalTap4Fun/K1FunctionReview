@@ -6,7 +6,7 @@
 
 Agent 在使用这些命令前按 [经验读写规则](feature-experience.md) 读取 [本功能档案](../features/index.md)，在阶段完成或中断前更新档案与必要脚本说明。CLI 维护的运行状态与证据继续独立保存，不把 `runtime reuse` 或 `publish` 当成经验自动回写。
 
-新运行批次先按 [运行验收 §1–3](runtime-acceptance.md) 核对文档确认标记、明确用户指定的验收节点、Unity 与真机两条路径并输出分组排程。`runtime create` 的请求提供 `planning={acceptanceMode,documentBaseline,executionGroups}`，由适配器写入 schemaVersion=2 计划并校验；证据路径相对新批次目录或使用实际绝对路径。省略 planning 仅为历史调用兼容，不能以旧入口绕过新任务规划。版本日先生成玩家旅程基线，不能将全量开发用例直接当本轮范围；Unity 与真机必要断言都进入计划。
+新运行批次先按 [运行验收 §1–3](runtime-acceptance.md) 核对文档确认标记、明确用户指定的验收节点和客户端路径并输出分组排程。`runtime create` 的请求提供 `planning={acceptanceMode,documentBaseline,executionGroups}`，由适配器写入 schemaVersion=2 计划并校验；证据路径相对新批次目录或使用实际绝对路径。省略 planning 仅为历史调用兼容，不能以旧入口绕过新任务规划。版本日先生成玩家旅程基线，不能将全量开发用例直接当本轮范围；本轮所选路径的必要断言都进入计划。
 
 `run init/show` 管理版本基线；`evidence add/review/verify` 登记内容哈希与实际看图记录；`operation next` 列出待执行或待核对动作。派发后没有回执时必须回读目标，不可直接重复发送。
 
