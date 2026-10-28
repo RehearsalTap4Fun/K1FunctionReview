@@ -73,6 +73,8 @@ description: Align K1 requirements and run static prechecks or runtime acceptanc
 
 macOS 上 `C:/Project` 对应 `~/Project`（或 `$K1_PROJECT_ROOT`），FunctionPreview 指本仓库根目录，`.ps1` 由 `pwsh` 执行；见 [macOS 安装与首次配置](references/macos-setup.md)。
 
+每轮开始、读取功能经验或选择 Unity 工程前，先解析并记录本机实际 K1 根目录：macOS 优先用当前进程的 `K1_PROJECT_ROOT`，未设置才用 `~/Project`；确认其下 Client、Server、Config 三个上述路径真实存在，并记录各自的绝对路径。Unity 的 `-projectPath` 必须取该 Client 路径下的 `client` 目录。工作空间目录、技能仓库位置、功能经验中的历史路径、当前打开的 Unity 工程和其他同名仓库都不能代替这次解析结果。目标分支不在指定工程目录时，不得因此改用另一份本地克隆；继续可用远端快照完成的核查，将依赖目标分支 Unity 工程的操作标为待准备。若用户本轮明确指定其他工程目录，先按该目录重新核验并记录。报告写明本轮解析出的三端路径和实际 Unity `-projectPath`；不一致时不得把该运行结果记为本轮指定工程的验收证据。
+
 所有 Git refs/objects、锁、LFS 对象、临时文件和报告只能写入 `C:/Project/FunctionPreview` 的 `.cache`、`.tmp` 或 `reports` 子目录。额外允许按用户逐项确认结果最小更新指定原策划文档及其变更记录；这不授权修改三端仓库、代码或配置。原文档位于正式 K1 仓库内时仍遵守仓库只读边界，明确请求可维护的文档来源。
 
 正式 K1 仓库禁止 `fetch`、`pull`、`checkout`、`switch`、`reset`、`clean`、`stash`、`add`、`commit`、`merge`、`rebase` 和任何 Git LFS 命令。静态阶段也禁止编译、测试、启动、运行验收、导表、配置/代码/资源生成、依赖安装、子模块更新和 Jenkins。
