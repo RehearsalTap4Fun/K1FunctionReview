@@ -22,10 +22,10 @@ K1 功能审核 skill：需求对齐、静态预检、运行验收，以及线�
 
 先读[外部依赖与首次配置](review-k1-function/references/dependencies-and-setup.md)。
 
-当前路径合同以 Windows 和 `C:/Project/FunctionPreview` 为项目根目录，三端仓库位置见 [K1 项目合同](review-k1-function/references/k1-project.md)。在尚未存在的目标目录可执行：
+K1 工程根目录由用户在每轮任务中提供，不能从系统默认目录、环境变量或历史报告自行选定。三端仓库的相对布局见 [K1 项目合同](review-k1-function/references/k1-project.md)；macOS 步骤见 [安装与首次配置](review-k1-function/references/macos-setup.md)。FunctionPreview 可安装在自选位置；在选定的父目录执行：
 
 ```powershell
-git clone https://github.com/RehearsalTap4Fun/K1FunctionReview.git C:/Project/FunctionPreview
+git clone https://github.com/RehearsalTap4Fun/K1FunctionReview.git
 ```
 
 然后把项目内的 `review-k1-function`、`slg-testcase-generator` 和 `jira-bug-creator` 三个完整目录分别注册或链接到你使用的 Agent skills 目录。不能只复制 `SKILL.md`；使用其他目录或平台前需适配并验证脚本中的路径约束。已有同名项目目录时，不要覆盖现有工作。
@@ -34,7 +34,7 @@ git clone https://github.com/RehearsalTap4Fun/K1FunctionReview.git C:/Project/Fu
 
 ## 配置与使用
 
-把[空 Jenkins 配置模板](review-k1-function/assets/jenkins-local-config.example.json)复制到自己的私有位置，填写本人 `username`、`apiToken`、`baseUrl` 和 `environmentWorkflow`。发布版没有预设内部通知群、机器人身份或测试节点，空值会阻止执行。默认配置位置是 `C:/Project/K1Game/.jenkins.local.json`，也可用 `--config` 指定。
+把[空 Jenkins 配置模板](review-k1-function/assets/jenkins-local-config.example.json)复制到自己的私有位置，填写本人 `username`、`apiToken`、`baseUrl` 和 `environmentWorkflow`。发布版没有预设内部通知群、机器人身份或测试节点，空值会阻止执行。配置可放在用户提供的 K1 工程根目录下 `K1Game/.jenkins.local.json`，也可用 `--config` 指定。
 
 随后按[测试环境流程](review-k1-function/references/jenkins-test-environment.md)填写线上 SID、代码分支、配表分支与实际授权，执行 `prepare` 和可续跑的 `advance`。战场服使用 `battle`；未指定 KVK 保留列表全量恢复，指定则按列表保留。环境 `ready` 不代表功能验收通过。
 

@@ -232,6 +232,7 @@ if ([string]::IsNullOrWhiteSpace($CacheRoot)) {
 }
 
 try {
+    if ([string]::IsNullOrWhiteSpace($env:K1_PROJECT_ROOT)) { throw 'K1_PROJECT_ROOT_REQUIRED' }
     Assert-OwnedPath -Path $RequestPath -Boundary $projectTmp `
         -OutsideCode 'REQUEST_OUTSIDE_PROJECT_TMP' -ReparseCode 'REQUEST_REPARSE_POINT'
     Assert-OwnedPath -Path $OutputPath -Boundary $projectTmp `
@@ -271,7 +272,7 @@ try {
                 [void]$childFiles.Add($childOutputPath)
 
                 $childStartInfo = New-Object System.Diagnostics.ProcessStartInfo
-                $childStartInfo.FileName = Join-Path $PSHOME 'powershell.exe'
+                $childStartInfo.FileName = if ([System.IO.Path]::DirectorySeparatorChar -eq [char]47) { Join-Path $PSHOME 'pwsh' } else { Join-Path $PSHOME 'powershell.exe' }
                 $childArguments = @(
                     '-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', $PSCommandPath,
                     '-RequestPath', $childRequestPath,
@@ -364,10 +365,11 @@ try {
         New-Item -ItemType Directory -Path $CacheRoot -Force | Out-Null
     }
 
+    $k1Root = Get-FullPath $env:K1_PROJECT_ROOT
     $officialPaths = @{
-        client = Get-FullPath 'C:\Project\K1Client\k1_client'
-        server = Get-FullPath 'C:\Project\K1Game\game'
-        config = Get-FullPath 'C:\Project\K1Dataconfig\dataconfig'
+        client = Get-FullPath (Join-Path $k1Root 'K1Client/k1_client')
+        server = Get-FullPath (Join-Path $k1Root 'K1Game/game')
+        config = Get-FullPath (Join-Path $k1Root 'K1Dataconfig/dataconfig')
     }
     $repositories = New-Object System.Collections.ArrayList
     $errors = New-Object System.Collections.ArrayList

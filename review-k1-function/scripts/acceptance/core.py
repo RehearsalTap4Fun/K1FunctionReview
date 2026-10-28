@@ -54,8 +54,17 @@ def owned_path(root, relative):
 
 
 def reject_formal_write(path):
-    resolved = str(Path(path).resolve()).replace('\\', '/').lower()
-    for base in ['c:/project/k1client', 'c:/project/k1game', 'c:/project/k1dataconfig']:
+    project_root = (os.environ.get('K1_PROJECT_ROOT') or '').strip()
+    require(project_root, 'K1_PROJECT_ROOT_REQUIRED')
+
+    def key(value):
+        raw = str(value)
+        canonical = PureWindowsPath(raw) if os.name != 'nt' and PureWindowsPath(raw).drive else Path(raw).resolve()
+        return str(canonical).replace('\\', '/').casefold().rstrip('/')
+
+    resolved = key(path)
+    for directory in ('K1Client', 'K1Game', 'K1Dataconfig'):
+        base = key(Path(project_root) / directory) if os.name == 'nt' or not PureWindowsPath(project_root).drive else key(PureWindowsPath(project_root) / directory)
         require(resolved != base and not resolved.startswith(base + '/'), 'FORMAL_REPOSITORY_READ_ONLY')
 
 

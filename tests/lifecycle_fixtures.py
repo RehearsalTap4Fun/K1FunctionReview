@@ -1,5 +1,6 @@
 import json
 import subprocess
+import sys
 import shutil
 import uuid
 from copy import deepcopy
@@ -258,7 +259,7 @@ def run_renderer(
     input_path.write_text(json.dumps(payload, ensure_ascii=False), encoding="utf-8")
     completed = subprocess.run(
         [
-            "python",
+            sys.executable,
             str(SCRIPT),
             "--input",
             str(input_path),

@@ -240,7 +240,7 @@ def scheduled(sample):
     return plan, root
 
 
-def test_regression_report_scopes_pass_to_player_experience(runtime, scheduled):
+def test_regression_report_labels_scope_by_case_type(runtime, scheduled):
     plan, root = scheduled
     plan['acceptanceMode'] = 'mainline_regression'
     state = runtime.initialize(plan, root)
@@ -251,7 +251,7 @@ def test_regression_report_scopes_pass_to_player_experience(runtime, scheduled):
     assert result['acceptanceMode'] == 'mainline_regression'
     assert result['fullyAccepted'] is True
     report = (root / 'report/summary.html').read_text(encoding='utf-8')
-    assert '版本日验收' in report and '玩家体验' in report
+    assert '版本日验收' in report and '按原单类型确定范围' in report
     assert '当前文档已是预检确认后的版本' in report
 
 

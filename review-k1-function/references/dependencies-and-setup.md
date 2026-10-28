@@ -1,6 +1,8 @@
 # 分享、外部依赖与首次配置
 
-本说明用于分享给同事、迁移机器或首次执行。只检查本次任务需要的能力；已配置且已核验的依赖无需反复询问。安装 skill 只提供流程说明和脚本，不会自动授予 Jenkins、钉钉、Git 或测试服务器访问权限。
+本说明用于分享给同事、迁移机器或首次执行。macOS 的对应命令与路径见 [macOS 安装与首次配置](macos-setup.md)。只检查本次任务需要的能力；已配置且已核验的依赖无需反复询问。安装 skill 只提供流程说明和脚本，不会自动授予 Jenkins、钉钉、Git 或测试服务器访问权限。
+
+Windows 与 macOS 均须由用户为本轮明确提供 K1 工程根目录；不得把旧示例中的 `C:/Project` 或环境变量现值当作用户决定。取得路径并核验三端目录后，才将其作为当前脚本进程的 `K1_PROJECT_ROOT`。FunctionPreview 安装目录是另一回事，由本技能脚本位置推导。
 
 分享时包含 [功能经验索引](../features/index.md)、对应档案、[读写规则](feature-experience.md)、档案模板及 `features/<featureId>/scripts/` 中被引用的运行模板和说明。档案中的本地证据路径仅作溯源，原始运行回执、账号快照和凭证不随包分发；接收者标记无法访问的来源，并在当前版本复核后使用。确认 Skill 目录可写以便持续沉淀；不可写时按读写规则保存本轮待回写增量。
 
@@ -13,7 +15,7 @@
 | 线上服备份 → DownKey → 个人测试服部署 → 运行校验 | 建议同时提供 `dws`，便于认证和故障排查；正常整链由本 skill 脚本执行，无须其他 skill 才能运行 | Python、PowerShell、Git；已登录的 DWS CLI；Node.js + mcporter；名为 `k1-mcp` 的 MCP 服务及 `ssh_exec`；个人 Jenkins API Token；代码/配表 Git 读取权限；公司内网/VPN |
 | 正式 K1 配置检查 | `config-table-editor`，检查正式 `.xlsx` 时需要 | 配置仓库读取权限；需要时 Git LFS；Excel 解析环境，例如 `openpyxl`。只读导出副本，不修改正式配置 |
 | 缺少用例、需要从需求生成用例 | 仓库内 `slg-testcase-generator/`，需将完整目录注册到 Agent skills | 可访问已确认并回读的需求文档；K1 静态 Markdown 用例无累计时间或数量上限，不要求 Google Drive/API Key。独立在线写表流程才需该 Skill 的额外依赖 |
-| 功能开发完成时或版本日运行验收（均含真机包与 Unity） | Unity 路径建议 `unity-mcp-orchestrator`（目录也可能名为 `unity-mcp-skill`）；钉钉出包通知走 `dws` | 客户端 Jenkins 的配置/多语言转换任务权限（优先 `K1_Build_Config_I18N_Mac`）；真机路径另需目标平台出包任务、通知群读取权限、APK 下载内网、Android SDK 的 ADB/包校验工具与已授权设备；Unity 路径需对应版本 Editor、打开的 K1 客户端项目、MCP for Unity 连接和授权测试账号；两者均需专属测试服，详见 [真机包安装链](android-package-install.md) |
+| 功能开发完成时或版本日运行验收（默认含真机包与 Unity，用户可限定路径） | Unity 路径建议 `unity-mcp-orchestrator`（目录也可能名为 `unity-mcp-skill`）；钉钉出包通知走 `dws` | 客户端 Jenkins 的配置/多语言转换任务权限（优先 `K1_Build_Config_I18N_Mac`）；真机路径另需目标平台出包任务、通知群读取权限、APK 下载内网、Android SDK 的 ADB/包校验工具与已授权设备；Unity 路径需对应版本 Editor、打开的 K1 客户端项目、MCP for Unity 连接和授权测试账号；所选路径均需专属测试服，详见 [真机包安装链](android-package-install.md) |
 | 钉钉需求文档、反馈表 | 走 CLI 时使用 `dws`；已连接的文档工具也可按原路由使用 | 本人的钉钉登录态和目标文档/表格权限；维护时需要编辑权限；图片追加等浏览器步骤还需可用的浏览器工具及登录态 |
 | 版本进包项进度播报 | 本 skill 的 Python 脚本 | 用户指定并授权的自定义机器人 Webhook；按 [播报配置](acceptance-progress.md#机器人私有配置) 存本地私有文件，不随 Skill 分享 |
 | Word / PDF 需求材料 | 分别按文档路由使用 `documents:documents` / `pdf:pdf` | 对应 skill 自身运行依赖；本地文件不需要统一的额外 API Key |
@@ -26,7 +28,7 @@
 
 | 项目 | 接收者需要准备什么 | 保存位置与说明 |
 |---|---|---|
-| 测试服 Jenkins | 自己的 `username`、`apiToken` 与包含 `/jenkins` 等实际上下文的 `baseUrl` | 环境脚本默认读取 `C:/Project/K1Game/.jenkins.local.json`，也可用 `--config <本地文件>` 指定；用户名同时决定个人测试容器归属，不照抄分享者账号 |
+| 测试服 Jenkins | 自己的 `username`、`apiToken` 与包含 `/jenkins` 等实际上下文的 `baseUrl` | 从本轮用户提供的工程根目录下 `K1Game/.jenkins.local.json` 读取，或用 `--config <本地文件>` 指定；用户名同时决定个人测试容器归属，不照抄分享者账号 |
 | 客户端构建 Jenkins | 对转换任务与目标平台打包任务有读取、构建权限的本人账号和 API Token | 与测试服 Jenkins 分开核验地址、账号和 Token；私有配置存仓库外，不把凭证写入请求、报告或分享包 |
 | Git | 服务端、配表仓库的读取凭证；完整审核还需客户端仓库 | 使用个人 SSH key/agent 或 Git credential helper，包含必要的 LFS 读取权限。远端快照是非交互式执行，凭证必须预先可用 |
 | DWS | 本人钉钉 OAuth 登录及读取备份通知群、客户端打包通知群历史消息的权限 | DWS 管理登录态，按 `dws auth --help` / `dws auth login --help` 配置。正常使用无需把 access token 填进本 skill；组织使用自建 OAuth 应用时，另由管理员提供对应 AppKey/AppSecret 配置 |
@@ -116,7 +118,6 @@ mcporter.cmd config add k1-mcp --url http://172.20.90.39:8443 --scope home
 在 FunctionPreview 项目目录中执行：
 
 ```powershell
-Set-Location C:/Project/FunctionPreview
 mcporter.cmd list k1-mcp
 $mcporterEntry = Join-Path (Split-Path (Get-Command mcporter.cmd -ErrorAction Stop).Source) 'node_modules/mcporter/dist/cli.js'
 Test-Path -LiteralPath $mcporterEntry
@@ -231,7 +232,6 @@ $notificationResult = $null
 建议将凭证文件放在仓库外。下面在用户目录创建私有配置，存在时保留原文件；在 FunctionPreview 根目录执行：
 
 ```powershell
-Set-Location C:/Project/FunctionPreview
 $jenkinsConfig = Join-Path $env:USERPROFILE '.config/k1-function-review/jenkins.local.json'
 if (-not (Test-Path -LiteralPath $jenkinsConfig)) {
     New-Item -ItemType Directory -Path (Split-Path $jenkinsConfig) -Force | Out-Null
@@ -253,7 +253,7 @@ notepad.exe $jenkinsConfig
 | `environmentWorkflow.senderId` | 同一机器人的消息字段 `senderOpenDingTalkId`，不是群 ID 或显示名 |
 | `environmentWorkflow.runtimeHost` | 维护者确认的个人测试部署节点，须与实际部署和 `k1-mcp.ssh_exec` 探针目标一致，不从 MCP URL 推测 |
 
-保持文件仅本人及必要的本机管理员可读，不放入共享/同步目录。本文使用仓库外位置，每次调用脚本都传 `--config`；如果使用默认 `C:/Project/K1Game/.jenkins.local.json`，同样不能提交该文件或覆盖已有配置。DownKey 留给每轮备份获取，不写进这里。
+保持文件仅本人及必要的本机管理员可读，不放入共享/同步目录。本文使用仓库外位置，每次调用脚本都传 `--config`；如果使用用户提供的工程根目录下的 `K1Game/.jenkins.local.json`，同样不能提交该文件或覆盖已有配置。DownKey 留给每轮备份获取，不写进这里。
 
 ### 4. 只读验证并维护 Token
 
@@ -281,8 +281,8 @@ python -X utf8 ./review-k1-function/scripts/jenkins_test_environment.py inspect 
 - 当前使用路径为 Windows：本地 Python **3.10 或以上**、可调用的 `powershell`、Git。需要读取 LFS 工作簿时还需 Git LFS。备份部署脚本使用 Python 标准库；正式 Excel 解析与 `acceptance/config_variants.py` 需要 `openpyxl`。`pytest`、skill 校验使用的 `PyYAML` 只在开发/验证 skill 时需要。
 - 自动建环境另需 DWS CLI、Node.js、mcporter；命令应可被当前进程发现。当前 Windows 适配器会寻找 mcporter 安装目录下的 `node_modules/mcporter/dist/cli.js`，可先核验入口存在；不兼容的安装布局须适配后再运行。
 - 远程测试节点需可用的 `python3`（当前探针使用 Python 3.6+ 标准库）、Docker CLI 和前述读取权限。仅本地安装 Docker 不能替代远程节点权限。
-- 源码目录约定为 `C:/Project/K1Client/k1_client`、`C:/Project/K1Game/game`、`C:/Project/K1Dataconfig/dataconfig`，各自存在可用的 `origin`。仅部署环境需要 server/config 两端；完整审核按三端准备。
-- 默认项目位置为 `C:/Project/FunctionPreview`，skill 位于其中的 `review-k1-function/`。脚本包含固定 K1 仓库路径、由脚本位置推导的项目根目录和写入边界，**不是复制到任意 skills 目录就能直接运行的通用包**。接收者可按此布局放置项目，再把 skill 注册/链接到自己的 skills 目录；不同目录或平台需同时适配脚本、合同和验证，不能只改说明中的路径。
+- 源码目录由用户提供 K1 工程根目录后确定，其下约定为 `K1Client/k1_client`、`K1Game/game`、`K1Dataconfig/dataconfig`，各自存在可用的 `origin`。仅部署环境需要 server/config 两端；完整审核按三端准备。未取得用户提供的工程根目录时先询问，不使用系统或脚本默认位置。
+- FunctionPreview 项目根目录由本技能脚本位置推导，skill 位于其中的 `review-k1-function/`。运行时将用户确认的 K1 工程根目录作为 `K1_PROJECT_ROOT` 传给脚本；脚本的缓存、临时文件和报告写入仍留在 FunctionPreview 项目内。接收者把完整 skill 注册/链接到自己的 skills 目录，不能只复制 `SKILL.md`。
 - 分享完整 `review-k1-function/` 与 `slg-testcase-generator/` 实体内容，包括各自的 `SKILL.md`、脚本、引用和资源。本机安装入口是 Junction，不能只发这个链接，也不能只发 `SKILL.md`。若分享整个 FunctionPreview 项目，不包括 `.tmp`、`.cache`、`reports` 和用户配置；运行记录可能含内部数据与访问定位。
 
 ## 首次使用的提示与只读检查

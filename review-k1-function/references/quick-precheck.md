@@ -53,7 +53,7 @@
   "repositories": [
     {
       "role": "client",
-      "localRepository": "C:/Project/K1Client/k1_client",
+      "localRepository": "<K1_PROJECT_ROOT>/K1Client/k1_client",
       "remote": "origin",
       "baseBranch": "dev",
       "targetBranch": "dev_NK-8604"
@@ -67,7 +67,7 @@
 硬规则：
 
 - 远端 URL 只从正式仓库 `remote get-url origin` 读取，不接受用户 URL/refspec。
-- 缓存位于 `C:/Project/FunctionPreview/.cache/fast-precheck/remote-git/<role>`，无 checkout。
+- 缓存位于本技能所在 FunctionPreview 项目根目录的 `.cache/fast-precheck/remote-git/<role>`，无 checkout。
 - 三端并行，精确 fetch base/target，使用 `--filter=blob:none --no-tags`。
 - 每次完整工作流开始时联系远端并冻结本次 SHA；同一次对齐与预审交接沿用已有 manifest，不刷新 refs。24 小时是分析缓存 TTL，不是已确认冻结证据的有效期。
 - 禁止 tags、全分支、submodule、全量 LFS 和 full-clone fallback。

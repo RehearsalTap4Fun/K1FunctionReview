@@ -24,7 +24,8 @@ import urllib.request
 JOB = '自定义代码配表分支启动个人远程服'
 JOB_PATH = '/job/' + urllib.parse.quote(JOB, safe='') + '/'
 ALLOWED_PARAMETERS = {'corebranch', 'branchName', 'app', 'server_id', 'ALIVE', 'DownKey', 'kvk_keep_servers'}
-DEFAULT_CONFIG = 'C:/Project/K1Game/.jenkins.local.json'
+K1_ROOT = (os.environ.get('K1_PROJECT_ROOT') or '').strip()
+DEFAULT_CONFIG = str(Path(K1_ROOT) / 'K1Game/.jenkins.local.json') if K1_ROOT else None
 
 
 class DeploymentError(ValueError):
@@ -251,6 +252,7 @@ def main():
     parser.add_argument('--output')
     args = parser.parse_args()
     try:
+        require(bool(args.config), 'K1_PROJECT_ROOT_OR_CONFIG_REQUIRED')
         client = Jenkins(read_json(args.config))
         if args.command == 'inspect':
             result = client.inspect()
