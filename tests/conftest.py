@@ -9,6 +9,11 @@ import pytest
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 
 
+@pytest.fixture(autouse=True)
+def supplied_k1_project_root(monkeypatch, tmp_path):
+    monkeypatch.setenv('K1_PROJECT_ROOT', str(tmp_path / 'user-supplied-k1-root'))
+
+
 def run_git(repo, *args, check=True):
     return subprocess.run(['git', '-C', str(repo), *args], check=check,
                           capture_output=True, text=True, encoding='utf-8')

@@ -67,6 +67,8 @@ description: Align K1 requirements and run static prechecks or runtime acceptanc
 
 静态阶段正式 K1 仓库只读；运行阶段沿用源代码与正式配置只读边界，另按下述例外操作测试环境。
 
+以下工程根目录规则同时适用于 Windows、macOS 和 Linux，Windows 不使用固定盘符路径作为默认值。
+
 每轮开始、读取功能经验或选择工程前，先从用户本轮明确提供的路径取得 K1 工程根目录；用户本轮明确要求沿用此前已确认的路径时才可复用。未取得时询问用户；在收到路径前只推进不依赖本地工程的工作。不得把技能仓库位置、当前工作目录、环境变量、历史报告或功能经验中的路径当成用户提供的工程路径，也不得自行采用系统默认目录。用户提供路径后，核验其下的 `K1Client/k1_client`、`K1Game/game`、`K1Dataconfig/dataconfig` 及所需 Unity 工程目录，并记录解析后的绝对路径；仅将确认的工程根目录作为 `K1_PROJECT_ROOT` 传给本轮脚本进程，不改写用户的持久环境配置。Unity 的 `-projectPath` 取确认的 Client 路径下的 `client` 目录。目标分支不在指定工程目录时，不得改用另一份本地克隆；继续可用远端快照完成的核查，将依赖目标分支 Unity 工程的操作标为待准备。报告列明用户提供的工程根目录、三端路径和实际 Unity `-projectPath`；不一致的运行结果不得记为本轮指定工程的验收证据。引用文档中的旧机器绝对路径仅为示例，不能覆盖本轮用户提供的路径。macOS 的 `.ps1` 脚本由 `pwsh` 执行；见 [macOS 安装与首次配置](references/macos-setup.md)。
 
 所有 Git refs/objects、锁、LFS 对象、临时文件和报告只能写入本技能所在 FunctionPreview 项目根目录的 `.cache`、`.tmp` 或 `reports` 子目录。额外允许按用户逐项确认结果最小更新指定原策划文档及其变更记录；这不授权修改三端仓库、代码或配置。原文档位于正式 K1 仓库内时仍遵守仓库只读边界，明确请求可维护的文档来源。

@@ -36,12 +36,12 @@
 
 脚本读取本轮用户提供的工程根目录下 `K1Game/.jenkins.local.json`（或 `--config` 指定文件）。DWS 使用当前登录账号；SSH 使用 mcporter 配置的 `k1-mcp.ssh_exec`。发布版不预填通知群、机器人身份或测试节点；先只读核验，再在私有配置的 `environmentWorkflow` 中填写 `groupId`、`sender`、`senderId`、`runtimeHost`。机器人名称和稳定 sender ID 必须同时匹配，不能从任意群搜索结果猜一个 Key。
 
-请求文件放在已有 `.tmp` 下（例如 `.tmp/environment-request.json`）；`--run-dir` 必须是尚不存在的新目录，由 prepare 创建。在 `C:/Project/FunctionPreview` 执行：
+请求文件放在已有 `.tmp` 下（例如 `.tmp/environment-request.json`）；`--run-dir` 必须是尚不存在的新目录，由 prepare 创建。在本技能所在 FunctionPreview 项目根目录执行：
 
 ```powershell
-python review-k1-function/scripts/jenkins_environment_workflow.py prepare --request <request.json> --run-dir C:/Project/FunctionPreview/reports/<new-run-id>
-python review-k1-function/scripts/jenkins_environment_workflow.py advance --run-dir C:/Project/FunctionPreview/reports/<same-run-id>
-python review-k1-function/scripts/jenkins_environment_workflow.py status --run-dir C:/Project/FunctionPreview/reports/<same-run-id>
+python review-k1-function/scripts/jenkins_environment_workflow.py prepare --request <request.json> --run-dir ./reports/<new-run-id>
+python review-k1-function/scripts/jenkins_environment_workflow.py advance --run-dir ./reports/<same-run-id>
+python review-k1-function/scripts/jenkins_environment_workflow.py status --run-dir ./reports/<same-run-id>
 ```
 
 `prepare` 自动调用远端快照脚本，在 FunctionPreview 缓存冻结两端分支，校验实时部署参数并保存计划；只读远端，不触发构建。准备失败、尚无 `workflow.json` 时可换新目录重做准备；一旦有提交回执就必须沿用原目录。
@@ -78,7 +78,7 @@ Agent 持续调用同一目录的 `advance`，每次最多一个 Jenkins POST。
 将本次 `environment-evidence.json` 作为 `state.environmentEvidence` 的 `kind=runtime` 附件，路径可为绝对路径。沿用实际部署 SHA，比较原验收基线；版本改变时重新核对受影响需求/用例。保留创建者、目标 SID、线上源 SID、恢复列表/全量模式、ALIVE 天数和导入范围，在收尾记录测试环境保留状态。
 
 ```json
-{"kind":"runtime","path":"C:/Project/FunctionPreview/reports/<run-id>/environment-evidence.json"}
+{"kind":"runtime","path":"<FunctionPreviewRoot>/reports/<run-id>/environment-evidence.json"}
 ```
 
 证据缺失或状态非 ready 时不得把环境写成已就绪。环境准备成功也不能把任何用例自动标为 passed。

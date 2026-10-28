@@ -2,6 +2,8 @@
 
 本说明用于分享给同事、迁移机器或首次执行。macOS 的对应命令与路径见 [macOS 安装与首次配置](macos-setup.md)。只检查本次任务需要的能力；已配置且已核验的依赖无需反复询问。安装 skill 只提供流程说明和脚本，不会自动授予 Jenkins、钉钉、Git 或测试服务器访问权限。
 
+Windows 与 macOS 均须由用户为本轮明确提供 K1 工程根目录；不得把旧示例中的 `C:/Project` 或环境变量现值当作用户决定。取得路径并核验三端目录后，才将其作为当前脚本进程的 `K1_PROJECT_ROOT`。FunctionPreview 安装目录是另一回事，由本技能脚本位置推导。
+
 分享时包含 [功能经验索引](../features/index.md)、对应档案、[读写规则](feature-experience.md)、档案模板及 `features/<featureId>/scripts/` 中被引用的运行模板和说明。档案中的本地证据路径仅作溯源，原始运行回执、账号快照和凭证不随包分发；接收者标记无法访问的来源，并在当前版本复核后使用。确认 Skill 目录可写以便持续沉淀；不可写时按读写规则保存本轮待回写增量。
 
 从零配置自动建环境时，先按仓库 README 准备 FunctionPreview、Python/Git 及 server/config 仓库，再依次完成本文的 MCP/mcporter、DWS 登录、Jenkins Token 和环境标识配置，最后执行只读检查。凭证文件和登录态均由使用者在自己电脑上建立。
@@ -116,7 +118,6 @@ mcporter.cmd config add k1-mcp --url http://172.20.90.39:8443 --scope home
 在 FunctionPreview 项目目录中执行：
 
 ```powershell
-Set-Location C:/Project/FunctionPreview
 mcporter.cmd list k1-mcp
 $mcporterEntry = Join-Path (Split-Path (Get-Command mcporter.cmd -ErrorAction Stop).Source) 'node_modules/mcporter/dist/cli.js'
 Test-Path -LiteralPath $mcporterEntry
@@ -231,7 +232,6 @@ $notificationResult = $null
 建议将凭证文件放在仓库外。下面在用户目录创建私有配置，存在时保留原文件；在 FunctionPreview 根目录执行：
 
 ```powershell
-Set-Location C:/Project/FunctionPreview
 $jenkinsConfig = Join-Path $env:USERPROFILE '.config/k1-function-review/jenkins.local.json'
 if (-not (Test-Path -LiteralPath $jenkinsConfig)) {
     New-Item -ItemType Directory -Path (Split-Path $jenkinsConfig) -Force | Out-Null
