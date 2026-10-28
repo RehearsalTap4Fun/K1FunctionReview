@@ -22,7 +22,7 @@ class RuntimeContractError(ValueError):
 
 KINDS = {'ui', 'protocol', 'server', 'runtime', 'platform', 'isolated', 'static', 'gm'}
 STATUSES = {'pending', 'partial', 'passed', 'failed', 'blocked', 'excluded', 'missed'}
-MODES = {'development': '功能开发完成时验收', 'mainline_regression': '版本日验收（本轮玩家体验范围）'}
+MODES = {'development': '功能验收（测试用例范围）', 'mainline_regression': '版本日验收（按原单类型确定范围）'}
 
 
 def require(condition, code):

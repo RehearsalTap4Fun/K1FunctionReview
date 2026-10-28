@@ -13,7 +13,7 @@ description: Align K1 requirements and run static prechecks or runtime acceptanc
 
 ## 定位
 
-首次完整预检先完成需求对齐，再生成或校准用例、执行静态预审。接续运行验收先核对分功能经验中的“预检后文档已确认”标记；当前版本一致时直接沿用，变化时只对齐受影响规则。运行验收由用户指定时间节点：功能开发完成时验收或版本日验收；每个节点都要完成 Unity 与真机包两条路径，不能二选一。现有 `acceptanceMode` 分别记录节点范围，四种组合及共同前置见 [验收节点与客户端路径](references/runtime-client-modes.md)。需求对齐和静态预审两阶段均不限时；运行验收同样以本轮范围和真实证据为完成依据，不按累计耗时收尾。
+验收分为三个阶段：**功能预检**、**功能验收**、**版本日验收**。功能预检先完成需求对齐，再生成或校准用例、执行静态预审，只通过远端隔离缓存取证，不切换正式仓库分支。接续运行验收先核对分功能经验中的“预检后文档已确认”标记；当前版本一致时直接沿用，变化时只对齐受影响规则。功能验收按测试用例详细验收；版本日通常按玩家体验范围验收，但原单是缺陷/故障或快速任务时，因尚未完成首次验收，仍按测试用例详细验收。两个运行阶段允许按下述边界安全准备并切换目标分支。每个运行阶段的完整结论需要 Unity 与真机包两条路径；Pango 单个快速任务只执行其指定客户端路径，另一条路径不能据此算通过。`acceptanceMode` 的 `development` / `mainline_regression` 分别对应功能验收 / 版本日验收，详见 [验收节点与客户端路径](references/runtime-client-modes.md)。各阶段以真实证据为完成依据，不按累计耗时收尾。
 
 静态输出必须显著声明：**这是静态预审结果，不代表功能验收通过。** 运行报告独立记录实际部署版本、验证方式、覆盖缺口和留存状态。
 
@@ -23,10 +23,10 @@ description: Align K1 requirements and run static prechecks or runtime acceptanc
 
 - “版本进包内容表验收 / 版本进包项进度播报”：读取 [版本需求进度与钉钉播报](references/acceptance-progress.md)。同一版本日完整需求清单共用台账，先记录开始状态，每项需求形成结论后调用 `python scripts/acceptance_progress.py record` 保存并立即播报标题、结果与总数/已完成/待验收/正在验收/未完成；子用例不计为需求，验收结果与通知送达分别记录。续跑与收尾检查待发送、失败和待核对消息。仅向用户已指定并授权的机器人发送，Webhook 留在私有配置。
 - “备份线上服并建测试环境 / 复制战场服 / 指定线上 SID、代码分支、配表分支部署”：直接读取 [references/jenkins-test-environment.md](references/jenkins-test-environment.md) 的整链入口，使用 `scripts/jenkins_environment_workflow.py`。这是独立环境任务，不要求先做策划文档对齐或静态预审。默认本人同 SID；战场服同样先备份，部署 `app=battle`；未指定保留列表则全量恢复，指定列表则按列表保留。沿用明确的备份、导入与重建授权，禁止覆盖他人实例。
-- “预检 / 静态预审 / 需求对齐”：执行下述静态流程。仅提供 Jira 单号或分支名，不自动授权部署。
+- “功能预检 / 静态预审 / 需求对齐”：执行下述远端只读静态流程。仅提供 Jira 单号或分支名，不自动授权部署。
 - 活动类功能必须执行 [活动生命周期与补验合同](references/activity-lifecycle.md)：记录开启、进行、结束、结算、回收、关闭清理和下一期；结算按六类独立副作用拆断言，未充分需求、风险和历史补验都进入可校验台账。原文没有写“幂等”也要检查结束发奖防重与失败恢复。
 - “提 Bug / 提交 Jira 缺陷”：仅用户明确要求建单时，调用仓库内已注册的 `$jira-bug-creator`，按其 NK 规则整理证据、提交并回读；验收发现问题或维护反馈表不自动创建 Jira 单。
-- “运行验收 / 测试 / 继续补验”：继承已确认的需求、操作范围和已有证据，完整读取 [references/runtime-acceptance.md](references/runtime-acceptance.md)。先核对文档确认标记，再按用户指定的验收节点确定范围，并为 Unity 与真机两条路径生成计划；已有有效交接直接续跑，不重问旧决定。功能开发完成时按文档及反馈表详细验收；版本日按文档规则进行正常玩家体验，不自动套用全量开发用例或反馈复验。节点不能仅凭分支名或日期猜测。
+- “功能验收 / 版本日验收 / 继续补验”：继承已确认的需求、操作范围和已有证据，完整读取 [references/runtime-acceptance.md](references/runtime-acceptance.md)。先核对文档确认标记，再按用户指定阶段确定范围；已有有效交接直接续跑，不重问旧决定。功能验收按用例详细验收；版本日原单是缺陷/故障或快速任务时也按用例详细验收，其他类型按正常玩家体验范围。节点不能仅凭分支名或日期猜测。
 - 每个指定验收节点开测前先运行配置表转换与多语言转换任务，优先使用 `K1_Build_Config_I18N_Mac`；转换成功后按 [设备与测试服隔离](references/device-server-isolation.md) 为 Unity 和真机客户端分别启动本轮专属服务器，确认各自实际连接目标服后才验收。同一节点两条路径使用完全相同的转换输入和产物时可共用本轮转换回执；默认每个客户端实例一独占服务器实例，同轮续跑可复用本轮已启动且仍有效的实例。缺分配或必要部署信息时先查后问，受影响客户端暂不部署或执行游戏操作；同服例外需用户明确指定，服务器级 GM 统一协调。
 - 已有明确验收列表时，开测前先输出有序计划：检查状态和时间依赖、合并可共享准备与操作的项目、保留逐项结果和证据，再按资源隔离情况安排协作者分批并发。具体字段和派发规则见 [运行验收 §3](references/runtime-acceptance.md#3-冻结可执行断言计划)。
 - 验收项涉及新增界面或旧界面改动时，两类验收都按 [UI 多语言与屏幕适配规则](references/ui-language-and-screen-adaptation.md) 对受影响界面切换英语、俄语、阿拉伯语，逐语言检查显示并保存截图。多项任务默认按语言集中验证，减少重启切语；每项完成全部必要验证后立即更新文档状态并回读，不等待整批结束。缺少必要语言验证时保留补验/阻塞，不能整项通过；结束恢复原语言。版本日的 Unity 与真机路径同样执行这三语检查，范围限于受影响界面，不自动扩展全部功能或屏幕组合。
@@ -42,7 +42,7 @@ description: Align K1 requirements and run static prechecks or runtime acceptanc
 
 ## 功能审核开始前必读
 
-以下前置适用于首次需求对齐和完整静态预检。接续运行验收按运行入口核对已有文档标记与交接，不自动重跑完整静态工作流；版本日验收不要求为本轮重建全量开发用例。单独准备环境使用上方独立入口，环境就绪后不能宣称功能验收通过。
+以下前置只适用于首次需求对齐和功能预检。接续功能验收或版本日验收按运行入口核对已有文档标记与交接，不自动重跑完整静态工作流；版本日缺陷/故障和快速任务须准备或校准详细用例。单独准备环境使用上方独立入口，环境就绪后不能宣称功能验收通过。
 
 1. 完整读取 `references/requirement-alignment.md`，执行必经的文档对齐、用户确认、原文维护和交接合同；使用 `assets/requirement-alignment.md` 展示增删改清单。
 2. 完整读取 `references/quick-precheck.md`，执行输入、远端快照、证据、降级和报告合同。
@@ -65,19 +65,19 @@ description: Align K1 requirements and run static prechecks or runtime acceptanc
 
 ## 只读与写入边界
 
-静态阶段正式 K1 仓库只读；运行阶段沿用源代码与正式配置只读边界，另按下述例外操作测试环境：
+功能预检阶段正式 K1 仓库只读，远端信息只通过 FunctionPreview 隔离缓存取得。功能验收与版本日验收可在指定验收工程中安全准备和切换目标分支；这不授权修改业务源码或正式配置。默认仓库位置：
 
 - Client：`C:/Project/K1Client/k1_client`
 - Server：`C:/Project/K1Game/game`
 - Config：`C:/Project/K1Dataconfig/dataconfig`
 
-所有 Git refs/objects、锁、LFS 对象、临时文件和报告只能写入 `C:/Project/FunctionPreview` 的 `.cache`、`.tmp` 或 `reports` 子目录。额外允许按用户逐项确认结果最小更新指定原策划文档及其变更记录；这不授权修改三端仓库、代码或配置。原文档位于正式 K1 仓库内时仍遵守仓库只读边界，明确请求可维护的文档来源。
+功能预检产生的 Git refs/objects、锁、LFS 对象、临时文件和报告只能写入 `C:/Project/FunctionPreview` 的 `.cache`、`.tmp` 或 `reports` 子目录。运行阶段可在指定的验收工程或 FunctionPreview 隔离副本中 fetch、checkout、switch 和构建；先核对工作区状态，已有改动不得 reset、clean、覆盖或擅自 stash，必要时创建隔离工作树并核对目标提交。额外允许按用户逐项确认结果最小更新指定原策划文档及其变更记录；原文档位于正式 K1 仓库内时仍按文档边界处理。
 
-正式 K1 仓库禁止 `fetch`、`pull`、`checkout`、`switch`、`reset`、`clean`、`stash`、`add`、`commit`、`merge`、`rebase` 和任何 Git LFS 命令。静态阶段也禁止编译、测试、启动、运行验收、导表、配置/代码/资源生成、依赖安装、子模块更新和 Jenkins。
+功能预检禁止在正式 K1 仓库执行 `fetch`、`pull`、`checkout`、`switch`、`reset`、`clean`、`stash`、`add`、`commit`、`merge`、`rebase` 和 Git LFS 命令；也不编译、启动、部署、导表或运行验收。运行阶段不沿用这条切分支禁令，但仍不得丢弃用户改动、擅改业务代码或发布线上热更。
 
 运行阶段及独立环境任务的明确例外：可在已获授权的服务器/账号范围内使用 Unity、正常业务请求、现有 GM、故障模拟和测试部署任务；用 `scripts/jenkins_environment_workflow.py` 执行已授权的线上备份 → 钉钉 DownKey → 本人测试服导入重建 → 运行校验；只部署已有 Key/空服时仍可使用 `scripts/jenkins_test_environment.py`。两者读取项目本地连接配置。探针和隔离测试写入 FunctionPreview，禁止借测试任务修改正式业务源码、清理与本轮无关的用户文件或发布线上热更。清档、导入、改时间依照实际已获授权范围分别记录，不从“允许部署”推导清除数据的权限。Unity 自身产生的资源/缓存变化如实披露，不擅自回滚。
 
-唯一允许的网络 Git 写入命令由 `scripts/prepare-remote-snapshots.ps1` 在 FunctionPreview 远端缓存中执行；唯一允许的 LFS fetch/smudge 由 `scripts/export-git-file.ps1 -MaterializeLfs` 在该缓存中执行。不得手写替代命令绕过脚本边界。
+功能预检的网络 Git 写入仅由 `scripts/prepare-remote-snapshots.ps1` 在 FunctionPreview 远端缓存中执行；预检的 LFS fetch/smudge 仅由 `scripts/export-git-file.ps1 -MaterializeLfs` 在该缓存中执行。运行阶段的目标分支准备按上面的安全边界执行，不借预检脚本限制而停止必要的切分支。
 
 经验维护的文件写入例外：按 [经验读写规则](references/feature-experience.md) 更新本 Skill 的 `features/` 索引与档案，及已走通流程所需的 `features/<featureId>/scripts/` 模板和说明；既有公共执行脚本只引用，不因记录经验而自动改写。原始截图、回执、身份绑定执行副本仍保存在 FunctionPreview 的 `.tmp` / `reports`，不随 Skill 分享。此例外适用于静态与运行阶段的经验归档，不授权静态阶段执行运行脚本，也不改变三端正式仓库只读边界。
 
