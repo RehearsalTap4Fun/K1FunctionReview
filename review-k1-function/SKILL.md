@@ -39,7 +39,7 @@ description: Align K1 requirements and run static prechecks or runtime acceptanc
 - 同步或整理反馈表时，截图统一追加到对应行的“问题截图”单元格，保留原图并支持多图；验收只保留一个状态字段，必要说明合并到“验收详情”。按 [运行验收规则 §4.2](references/runtime-acceptance.md#42-反馈表字段整理与格式保留) 做最小范围写入，并回读核对原有下拉验证、选项、颜色与适用范围。
 - 结果已写入文档并回读、逐图核验后，按 [过程文件归档与清理](references/runtime-artifact-cleanup.md) 自动删除本轮不可复用且无依赖的临时文件；先迁移可迁移的引用，保留未同步、待补验、机器校验依赖的证据及正式台账，不清空整个工作区。
 - 运行阶段缺环境：读取 [references/jenkins-test-environment.md](references/jenkins-test-environment.md)，从 Jira 关联、远端分支及 Jenkins 历史分别解析代码和配置来源，在已授权测试服范围内准备并部署。部署成功后验证实际运行状态，再继续原补验队列。不能把本地仓库位于其他分支、Jira 无验收描述或 MCP 返回 `auth required` 直接当作整轮终止理由；分别查目标版本的隔离运行入口、关联文档及连接修复路径，并记录实际尝试。
-- 不把“部分验证”当作结束状态。每轮调用 `scripts/runtime_acceptance.py next`，执行可继续动作；推进时间前调用 `check-advance`；最终运行验收报告只能由 `publish` 在收尾检查通过后生成。尚未确定节点或文档基线、无法建立有效计划时，只能交付明确标为“前置检查／待续”的记录，列出已完成、未尝试、真正阻塞及各自下一步，不称为运行验收结论；交付前核对本地报告链接确实存在。
+- 不把“部分验证”当作结束状态。每轮调用 `scripts/runtime_acceptance.py next`，执行可继续动作；推进时间前调用 `check-advance`；最终运行验收报告只能由 `publish` 在收尾检查通过后生成。尚未确定节点或文档基线、无法建立有效计划时，只能交付明确标为“前置检查／待续”的记录，列出已完成、未尝试、真正阻塞及各自下一步，不称为运行验收结论；交付前核对本地报告链接确实存在。交付摘要先列出每个验收条目、状态、实际观察与待补动作，过程日志留在详细报告；Pango 自动测试的结构化逐项格式见 [运行验收结果输出](references/runtime-acceptance.md#6-收尾与最终发布)。
 
 ## 功能审核开始前必读
 
