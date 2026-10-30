@@ -5,8 +5,8 @@
 | featureId | `k1-cold-server-recruitment` |
 | 名称 / 别名 | 冷库服与召集活动调整 / 冷库迁服 / 冷库召集 / ColdServer / coldsrc / UnionCross |
 | 关联需求 / 历史分支 | NK-9710；`dev_NK-9710`；后续合入 `dev`。仅作检索线索 |
-| 档案更新时间 | 2026-10-21，Asia/Shanghai |
-| 最近实际验证 | 2026-10-16 三服运行；2026-10-15 v1.12 需求对齐与静态预审。归档未重新运行游戏 |
+| 档案更新时间 | 2026-10-29，Asia/Shanghai |
+| 最近实际验证 | 2026-10-29 dev 599 Unity：真实召集空列表、三语与原生ESC；历史全功能结论仍见下文，不沿用为新轮通过 |
 | 维护源 / 在线地址 | 本文件；需求文档见 COLD-E02，档案尚未迁移在线空间 |
 
 ## 再次验收先看
@@ -124,6 +124,16 @@ COLD-E07 本地工作簿哈希分别为 `ColdServer.xlsx`：`d2c3a5e726d0a40d515
 没有归档游戏运行脚本。`build_report.py` 会写回历史运行结果与台账；`prepare-matrix.py` 绑定旧结果和固定 66 条；对齐/报告生成脚本绑定旧确认与冻结对象，均保留原处。GM、角色安置、时间推进只有原始回执/台账，未把它们拼成新自动化执行逻辑。
 
 ## 更新记录
+
+### 599 Unity 增量（2026-10-29）
+
+来源 COLD-E10：`FunctionPreview/.tmp/k1-599-supplement-20261029/case37-verified-results.json`、`case21-real-fixture-blocked-results.json`；原始图片/协议不随 Skill 分享。客户端529503da、服务器242b2db3、配置f904ffa7；仅本批次实际验证，不代替真实迁服或真机。
+
+| entryId | 已掌握事实与下次操作 | 状态 |
+|---|---|---|
+| COLD-599-EMPTY | type92 刚开启的准备期可返回238731；不能将失败回包当空列表。准备期过后，由无盟角色正常申请迁入，取得err0、服务器发布数0及空申请，再验NoAppliance开启、RegionList关闭、无预制卡；R4成员看到的发布资格规则不是空列表。EN/RU/AR原尺寸已观察、最后恢复中文。 | 已验证：该真实空态玩家旅程 |
+| COLD-599-ESC | MCP无原生键盘接口时，仅对实际ESC使用Windows原生输入。EditorWindow.Focus不保证应用获得焦点；先确认appFocused，再按键。CaptureScreenshot在帧尾采图，同一调用随后重开页面会污染“按键后图”；按键后采图和正常重开分开调用。 | 已验证：关闭、HUD保持、正常重进 |
+| COLD-599-PUBLISH | 自控新盟发布要求近30天登录30个真实成员；NPC RobotMap不算Members。正常SDK同服角色上限2。pcreate绕过gate上线可触发自动开服，缺gate agent时不可假定能用kickme完整收尾；未用假卡/伪成员替代真实详情。新一轮先核真实账号与可收尾造号链。 | 待验证：真实发布/详情；本批缺夹具 |
 
 | 日期 / 批次 | entryId / scriptId | 新增、修订或失效原因 | 依据 / 未闭环事项 |
 |---|---|---|---|
