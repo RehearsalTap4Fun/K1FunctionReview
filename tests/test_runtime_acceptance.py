@@ -262,6 +262,58 @@ def test_changed_document_cannot_claim_precheck_freshness(runtime, scheduled):
         runtime.initialize(plan, root)
 
 
+@pytest.fixture
+def title_scheduled(scheduled):
+    plan, root = scheduled
+    source = 'Jira NK-10720 标题：引导组支持关联 switch 开关'
+    version = 'jira-titles-sha256:test-title-baseline'
+    baseline_path = root / 'baseline.json'
+    baseline = json.loads(baseline_path.read_text(encoding='utf-8'))
+    baseline['metadata'].update(documentSource=source, documentVersion=version,
+                                testcaseDocumentVersion=version)
+    baseline_path.write_text(json.dumps(baseline, ensure_ascii=False), encoding='utf-8')
+    plan['baselineSha256'] = hashlib.sha256(baseline_path.read_bytes()).hexdigest()
+    plan['documentBaseline'] = {'status': 'needs_review', 'basisType': 'jira_title',
+                                'source': source, 'currentVersion': version,
+                                'checkedAt': '2026-10-30T10:49:16+08:00',
+                                'reason': '原 Jira 只有标题，详细规则待确认', 'evidence': []}
+    return plan, root
+
+
+def test_title_scope_can_pass_without_claiming_full_requirement(runtime, title_scheduled):
+    plan, root = title_scheduled
+    state = runtime.initialize(plan, root)
+    passed(state, 'TC-1/migrate', 'protocol', 'server')
+    passed(state, 'TC-1/relogin', 'runtime')
+    finish(state)
+    result = runtime.publish(plan, state, root, root / 'report')
+    assert result['canFinalize'] is True
+    assert result['titleScopedAccepted'] is True
+    assert result['fullyAccepted'] is False
+    assert result['documentStatus'] == '标题基线（完整需求待确认）'
+    assert '标题范围通过，完整需求待确认' in (root / 'report/summary.html').read_text(encoding='utf-8')
+
+
+def test_title_scope_rejects_stale_title_version(runtime, title_scheduled):
+    plan, root = title_scheduled
+    plan['documentBaseline']['currentVersion'] = 'jira-titles-sha256:stale'
+    with pytest.raises(runtime.RuntimeContractError, match='DOCUMENT_BASIS_INVALID'):
+        runtime.initialize(plan, root)
+
+
+def test_title_scope_requires_all_planned_assertions_to_pass(runtime, title_scheduled):
+    plan, root = title_scheduled
+    state = runtime.initialize(plan, root)
+    passed(state, 'TC-1/migrate', 'protocol', 'server')
+    state['results']['TC-1/relogin'] = {'status': 'failed', 'observation': '重登状态错误',
+                                        'evidence': evidence('runtime')}
+    finish(state)
+    result = runtime.evaluate(plan, state, root)
+    assert result['canFinalize'] is True
+    assert result['titleScopedAccepted'] is False
+    assert result['fullyAccepted'] is False
+
+
 def test_unreadable_document_can_record_work_but_cannot_fully_accept(runtime, scheduled):
     plan, root = scheduled
     plan['documentBaseline'].update(status='needs_review', currentVersion='', reason='当前源文档不可读')
@@ -273,6 +325,7 @@ def test_unreadable_document_can_record_work_but_cannot_fully_accept(runtime, sc
     assert result['canFinalize'] is True
     assert result['fullyAccepted'] is False
     assert result['documentStatus'] == '待复核'
+    assert result['titleScopedAccepted'] is False
     runtime.publish(plan, state, root, root / 'report')
     assert '当前源文档不可读' in (root / 'report/summary.html').read_text(encoding='utf-8')
 

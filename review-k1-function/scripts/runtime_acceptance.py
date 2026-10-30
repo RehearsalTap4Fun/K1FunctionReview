@@ -103,6 +103,11 @@ def validate_planning(plan, baseline, root):
     require(doc.get('status') in {'precheck_confirmed', 'needs_review'}
             and all(nonempty(doc.get(k)) for k in ('source', 'checkedAt')), 'DOCUMENT_BASELINE_INVALID')
     require(baseline['metadata'].get('documentSource', doc['source']) == doc['source'], 'DOCUMENT_SOURCE_MISMATCH')
+    require(doc.get('basisType') in {None, 'jira_title'}, 'DOCUMENT_BASIS_INVALID')
+    if doc.get('basisType') == 'jira_title':
+        require(doc['status'] == 'needs_review' and
+                doc.get('currentVersion') == baseline['metadata']['documentVersion'],
+                'DOCUMENT_BASIS_INVALID')
     if doc['status'] == 'precheck_confirmed':
         require(all(nonempty(doc.get(k)) for k in ('confirmedVersion', 'confirmedAt', 'precheckRunId')), 'DOCUMENT_BASELINE_INVALID')
         require(doc['confirmedVersion'] == doc.get('currentVersion') == baseline['metadata']['documentVersion'], 'DOCUMENT_BASELINE_MISMATCH')
@@ -267,7 +272,11 @@ def evaluate(plan, state, root):
     ready = not unfinished and bool(env) and cleanup_ready
     mode = plan.get('acceptanceMode', 'legacy_unspecified')
     doc_ready = plan.get('documentBaseline', {}).get('status') == 'precheck_confirmed'
-    doc_status = ('当前文档已是预检确认后的版本' if doc_ready else '待复核') if plan['schemaVersion'] == 2 else '旧计划未记录'
+    title_basis = (plan['schemaVersion'] == 2 and plan['documentBaseline'].get('basisType') == 'jira_title')
+    doc_status = ('当前文档已是预检确认后的版本' if doc_ready else
+                  '标题基线（完整需求待确认）' if title_basis else '待复核') if plan['schemaVersion'] == 2 else '旧计划未记录'
+    all_passed = all(r['status'] == 'passed' for r in results.values())
+    title_scoped_accepted = ready and title_basis and all_passed
     dispatch, deferred = [], []
     if plan['schemaVersion'] == 2:
         next_actions, dispatch, deferred = dispatch_groups(plan, state, next_actions, unfinished)
@@ -277,7 +286,8 @@ def evaluate(plan, state, root):
             'dispatchGroups': dispatch, 'deferredActions': deferred,
             'unfinished': unfinished, 'canFinalize': ready,
             'followupResults': followups,
-            'fullyAccepted': ready and (doc_ready or plan['schemaVersion'] == 1) and all(r['status'] == 'passed' for r in results.values()),
+            'fullyAccepted': ready and (doc_ready or plan['schemaVersion'] == 1) and all_passed,
+            'titleScopedAccepted': title_scoped_accepted,
             'caseResults': case_results, 'counts': dict(Counter(case_results.values())),
             'missingClosure': [k for k, ok in [('environmentEvidence', bool(env)), ('cleanup', cleanup_ready)] if not ok]}
 
@@ -304,7 +314,9 @@ def publish(plan, state, root, output):
         next_step = r.get('nextAction') or r.get('blocker', {}).get('nextAction', '')
         rows.append('<tr>' + ''.join('<td>' + h(str(v)) + '</td>' for v in [a['testcaseId'], a['id'], a['expected'], r['status'], detail, next_step]) + '<td>' + links + '</td></tr>')
     mode_label = MODES.get(result['acceptanceMode'], '运行验收（旧计划未区分模式）')
-    verdict = mode_label + '通过' if result['fullyAccepted'] else mode_label + '：本轮结束，未完整通过'
+    verdict = (mode_label + '通过' if result['fullyAccepted'] else
+               mode_label + '：标题范围通过，完整需求待确认' if result['titleScopedAccepted'] else
+               mode_label + '：本轮结束，未完整通过')
     document = '<!doctype html><meta charset="utf-8"><title>运行验收</title><style>body{font:16px sans-serif;margin:32px}table{border-collapse:collapse}td,th{border:1px solid #ccc;padding:10px;text-align:left}</style>'
     document += '<h1>' + h(verdict) + '</h1><p>' + h(result['documentStatus']) + '</p><p>' + h(json.dumps(result['counts'], ensure_ascii=False)) + '</p><p>通过结论仅适用于本轮模式和计划范围。用例与断言分别统计；隔离、GM、静态证据不能替代所需运行证据。台账校验不证明证据真实性。</p>'
     if result['followupResults']:
