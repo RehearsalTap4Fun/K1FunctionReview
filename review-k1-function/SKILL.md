@@ -11,6 +11,12 @@ description: Align K1 requirements and run static prechecks or runtime acceptanc
 
 分享完整 `review-k1-function/` 与仓库内的 `slg-testcase-generator/` 目录及被调用的脚本/资源，提醒接收者分别注册 Skill，并配置自己的账号和本地路径。Jenkins Token、DWS 登录态、Git/SSH 私钥、MCP 连接密钥和运行回执不随 skill 分发；不得让接收者在聊天中粘贴密钥。
 
+## 每轮开始：核对并更新技能仓库
+
+在读取本技能的其他规则、选择工程或执行预检／验收前，定位包含当前 `review-k1-function/SKILL.md` 的 FunctionReview Git 仓库。核对 `origin` 指向本技能的预期仓库，获取 `origin/main` 的最新提交，记录远端 SHA、实际使用的本地 SHA 和更新时间。此同步只针对 FunctionReview 技能仓库，不代替目标客户端、服务端、配表分支的版本核对。
+
+若当前技能仓库工作区干净、位于 `main` 且可快进，则只以 fast-forward 更新，并重新读取更新后的 `SKILL.md` 与本轮相关引用。若有未提交改动、处于其他分支或历史分叉，不 reset、clean、stash 或覆盖现有文件；从已获取的 `origin/main` 建立隔离工作树，在隔离副本中读取技能并执行本轮流程。不能获取远端或不能安全建立副本时，报告原因与实际使用的技能 SHA，不声称已更新；继续不依赖新版规则的核查，并明确版本未核实对结论的影响。
+
 ## 定位
 
 验收分为三个阶段：**功能预检**、**功能验收**、**版本日验收**。功能预检先完成需求对齐，再生成或校准用例、执行静态预审，只通过远端隔离缓存取证，不切换正式仓库分支。接续运行验收先核对分功能经验中的“预检后文档已确认”标记；当前版本一致时直接沿用，变化时只对齐受影响规则。功能验收按测试用例详细验收；版本日普通需求通常按玩家体验范围验收，原单是缺陷/故障或快速任务时仍按测试用例详细验收。两个运行阶段可按下述边界安全准备目标分支；完整阶段结论默认需要 Unity 与真机包两条路径。用户明确限定单一路径（包括 Pango 单个快速任务）时只执行指定路径，并明确另一条属于本轮范围外，不能称完整双路径验收通过。`acceptanceMode` 的 `development` / `mainline_regression` 分别对应功能验收 / 版本日验收，详见 [验收节点与客户端路径](references/runtime-client-modes.md)。各阶段以真实证据为完成依据，不按累计耗时收尾。
