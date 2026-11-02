@@ -5,8 +5,8 @@
 | featureId | k1-giant-snake-phase4 |
 | 别名 | 肉鸽塔防4期、巨蛇4期、Phase4Minion、混合无尽 |
 | 关联需求 / 分支 | NK-10652、NK-10657 / dev_NK-10652 |
-| 更新时间 | 2026-11-02，Asia/Shanghai |
-| 最近实际验证 | Unity首局已从正常入口运行到9%；技能说明关闭异常导致首局失败，整轮仍在执行 |
+| 更新时间 | 2026-11-03，Asia/Shanghai |
+| 最近实际验证 | Unity已实际运行普通/盾/纯兵/无尽入口、三新弹道、选卡消耗与重复确认、读档、自然失败和复活、三语及ESC；整轮仍在执行 |
 
 ## 再次验收先看
 
@@ -42,10 +42,18 @@
 | RUN-SKILL-CLOSE | UIEnhanceSkill关闭时执行UIEnhanceSkillData.onCloseCallback；当前抽奖回调捕获UITowerDefenseSlotMachine.SetMaskState，必须关注父界面销毁后引用。 | 2026-11-02 S-01首局9%实际出现MissingReferenceException：SetMaskState:437 → OpenEnhanceUnitPopup回调:575 → UIEnhanceSkill.OnCloseStart:164。页面残留且World未Resume；证据skill-close-missing-reference.log、current-skill-page-check.png。后续版本须正常抽卡并关闭技能页复验，不能修回调后冒充原版本通过。 |
 | RUN-CLOSE-EVIDENCE | ExecuteEvents返回true只证明存在事件处理器；BasePopup.Close会先清空关闭回调/出栈，后续异常可能保留可见对象。 | 2026-11-02 S-01实际验证：页面可见但PopupManager.FindPopup返回null，后续点击无效。观察器遇到同页重复须停止并取异常/生命周期证据，不能把重复页面都记成新开箱或持续盲点。 |
 | RUN-SNAPSHOT-ISOLATION | SnapshotMgr.ContainsLastSaveData在UNITY_EDITOR等条件下跳过版本/角色匹配，活动存档目录按玩法前缀分隔，未按角色分目录。 | 2026-11-02 S-01只读存档头与实际提示一致；未恢复另一角色战局，不外推正式包。必要隔离时逐文件保留原路径、SHA256、时间戳并核验备份，验收收尾恢复；账号及原件仅在私有台账。 |
-| RUN-ENTRY-PREP | 活动HUD入口仍受主线肉鸽进度与引导条件影响；现有setroguelvl玩家GM可构造主线开放前置，actv rtAddCard可添加活动卡，actv rtSetLvl构造活动关卡。 | 2026-11-02 S-01已验证主线开放、三种新卡添加、正常HUD入口及四卡自动补阵后Save/Start ACK成功；rtSetLvl尚待本轮实测。每次绑定本轮授权身份，IsRunning单一标志不足以防止战中GM，必须同时检查IsPlaying及玩法上下文。 |
+| RUN-ENTRY-PREP | 活动HUD入口仍受主线肉鸽进度与引导条件影响；现有setroguelvl玩家GM可构造主线开放前置，actv rtAddCard可添加活动卡，actv rtSetLvl构造活动关卡。 | 2026-11-02 S-01已验证主线开放、三种新卡添加、正常HUD入口及四卡自动补阵后Save/Start ACK成功；rtSetLvl已实测ACK并更新目标关卡，清除StartingInfo和目标及之后奖励；只用于场景准备，跳关不计自然通关。每次绑定本轮授权身份，IsRunning单一标志不足以防止战中GM，必须同时检查IsPlaying及玩法上下文。 |
+| RUN-INSTANCE-GUARDS | 本轮正常进入3、4、11、41后，Minion/Shield/Endless的Active均为空，实际ActivityID不在各TextAsset白名单；三新弹道却按内容正常激活。 | S-01的level03/04/11/41-phase4-runtime.json及实图；不能写成所有四期功能都未启动，也不能把预览实例当成正式实例证据。相关深层断言保留具体依赖。 |
+| RUN-GETALL-DEDUP | 全选锁仅禁用单卡，没有完整阻止全选再次提交；同帧正常pointerClickHandler两次均成功ACK，道具按两个梯度扣除，相同三词条各添加两次。 | S-01 russian-double-getall-protocol.jsonl及前后列表，已记录失败；未伪造网络请求。单次刷新/全选和资源不足结果须独立记录，不能被重复确认失败覆盖。 |
+| RUN-PROJECTILES | 实测每组20枚游走弹，重叠施放可有40枚总数；环有同圆心追加和回流缩小，暂停时elapsed/radius冻结。 | S-01 three-projectiles-motion-analysis.json、ring-return-geometry-analysis.json；DTO缺少wave身份，不能用几何样本冒充逐目标命中次数或伤害公式验证。 |
+| RUN-REVIVE | 正常自然失败后复活ACK成功、扣道具、已存在蛇回退；累计投放与强化保留，未发现HP补高。 | S-01 russian-revive-analysis.json；仅证明本轮蛇的观察范围，不能外推缺失的小兵、3/1调度、新积分、双源箱。 |
+| RUN-HUD-CARD-LOOKUP | GamePlayEnhanceHeroItem.RefreshCdFill以活动卡ID查CDragonHero，实际每帧缺表错误；本轮另发生一次原生崩溃，managed栈含ExLog工作线程调用Unity日志。 | S-01 runtime-native-crash-preface.log与dump；错误与崩溃并存，不声称已证明因果。正常重启后续测，不自动改业务代码。 |
+| RUN-LANGUAGE-RESTART | 现有语言流程SetLocalizationLanguage后Main.ReStart；可自动登录原角色，不一定出现选角页。 | S-01英/俄/阿均真实重进；先读实际身份/语言，避免因没出现选角页而重复登录或误判失败。收尾恢复原语言。 |
+| RUN-RTL-LAYOUT | 阿拉伯语主活动倒计时和战斗伤害飘字出现水平镜像；结算长技能名压叠数值。英/俄/阿排行榜长标签越入横幅，刷新与全选余次共用“刷新次数”文案。 | S-01多语言原始PNG及UI文本；字形/布局与数值应逐类核对，不能用本地化键存在替代看图。 |
+| TOOL-CACHED-POPUP | GameObject.Find找到缓存弹窗的外层Root，不代表弹窗正在前台显示；本轮空的GameEnd外壳误使自动观察器提前停止。 | 操作前核对PopupManager当前弹窗、有效子内容及实际截图；重复观察器有时限并记录停止原因，不把事件投递或对象存在当成玩家流程完成。 |
 
 ## 运行与界面覆盖
 
-本轮用例包括三种弹道、盾计次、3/1调度、预算与去重、双源宝箱、复活读档、旧期次、生命周期副作用、英/俄/阿、ESC与Unity屏幕尺寸。已实际进入普通首局并发现技能页关闭失败；尚未获得完整首局、三语或返回操作通过证据。真机仅在用户明确指定时纳入。身份绑定的操作副本只留S-01，尚无参数化且重跑验证的共享脚本。
+本轮用例包括三种弹道、盾计次、3/1调度、预算与去重、双源宝箱、复活读档、旧期次、生命周期副作用、英/俄/阿、ESC与Unity屏幕尺寸。已实际进入多类场景，初局关闭技能页失败、重复全选扣费加卡、多语言显示等问题均保留；自然失败、复活、读档和ESC已有分支证据，最终以S-01逐项状态为准，不能称整轮通过。真机仅在用户明确指定时纳入。身份绑定的操作副本只留S-01，尚无参数化且重跑验证的共享脚本。
 
 私有反馈来源、账号、目标服、环境权限、清理与恢复状态均读取S-01，不写入共享Skill。
