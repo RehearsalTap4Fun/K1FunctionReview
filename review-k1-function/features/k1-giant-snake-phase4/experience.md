@@ -6,7 +6,7 @@
 | 别名 | 肉鸽塔防4期、巨蛇4期、Phase4Minion、混合无尽 |
 | 关联需求 / 分支 | NK-10652、NK-10657 / dev_NK-10652 |
 | 更新时间 | 2026-11-03，Asia/Shanghai |
-| 最近实际验证 | Unity已实际运行普通/盾/纯兵/无尽入口、三新弹道、选卡消耗与重复确认、读档、自然失败和复活、三语及ESC；整轮仍在执行 |
+| 最近实际验证 | Unity首轮85项：14通过、25失败、46阻塞（保留已测子分支）；18条事项待统一决策。小兵/盾/混合无尽接入未生效，不能称这些战斗类型已通过。 |
 
 ## 再次验收先看
 
@@ -51,9 +51,17 @@
 | RUN-LANGUAGE-RESTART | 现有语言流程SetLocalizationLanguage后Main.ReStart；可自动登录原角色，不一定出现选角页。 | S-01英/俄/阿均真实重进；先读实际身份/语言，避免因没出现选角页而重复登录或误判失败。收尾恢复原语言。 |
 | RUN-RTL-LAYOUT | 阿拉伯语主活动倒计时和战斗伤害飘字出现水平镜像；结算长技能名压叠数值。英/俄/阿排行榜长标签越入横幅，刷新与全选余次共用“刷新次数”文案。 | S-01多语言原始PNG及UI文本；字形/布局与数值应逐类核对，不能用本地化键存在替代看图。 |
 | TOOL-CACHED-POPUP | GameObject.Find找到缓存弹窗的外层Root，不代表弹窗正在前台显示；本轮空的GameEnd外壳误使自动观察器提前停止。 | 操作前核对PopupManager当前弹窗、有效子内容及实际截图；重复观察器有时限并记录停止原因，不把事件投递或对象存在当成玩家流程完成。 |
+| RUN-LEVEL-SOURCE | CActDragonBattleLevel新表已实际加载，但MActivityRoguelikeTowerMgr.GetDragonRoguelikeLevelCfg直接选择CActivityDragonRoguelikeLevel，再经旧桥接；30关仍旧LevelType1/蛇数据，新表30为Type2，11/25纯兵数据未进入实际关卡。 | S-01 level-config-selection-proof.json、actual-runtime-activity-level-configs.json、loaded-phase4-battle-source.json及冻结源码。区分“新表已加载”和“玩法已消费”；旧桥接ContentID=0是属性约定，不能单凭0判断导入失败。 |
+| RUN-PROJECTILE-HIT-LEDGER | 只读真实ECS Phase4SwarmHitComponent与RingHitComponent，记录实体键、目标键、Leg和LastHitAt，可核对实际EmitHit前的去重门槛。 | S-01 projectile-hit-ledger-analysis.json：704个游走弹目标对、546次重复记录，最小间隔约1.033秒，无同Leg更新；16环波36目标对无重复。仅当前实际蛇场景，不外推未激活小兵。 |
+| RUN-RING-HOLLOW | 详情文档要求伤害跟随径向波前，各环实体对同目标最多一次；主环、追加环、回流环分别计算。 | S-01 ring-collision-geometry-analysis.json、ring-hollow-negative-analysis.json：54次强候选均命中，57次新命中均有相交位置区间，360次空心内部负向检查无意外命中。须同时采样上一/当前半径、目标位置及碰撞半径，不能只用静态圆环截图推断伤害错误。 |
+| RUN-BEAM-MAPPING | 需求及美术详情以多束/多目标为核心；本轮实际基础beamCount仍1，正常BeamSplit与SplitCount词条实现的是分裂弹。 | S-01 english-normal-beam-multiplicity-analysis.json。记录核心多束缺口；K1最终强化名/星级映射未定时单列信息阻塞，不能错误归因为“分裂弹词条承诺多束却未生效”。 |
+| RUN-REWARD-FAILURE | 正常有限关自然胜利可建立真实领奖资格；用受控非法索引发真实业务请求验证拒绝，再正常UI重试和重复已领请求。 | S-01两次6关自然End ACK0；受控奖励ACK20后资格/红点/资产不变，正常重试ACK0增币150，重复ACK247161不再发奖。UI显示errCode裸键另记P18。异步资产Ntf稍后到达，不能以ACK后立即值误判漏奖；奖励过期仍须独立到期夹具。 |
+| TOOL-BUTTON-DISPATCH | 对象上有Unity Button不保证TFW监听器接在onClick；奖励BoxClose本轮需pointerClickHandler才能触发正常请求。 | 事件返回true后还须检查前台页面、实际ACK及资产/红点；本轮claim-six-box-pointer.cs.txt为身份绑定私有副本，不作为已参数化共享模板。 |
+| RUN-CORRECTED-OBSERVATIONS | 英俄主界面战力压叠仅切页瞬间出现，稳定帧正常；30关后续技能页已正常注册且无新的MissingReferenceException。 | 不把稳定帧已恢复的瞬态报告为持续溢出；不因观察器超时或同名弹窗再次出现就断言第二次软锁。排行榜、复活按钮、结算及Arabic数字问题按各自实图保留。 |
+| RUN-CLEANUP | 停止Play后再恢复隔离的原角色存档，逐文件校验SHA256、大小与原时间戳；恢复原语言和GameView预设列表，保留未知工作区变化。 | S-01原5份已恢复、中文及原屏幕已回读，临时UniTask依赖路径修复和Library备份保留。Git状态可包含大量无实际diff的刷新标记，应同时保存实际内容差异；并行工作导致配置分支变化时不切回覆盖，继续引用冻结正式表。 |
 
 ## 运行与界面覆盖
 
-本轮用例包括三种弹道、盾计次、3/1调度、预算与去重、双源宝箱、复活读档、旧期次、生命周期副作用、英/俄/阿、ESC与Unity屏幕尺寸。已实际进入多类场景，初局关闭技能页失败、重复全选扣费加卡、多语言显示等问题均保留；自然失败、复活、读档和ESC已有分支证据，最终以S-01逐项状态为准，不能称整轮通过。真机仅在用户明确指定时纳入。身份绑定的操作副本只留S-01，尚无参数化且重跑验证的共享脚本。
+本轮用例包括三种弹道、盾计次、3/1调度、预算与去重、双源宝箱、复活读档、旧期次、生命周期副作用、英/俄/阿、ESC与Unity屏幕尺寸。首轮已结束，14通过、25失败、46阻塞；通过与失败数量是用例数，不是唯一缺陷数。有限关自然胜利、失败复活、读档、正常消耗与故障领奖、真实命中去重/空心检查、暂停、三语和原生ESC均有证据。实际新表/实例接入失败使小兵、盾和混合无尽的深层断言无法验证；历史格式、低版本、独立到期/跨期和正式配置切换夹具缺口仍开放。未结束当前活动或修改配置强造通过。真机为用户本轮指定范围外；身份绑定的操作副本只留S-01，尚无参数化且重跑验证的共享脚本。
 
 私有反馈来源、账号、目标服、环境权限、清理与恢复状态均读取S-01，不写入共享Skill。
