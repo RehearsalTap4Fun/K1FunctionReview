@@ -4,7 +4,7 @@
 
 | featureId | 功能 | 别名 / 搜索词 | 关联需求 / 历史分支 | 历史证据范围 | 档案 | 更新日期 |
 |---|---|---|---|---|---|---|
-| k1-giant-snake-phase4 | 巨蛇大作战4期 | 肉鸽塔防4期、Phase4Minion、混合无尽、计次盾 | NK-10652、NK-10657 / dev_NK-10652 | Unity首轮14通过/25失败/46阻塞；旧表选择、实例守卫、全选重复及软锁，真实命中/领奖和恢复已留证；文档待统一决策 | [巨蛇四期档案](k1-giant-snake-phase4/experience.md) | 2026-11-03 |
+| k1-giant-snake-phase4 | 巨蛇大作战4期 | 肉鸽塔防4期、Phase4Minion、混合无尽、计次盾 | NK-10652、NK-10657 / dev_NK-10652 | Unity首轮14通过/25失败/46阻塞；18项处理决定已确认，ESC沿用历史、背景下轮观察、活动阵容独立；修复与新部署复验尚未完成 | [巨蛇四期档案](k1-giant-snake-phase4/experience.md) | 2026-11-03 |
 | k1-kvk-sea-world | KVK海底世界 | 王座、KVK4、独立地图、85模板、匹配隔离 | NK-10712、NK-10714、NK-10707、NK-10715、NK-10735 / dev | 独立地图/真实归属前置已验证；缺真实85模板，上下文不能替业务验收 | [KVK海世界档案](k1-kvk-sea-world/experience.md) | 2026-10-29 |
 | k1-lava-cave | 熔岩洞穴与科技扣费 | LavaCave、AP、批量科技升级 | NK-10750 / dev | Unity正常合法扣费、资源不足无副作用、单升/批升预算旅程通过 | [熔岩洞穴档案](k1-lava-cave/experience.md) | 2026-10-29 |
 | k1-strongest-trial | 强者试炼 | type151、CommonScoreRank、白金兑换券、紫箱 | NK-10648 / dev | Unity真实奖励预览与1194000分入榜前态；双榜邮件自然End仍待验 | [强者试炼档案](k1-strongest-trial/experience.md) | 2026-10-29 |
