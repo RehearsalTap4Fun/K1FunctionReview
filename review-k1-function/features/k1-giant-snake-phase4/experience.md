@@ -59,6 +59,7 @@
 | TOOL-BUTTON-DISPATCH | 对象上有Unity Button不保证TFW监听器接在onClick；奖励BoxClose本轮需pointerClickHandler才能触发正常请求。 | 事件返回true后还须检查前台页面、实际ACK及资产/红点；本轮claim-six-box-pointer.cs.txt为身份绑定私有副本，不作为已参数化共享模板。 |
 | RUN-CORRECTED-OBSERVATIONS | 英俄主界面战力压叠仅切页瞬间出现，稳定帧正常；30关后续技能页已正常注册且无新的MissingReferenceException。 | 不把稳定帧已恢复的瞬态报告为持续溢出；不因观察器超时或同名弹窗再次出现就断言第二次软锁。排行榜、复活按钮、结算及Arabic数字问题按各自实图保留。 |
 | RUN-CLEANUP | 停止Play后再恢复隔离的原角色存档，逐文件校验SHA256、大小与原时间戳；恢复原语言和GameView预设列表，保留未知工作区变化。 | S-01原5份已恢复、中文及原屏幕已回读，临时UniTask依赖路径修复和Library备份保留。Git状态可包含大量无实际diff的刷新标记，应同时保存实际内容差异；并行工作导致配置分支变化时不切回覆盖，继续引用冻结正式表。 |
+| TOOL-FEEDBACK-COLLAB | 多人协作反馈表使用服务端append追加并分配稳定反馈ID，不以旧行号覆盖；后续插图前重读ID和目标单元格，只补本轮新行。原下拉选项、颜色和单／多选规则原样映射至新行。 | S-01 feedback-sync-verification.json：16条新增反馈、12张截图，原3行、原图和验证语义保留。直接MCP未暴露表格写工具时，DWS可调用底层MCP；附件凭证由现有MCP取得并上传，再写入新行。区域读取不返回嵌图、导出未能完成时，仅用浏览器打开单元格图片及图库，逐张核对实际资源路径、加载完成和原始尺寸；不能以写入成功回执替代在线附图核验。 |
 
 ## 运行与界面覆盖
 
