@@ -1,0 +1,14 @@
+var types = System.AppDomain.CurrentDomain.GetAssemblies().SelectMany(a => { try { return a.GetTypes(); } catch { return new System.Type[0]; } }).ToList();
+var worldT = types.First(x => x.Name == "World" && x.GetField("LogicMgr") != null);
+var world = worldT.GetProperty("I", System.Reflection.BindingFlags.Public|System.Reflection.BindingFlags.Static|System.Reflection.BindingFlags.FlattenHierarchy).GetValue(null);
+if (world == null) return "no world";
+var mgr = worldT.GetField("LogicMgr").GetValue(world);
+var api = types.First(x => x.Name == "SystemAPI" && x.GetMethods().Any(m => m.Name == "QueryEntities"));
+var q = api.GetMethods().First(m => m.Name == "QueryEntities" && m.IsGenericMethodDefinition && m.GetGenericArguments().Length == 1 && m.GetParameters().Length == 1);
+System.Collections.Generic.List<object> Rows(string comp) { var ct = types.First(x => x.Name == comp); var res = new System.Collections.Generic.List<object>(); var en = q.MakeGenericMethod(ct).Invoke(null, new[]{ mgr }); var e = en.GetType().GetMethod("GetEnumerator").Invoke(en, null); var et = e.GetType(); var mn = et.GetMethod("MoveNext"); var cur = et.GetProperty("Current"); int guard = 0; while ((bool)mn.Invoke(e, null) && guard++ < 100000) { var item = cur.GetValue(e); var it = item.GetType(); var f2 = it.GetField("Item2"); res.Add(f2 != null ? f2.GetValue(item) : item); } return res; }
+var sw = Rows("Phase4SwarmHitComponent"); var rg = Rows("Phase4RingHitComponent");
+var st = types.First(x => x.Name == "Phase4SwarmHitComponent"); var rt = types.First(x => x.Name == "Phase4RingHitComponent");
+var swPairs = sw.Select(v => st.GetField("BulletEntityID").GetValue(v) + ":" + st.GetField("LedgerKey").GetValue(v)).ToList();
+var rgPairs = rg.Select(v => rt.GetField("WaveEntityID").GetValue(v) + ":" + rt.GetField("LedgerKey").GetValue(v)).ToList();
+var maxLeg = sw.Count == 0 ? 0 : sw.Max(v => (int)st.GetField("Leg").GetValue(v));
+return System.DateTime.Now.ToString("HH:mm:ss.f") + " swarmHits=" + sw.Count + " uniquePairs=" + swPairs.Distinct().Count() + " maxLeg=" + maxLeg + " | ringHits=" + rg.Count + " uniquePairs=" + rgPairs.Distinct().Count() + " waves=" + rgPairs.Select(p => p.Split(':')[0]).Distinct().Count();

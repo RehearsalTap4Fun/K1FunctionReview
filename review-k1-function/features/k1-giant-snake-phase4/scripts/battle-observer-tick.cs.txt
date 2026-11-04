@@ -1,0 +1,39 @@
+// Battle observer tick for MCP execute_code. One JSON line per call; never returns Task objects.
+void Click(UnityEngine.GameObject g) => UnityEngine.EventSystems.ExecuteEvents.Execute(g, new UnityEngine.EventSystems.PointerEventData(UnityEngine.EventSystems.EventSystem.current), UnityEngine.EventSystems.ExecuteEvents.pointerClickHandler);
+var all = UnityEngine.Object.FindObjectsOfType<UnityEngine.Canvas>(false).Where(x => x.isRootCanvas).ToList();
+var names = all.Select(x => x.name.Split('(')[0]).ToList();
+var ignore = new[] { "UITreasureChestFly", "UIGoldFly", "UIHurtFlyText", "UI2024InterchangeableTip", "UIActivitySupremeLordTip", "SelfHeroSpriteRoot", "SelfSpriteRoot", "TrailsCameraRoot", "CameraRoot", "UIFPSOverlay", "LogoFloatTips", "Mask", "LevelCanvas", "UITowerDefenseGamePlay", "GuideRoot", "UIGuide", "UIDamagePopup", "DamagePopupCanvas", "UITowerDefenseSlotMachine", "Canvas", "Blur", "ui4109Widgets" };
+var gp = all.FirstOrDefault(c => c.name.StartsWith("UITowerDefenseGamePlay"));
+var prog = gp?.GetComponentsInChildren<UnityEngine.UI.Text>(false).FirstOrDefault(t => t.text.StartsWith("关卡进度"))?.text;
+var mgrT = System.AppDomain.CurrentDomain.GetAssemblies().SelectMany(a => { try { return a.GetTypes(); } catch { return new System.Type[0]; } }).First(x => x.FullName == "Logic.RoguelikeTower.MActivityRoguelikeTowerMgr");
+var mgr = mgrT.GetProperty("I", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.FlattenHierarchy).GetValue(null);
+var r = new System.Collections.Generic.Dictionary<string, object> { ["t"] = System.DateTime.Now.ToString("HH:mm:ss"), ["prog"] = prog, ["lvl"] = mgrT.GetProperty("CurLvlCfgID").GetValue(mgr), ["playing"] = mgrT.GetProperty("IsPlaying").GetValue(mgr) };
+if (names.Contains("UITowerDefenseSlotMachine")) r["slotMachine"] = true;
+var gift = all.FirstOrDefault(x => x.name.StartsWith("UITriggerGift_New"));
+if (gift != null) { var cb = gift.GetComponentsInChildren<UnityEngine.Transform>(false).FirstOrDefault(x => x.name == "CloseBtn"); if (cb != null) Click(cb.gameObject); r["closedGift"] = true; }
+var card = all.FirstOrDefault(x => x.name.StartsWith("UIEnhanceCard"));
+if (card != null) {
+    var titles = card.GetComponentsInChildren<UnityEngine.UI.Text>(false).Where(t => t.name == "Title" && t.transform.parent.name == "TitleBg").Select(t => t.text).ToList();
+    var items = card.GetComponentsInChildren<UnityEngine.Transform>(false).Where(x => x.name == "Click" && x.parent.name.StartsWith("Item")).ToList();
+    r["cardOptions"] = titles;
+    if (items.Count > 0) { Click(items[0].gameObject); r["picked"] = titles.FirstOrDefault(); }
+}
+var skill = all.FirstOrDefault(x => x.name.StartsWith("UIEnhanceSkill"));
+if (skill != null) {
+    r["skillPage"] = skill.GetComponentsInChildren<UnityEngine.UI.Text>(false).Select(t => t.text).Where(s => !string.IsNullOrWhiteSpace(s)).Take(4).ToList();
+    var bc = skill.GetComponentsInChildren<UnityEngine.Transform>(false).FirstOrDefault(x => x.name == "BtnClose");
+    if (bc != null) { Click(bc.gameObject); r["closedSkill"] = true; }
+}
+var rw = all.FirstOrDefault(x => x.name.StartsWith("UIWinRewardGrid"));
+if (rw != null) {
+    var ok = rw.GetComponentsInChildren<UnityEngine.Transform>(false).FirstOrDefault(x => x.GetComponents<UnityEngine.Component>().Any(k => k is UnityEngine.EventSystems.IPointerClickHandler) && x.GetComponentsInChildren<UnityEngine.UI.Text>(false).Any(t => t.text == "确认"));
+    if (ok != null) { Click(ok.gameObject); r["closedRewardList"] = true; }
+}
+var unknown = names.Where(n => !ignore.Contains(n) && n != "UIEnhanceCard" && n != "UITriggerGift_New" && n != "UIEnhanceSkill" && n != "UIWinRewardGrid" && n != "Blur").Distinct().ToList();
+if (unknown.Count > 0) {
+    r["stop"] = true; r["popups"] = unknown;
+    var p = all.First(x => unknown.Contains(x.name.Split('(')[0]));
+    r["popupTexts"] = p.GetComponentsInChildren<UnityEngine.UI.Text>(false).Select(t => t.text).Where(s => !string.IsNullOrWhiteSpace(s)).Take(25).ToList();
+}
+if (gp == null && card == null && unknown.Count == 0) { r["stop"] = true; r["noBattleUi"] = names; }
+return Newtonsoft.Json.JsonConvert.SerializeObject(r);

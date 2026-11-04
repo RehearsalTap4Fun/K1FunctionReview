@@ -4,12 +4,13 @@
 
 | featureId | 功能 | 别名 / 搜索词 | 关联需求 / 历史分支 | 历史证据范围 | 档案 | 更新日期 |
 |---|---|---|---|---|---|---|
-| k1-giant-snake-phase4 | 巨蛇大作战4期 | 肉鸽塔防4期、Phase4Minion、混合无尽、计次盾 | NK-10652、NK-10657 / dev_NK-10652 | Unity首轮14通过/25失败/46阻塞；旧表选择、实例守卫、全选重复及软锁，真实命中/领奖和恢复已留证；文档待统一决策 | [巨蛇四期档案](k1-giant-snake-phase4/experience.md) | 2026-11-03 |
+| k1-giant-snake-phase4 | 巨蛇大作战4期 | 肉鸽塔防4期、Phase4Minion、混合无尽、计次盾 | NK-10652、NK-10657 / dev_NK-10652 | S-04反馈定向复验9项5通过/4失败：P18、多束及文案（Unity显示为准）、ESC结算显示修复；服务端全选不去重、英/阿通行证与退出文案仍在母表、俄语标题压按钮；含Editor拉母表、冷启动切语与反馈插图限制经验 | [巨蛇四期档案](k1-giant-snake-phase4/experience.md) | 2026-11-04 |
+| k1-gm-auto-occupy | GM 自动占领 | LGmAutoOccupy、王座、禁迁、自动迁城 | dev_NK-9557 / 用户定向修复实测 | Unity真实迁城及107项回归通过；出兵被王战None状态拦截，待整服前置授权 | [自动占领档案](k1-gm-auto-occupy/experience.md) | 2026-11-02 |
 | k1-kvk-sea-world | KVK海底世界 | 王座、KVK4、独立地图、85模板、匹配隔离 | NK-10712、NK-10714、NK-10707、NK-10715、NK-10735 / dev | 独立地图/真实归属前置已验证；缺真实85模板，上下文不能替业务验收 | [KVK海世界档案](k1-kvk-sea-world/experience.md) | 2026-10-29 |
 | k1-lava-cave | 熔岩洞穴与科技扣费 | LavaCave、AP、批量科技升级 | NK-10750 / dev | Unity正常合法扣费、资源不足无副作用、单升/批升预算旅程通过 | [熔岩洞穴档案](k1-lava-cave/experience.md) | 2026-10-29 |
 | k1-strongest-trial | 强者试炼 | type151、CommonScoreRank、白金兑换券、紫箱 | NK-10648 / dev | Unity真实奖励预览与1194000分入榜前态；双榜邮件自然End仍待验 | [强者试炼档案](k1-strongest-trial/experience.md) | 2026-10-29 |
 | k1-commerce-shops | 次元商店与兑换商店 | UIMergeShop、TFWTab、头像框券、城堡预览 | NK-10651、NK-10644 / dev | 次元商店最小购买、三语及真实ESC重进闭环；兑换商店历史适配问题和人工完成决定分开保留 | [商业商店档案](k1-commerce-shops/experience.md) | 2026-10-29 |
-| k1-arena | 竞技场 | ArenaV2、阵容快照、重复挑战、积分分档匹配、三语与多图反馈 | NK-10402 / dev_NK-10402；NK-10371、NK-10459（已发MR，599排除） | 10/27历史21项保留；10/29原32/33未合dev误纳入，技术实测仅开发参考，不计599通过/失败、不移挂其他项 | [竞技场验收档案](k1-arena/experience.md) | 2026-10-29 |
+| k1-arena | 竞技场 | ArenaV2、阵容快照、重复挑战、积分分档匹配、三语与多图反馈 | NK-10402 / dev_NK-10402；NK-10371、NK-10459（已发MR，599排除） | 10/27历史21项保留；10/29原32/33仅开发参考；11/03 Unity定向复验3通过、2待补，非全需求通过 | [竞技场验收档案](k1-arena/experience.md) | 2026-11-03 |
 | k1-gold-miner | 黄金矿工 | GoldMiner、Gold Miner、矿工、挖矿活动、特殊设备、矿工币、ESC、返回键、HUD | NK-8062 / dev_NK-8062 | 玩家体验、反馈与运行片段；含 MuMu 连续帧普通输入体验（4–18 关通过，含标记目标优先、每局免费炸弹、钻石补体力及规则文案歧义），返回键后 HUD 消失仍待复验，非全功能通过；10/29追加实例GM/跨服排行隔离前置只读核证 | [黄金矿工验收档案](k1-gold-miner/experience.md) | 2026-10-29 |
 | k1-world-map-rework | 大地图重构 | WorldMapV2、V2Fort、FogLayer、新大地图 | NK-8604 / dev_NK-8604 | 多批次静态预检；历史阻断待复核 | [大地图重构档案](k1-world-map-rework/experience.md) | 2026-10-21 |
 | k1-first-day-fog-spawn | 新服大地图出生与随机迁城首日迷雾一致性 | 首日迷雾、D0 出生区、随机迁城、FogLayer | 2026-08-11 专项请求；相关 NK-8604 / dev_NK-8604 | 静态可进入运行验收；未执行运行验证 | [出生与迷雾档案](k1-first-day-fog-spawn/experience.md) | 2026-10-21 |
@@ -19,6 +20,12 @@
 | k1-cold-server-recruitment | 冷库服与召集活动调整 | 冷库迁服、冷库召集、ColdServer、coldsrc、UnionCross | NK-9710 / dev_NK-9710、dev | 历史全功能矩阵保留；10/29追加真实空列表、三语与原生ESC闭环，发布详情夹具另记缺口 | [冷库服档案](k1-cold-server-recruitment/experience.md) | 2026-10-29 |
 | k1-google-play-achievements | Google Play 成就接入 | Google Play 成就、CPE 成就、CpeTask、LittleGameAchievement | NK-8028 / dev_NK-8028 | 0 完整通过、8 部分、24 阻塞、8 待 Android | [Google Play 成就档案](k1-google-play-achievements/experience.md) | 2026-10-21 |
 | k1-radar-monster-first-kill | 雷达怪物击杀计数优化 | 普通雷达怪、雷达规则更新、选级、攻击、首杀隔离 | NK-9973、配套 NK-9974 / dev_NK-9973 | 1 通过、3 部分、20 阻塞；真实战斗未闭环 | [雷达怪物档案](k1-radar-monster-first-kill/experience.md) | 2026-10-21 |
+
+| k1-anonymous-login-password | 匿名账号登录密码稳定性 | ClientLoginPassword、匿名登录、杀进程、密码指纹 | NK-10861 | Android8536新增三轮真实匿名密码认证经服务端确认同值；密码单项通过；游戏入场1通过2失败，iOS未测 | [匿名密码档案](k1-anonymous-login-password/experience.md) | 2026-11-02 |
+
+| k1-throne-war-king-skill | 国王技能与城堡技能弹窗 | 王座战、禁锢、UIPlayerCityInfo、UIThroneWarKingSkill | NK-10866 / CS-305229 | 按用户指定原录屏城堡弹窗复验；技能使用与ESC正常，三语说明裁切；未通过 | [国王技能档案](k1-throne-war-king-skill/experience.md) | 2026-11-03 |
+
+| k1-save-egg-mail | 巨龙前置迁移补偿邮件 | SaveEgg、345、60010003、RoyalChest、版本迁移、防重 | NK-10875 / dev | Unity九项实现回归通过；完整产品规则待确认；只修既有模板ID无需机械三语 | [龙蛋邮件档案](k1-save-egg-mail/experience.md) | 2026-11-03 |
 
 新增功能按 [档案模板](../assets/feature-experience-template.md) 创建 `features/<featureId>/experience.md` 并登记在本表；同功能改名、换分支或新一轮验收更新原档案。泛称“矿工”“特殊设备”“迷雾”或“首杀”只作为搜索线索，按需求确认归属。出生与迷雾专项和大地图主档案相互链接，同一分支不自动合并不同范围的结论。
 

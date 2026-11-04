@@ -1,0 +1,16 @@
+// ESC step: snapshot state, invoke Main.SimulateKeyBack (the ESC key handler), snapshot again. Tag passed via __TAG__.
+var types = System.AppDomain.CurrentDomain.GetAssemblies().SelectMany(a => { try { return a.GetTypes(); } catch { return new System.Type[0]; } }).ToList();
+string State() {
+    var names = UnityEngine.Object.FindObjectsOfType<UnityEngine.Canvas>(false).Where(x => x.isRootCanvas).Select(x => x.name.Split('(')[0]).Where(n => (n.StartsWith("UI") || n.StartsWith("Ui_")) && !n.Contains("Fly") && !n.Contains("Tip") && !n.Contains("FPS")).ToList();
+    var worldT = types.FirstOrDefault(x => x.Name == "World" && x.GetField("LogicMgr") != null);
+    var world = worldT?.GetProperty("I", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.FlattenHierarchy)?.GetValue(null);
+    var paused = world?.GetType().GetProperty("IsPaused")?.GetValue(world);
+    var mgrT = types.First(x => x.FullName == "Logic.RoguelikeTower.MActivityRoguelikeTowerMgr");
+    var mgr = mgrT.GetProperty("I", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.FlattenHierarchy).GetValue(null);
+    return "[" + string.Join(",", names) + "] worldPaused=" + paused + " playing=" + mgrT.GetProperty("IsPlaying").GetValue(mgr) + " timeScale=" + UnityEngine.Time.timeScale;
+}
+var before = State();
+UnityEngine.ScreenCapture.CaptureScreenshot("__EVIDENCE_DIR__/__TAG__-before.png");
+var main = types.First(x => x.Name == "Main" && x.GetMethod("SimulateKeyBack", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static) != null);
+main.GetMethod("SimulateKeyBack", System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static).Invoke(null, null);
+return "__TAG__ BEFORE " + before + " || AFTER(immediate) " + State();

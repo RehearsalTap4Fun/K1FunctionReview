@@ -1,0 +1,19 @@
+var types = System.AppDomain.CurrentDomain.GetAssemblies().SelectMany(a => { try { return a.GetTypes(); } catch { return new System.Type[0]; } }).ToList();
+var bf = System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.Public|System.Reflection.BindingFlags.NonPublic;
+var worldT = types.First(x => x.Name == "World" && x.GetProperty("I", System.Reflection.BindingFlags.Public|System.Reflection.BindingFlags.Static|System.Reflection.BindingFlags.FlattenHierarchy) != null && x.GetField("LogicMgr") != null);
+var world = worldT.GetProperty("I", System.Reflection.BindingFlags.Public|System.Reflection.BindingFlags.Static|System.Reflection.BindingFlags.FlattenHierarchy).GetValue(null);
+if (world == null) return "no world";
+var mgr = worldT.GetField("LogicMgr").GetValue(world);
+var tryGet = mgr.GetType().GetMethod("TryGetComponent");
+object Get(System.Type ct, int id) { var args = new object[]{ id, null }; var ok = (bool)tryGet.MakeGenericMethod(ct).Invoke(mgr, args); return ok ? args[1] : null; }
+string F(object v) { if (v == null) return "null"; var t = v.GetType(); var x = t.GetField("x"); var y = t.GetField("y"); if (x != null && y != null) return "(" + ((float)x.GetValue(v)).ToString("F1") + "," + ((float)y.GetValue(v)).ToString("F1") + ")"; return v is float f ? f.ToString("F2") : v.ToString(); }
+var bulletT = types.First(x => x.Name == "Phase4SwarmBulletComponent"); var waveT = types.First(x => x.Name == "Phase4RingWaveComponent");
+var st = types.First(x => x.Name == "Phase4SwarmRuntime"); var sw = st.GetProperty("Active", System.Reflection.BindingFlags.Public|System.Reflection.BindingFlags.Static)?.GetValue(null);
+var rt = types.First(x => x.Name == "Phase4RingRuntime"); var ring = rt.GetProperty("Active", System.Reflection.BindingFlags.Public|System.Reflection.BindingFlags.Static)?.GetValue(null);
+var paused = world.GetType().GetProperty("IsPaused")?.GetValue(world);
+var sb = new System.Text.StringBuilder(System.DateTime.Now.ToString("HH:mm:ss.f") + " paused=" + paused);
+if (sw != null) { var bl = (System.Collections.IList)st.GetField("m_Bullets", bf).GetValue(sw); sb.Append(" bullets=" + bl.Count);
+  foreach (var b in bl.Cast<object>().Take(3)) { var id = (int)b.GetType().GetField("EntityID", bf).GetValue(b); var c = Get(bulletT, id); if (c == null) { sb.Append(" [" + id + ":none]"); continue; } sb.Append(" [" + id + " pos" + F(bulletT.GetField("Position").GetValue(c)) + " wp" + F(bulletT.GetField("Waypoint").GetValue(c)) + " leg" + bulletT.GetField("Leg").GetValue(c) + " t" + F(bulletT.GetField("Elapsed").GetValue(c)) + "]"); } }
+if (ring != null) { var wl = (System.Collections.IList)rt.GetField("m_Waves", bf).GetValue(ring); sb.Append(" | waves=" + wl.Count);
+  foreach (var w in wl.Cast<object>().Take(4)) { var idf = w.GetType().GetField("EntityID", bf) ?? w.GetType().GetFields(bf).FirstOrDefault(f => f.FieldType == typeof(int)); var id = (int)idf.GetValue(w); var c = Get(waveT, id); if (c == null) { sb.Append(" {" + id + ":none}"); continue; } sb.Append(" {" + id + " main=" + waveT.GetField("IsMain").GetValue(c) + " r=" + F(waveT.GetField("LastSampleRadius").GetValue(c)) + " ret=" + waveT.GetField("Returning").GetValue(c) + " app=" + waveT.GetField("AppendSpawned").GetValue(c) + " c" + F(waveT.GetField("Center").GetValue(c)) + " t" + F(waveT.GetField("Elapsed").GetValue(c)) + "}"); } }
+return sb.ToString();

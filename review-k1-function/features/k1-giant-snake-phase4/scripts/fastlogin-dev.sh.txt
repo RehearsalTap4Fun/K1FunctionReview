@@ -1,0 +1,23 @@
+#!/bin/zsh
+# Fast-login __PLAYER_ID__@__SERVER_ID__ through the login screen's own GM panel and character entry.
+M="mcporter call --http-url http://127.0.0.1:8080/mcp --allow-http execute_code --args"
+call() { eval "$M '$(jq -nc --arg c "$1" '{action:"execute",code:$c}' | sed "s/'/'\\\\''/g")'" 2>&1 | jq -r '.data.result // .message // .error'; }
+for i in $(seq 1 40); do r=$(call 'return UnityEngine.Object.FindObjectsOfType<UnityEngine.Canvas>(false).Any(c=>c.name.StartsWith("UILogin")) ? "ready" : "wait";'); [ "$r" = "ready" ] && break; sleep 5; done
+echo "login screen: $r"
+call 'void Click(UnityEngine.GameObject g) => UnityEngine.EventSystems.ExecuteEvents.Execute(g, new UnityEngine.EventSystems.PointerEventData(UnityEngine.EventSystems.EventSystem.current), UnityEngine.EventSystems.ExecuteEvents.pointerClickHandler);
+var root = UnityEngine.Object.FindObjectsOfType<UnityEngine.Canvas>(false).First(c=>c.name.StartsWith("UILogin")).transform;
+var fast = root.GetComponentsInChildren<UnityEngine.Transform>(true).First(x=>x.name=="FastLogion");
+var panel = fast.GetComponentsInChildren<UnityEngine.Transform>(true).First(x=>x.name=="FastLogionPanel");
+UnityEngine.Transform P(string n)=>panel.GetComponentsInChildren<UnityEngine.Transform>(true).First(x=>x.name==n);
+Click(fast.GetComponentsInChildren<UnityEngine.Transform>(true).First(x=>x.name=="BigBlueBtn1").gameObject);
+P("Toggle3").GetComponent<UnityEngine.UI.Toggle>().isOn = true;
+P("InputField1").GetComponent<UnityEngine.UI.InputField>().text = "__PLAYER_ID__";
+P("InputField2").GetComponent<UnityEngine.UI.InputField>().text = "__SERVER_ID__";
+Click(P("CloseBtn").gameObject);
+var acc = root.GetComponentsInChildren<UnityEngine.Transform>(false).Where(x=>x.name=="Account1").First(a=>a.GetComponentsInChildren<UnityEngine.UI.Text>(false).Any(t=>t.text=="__ROLE_NAME__"));
+UnityEngine.Transform tgt = acc; while (!tgt.GetComponents<UnityEngine.Component>().Any(k=>k is UnityEngine.EventSystems.IPointerClickHandler)) tgt = tgt.parent;
+Click(tgt.gameObject); return "entry clicked";'
+for i in $(seq 1 10); do sleep 2; r=$(call 'var c = UnityEngine.Object.FindObjectsOfType<UnityEngine.Canvas>(false).FirstOrDefault(x=>x.name.StartsWith("UISwitchRole")); if (c == null) return "none"; UnityEngine.EventSystems.ExecuteEvents.Execute(c.GetComponentsInChildren<UnityEngine.Transform>(false).First(x=>x.name=="RightBtn" && x.parent.name=="Content").gameObject, new UnityEngine.EventSystems.PointerEventData(UnityEngine.EventSystems.EventSystem.current), UnityEngine.EventSystems.ExecuteEvents.pointerClickHandler); return "confirmed";'); [ "$r" = "confirmed" ] && break; done
+echo "switch role: $r"
+for i in $(seq 1 30); do sleep 4; r=$(call 'var t = System.AppDomain.CurrentDomain.GetAssemblies().Select(a => a.GetType("Logic.LPlayer")).First(x => x != null); var I = t.GetProperty("I", System.Reflection.BindingFlags.Public|System.Reflection.BindingFlags.Static|System.Reflection.BindingFlags.FlattenHierarchy).GetValue(null); return t.GetProperty("PlayerID").GetValue(I) + "@" + t.GetProperty("ServerId").GetValue(I);'); [ "$r" = "__PLAYER_ID__@__SERVER_ID__" ] && break; done
+echo "identity: $r"

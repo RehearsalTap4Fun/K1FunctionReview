@@ -1,0 +1,10 @@
+var bf = System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.Public|System.Reflection.BindingFlags.NonPublic|System.Reflection.BindingFlags.Static|System.Reflection.BindingFlags.FlattenHierarchy;
+var types = System.AppDomain.CurrentDomain.GetAssemblies().SelectMany(a => { try { return a.GetTypes(); } catch { return new System.Type[0]; } }).ToList();
+var pmT = types.First(x => x.FullName == "DeepUI.PopupManager"); var pm = pmT.GetProperty("I", bf).GetValue(null);
+var ecT = types.First(x => x.FullName == "UI.UIEnhanceCard");
+var pop = pmT.GetMethods().First(m => m.Name == "FindPopup" && !m.IsGenericMethod).Invoke(pm, new object[]{ ecT });
+if (pop == null) return "no popup";
+var ids = ecT.GetField("m_EnhanceCardIds", bf).GetValue(pop);
+var card = UnityEngine.Object.FindObjectsOfType<UnityEngine.Canvas>(false).First(x => x.isRootCanvas && x.name.StartsWith("UIEnhanceCard"));
+var titles = card.GetComponentsInChildren<UnityEngine.UI.Text>(false).Where(t => t.name == "Title" || t.name.StartsWith("T_353535")).Select(t => t.text.Replace("\n"," ")).ToList();
+return System.DateTime.Now.ToString("HH:mm:ss") + " ids=" + Newtonsoft.Json.JsonConvert.SerializeObject(ids) + " | " + string.Join(" | ", titles);

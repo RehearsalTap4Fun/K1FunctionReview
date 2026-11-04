@@ -1,0 +1,11 @@
+var types = System.AppDomain.CurrentDomain.GetAssemblies().SelectMany(a => { try { return a.GetTypes(); } catch { return new System.Type[0]; } });
+var bf = System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.Public|System.Reflection.BindingFlags.NonPublic;
+var t = types.First(x=>x.Name=="Phase4BeamRuntime"); var a = t.GetProperty("Active", System.Reflection.BindingFlags.Public|System.Reflection.BindingFlags.Static)?.GetValue(null);
+if (a == null) return "inactive";
+var casts = (System.Collections.IList)t.GetField("m_Casts", bf).GetValue(a);
+var outp = new System.Collections.Generic.List<string>();
+foreach (var c in casts) { var ct = c.GetType(); var parts = new System.Collections.Generic.List<string>();
+  foreach (var f in ct.GetFields(bf)) { var v = f.GetValue(c); if (v is System.Collections.ICollection col) parts.Add(f.Name+"#"+col.Count); else if (v == null || f.FieldType.IsPrimitive || f.FieldType.IsEnum) parts.Add(f.Name+"="+v); }
+  outp.Add(string.Join(";", parts)); }
+var hv = ((System.Collections.ICollection)t.GetField("m_HitVisuals", bf).GetValue(a)).Count;
+return System.DateTime.Now.ToString("HH:mm:ss") + " casts=" + casts.Count + " hitVisuals=" + hv + " | " + string.Join(" || ", outp);

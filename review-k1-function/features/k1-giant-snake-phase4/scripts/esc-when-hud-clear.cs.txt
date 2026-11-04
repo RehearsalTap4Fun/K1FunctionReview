@@ -1,0 +1,7 @@
+var tops = UnityEngine.Object.FindObjectsOfType<UnityEngine.Canvas>(false).Where(c=>c.isRootCanvas).Select(c=>c.name.Split('(')[0]).ToList();
+if (tops.Any(n => n.StartsWith("UIEnhance") || n.StartsWith("UITriggerGift") || n.StartsWith("UITowerDefenseGameEnd") || n.StartsWith("UIWinReward"))) return "busy " + string.Join(",", tops.Where(n=>n.StartsWith("UI")).Take(3));
+UnityEngine.ScreenCapture.CaptureScreenshot("__EVIDENCE_PNG__");
+var asms = System.AppDomain.CurrentDomain.GetAssemblies();
+var main = asms.Select(a => { try { return a.GetType("Main"); } catch { return null; } }).First(x => x != null && x.GetMethod("SimulateKeyBack", System.Reflection.BindingFlags.Public|System.Reflection.BindingFlags.NonPublic|System.Reflection.BindingFlags.Static) != null);
+main.GetMethod("SimulateKeyBack", System.Reflection.BindingFlags.Public|System.Reflection.BindingFlags.NonPublic|System.Reflection.BindingFlags.Static).Invoke(null, null);
+return "esc sent at clear HUD " + System.DateTime.Now.ToString("HH:mm:ss.fff");

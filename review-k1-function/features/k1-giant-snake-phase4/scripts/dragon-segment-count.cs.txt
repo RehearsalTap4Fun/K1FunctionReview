@@ -1,0 +1,13 @@
+var types = System.AppDomain.CurrentDomain.GetAssemblies().SelectMany(a => { try { return a.GetTypes(); } catch { return new System.Type[0]; } }).ToList();
+var worldT = types.First(x => x.Name == "World" && x.GetField("LogicMgr") != null);
+var world = worldT.GetProperty("I", System.Reflection.BindingFlags.Public|System.Reflection.BindingFlags.Static|System.Reflection.BindingFlags.FlattenHierarchy).GetValue(null);
+if (world == null) return "no world";
+var mgr = worldT.GetField("LogicMgr").GetValue(world);
+var api = types.First(x => x.Name == "SystemAPI" && x.GetMethods().Any(m => m.Name == "QueryEntities"));
+var q = api.GetMethods().First(m => m.Name == "QueryEntities" && m.IsGenericMethodDefinition && m.GetGenericArguments().Length == 1);
+var ct = types.First(x => x.Name == "DragonUnitMoveComponent");
+var en = q.MakeGenericMethod(ct).Invoke(null, new[]{ mgr }); var e = en.GetType().GetMethod("GetEnumerator").Invoke(en, null); var et = e.GetType(); var mn = et.GetMethod("MoveNext"); var cur = et.GetProperty("Current");
+var ids = new System.Collections.Generic.List<int>(); var ts = new System.Collections.Generic.List<float>();
+while ((bool)mn.Invoke(e, null)) { var item = cur.GetValue(e); var it = item.GetType(); ids.Add((int)it.GetField("Item1").GetValue(item)); var c = it.GetField("Item2").GetValue(item); ts.Add((float)ct.GetField("T").GetValue(c)); }
+var paused = world.GetType().GetProperty("IsPaused")?.GetValue(world);
+return System.DateTime.Now.ToString("HH:mm:ss.f") + " paused=" + paused + " segments=" + ids.Count + " idHash=" + string.Join(",", ids.OrderBy(i=>i).Take(3)) + "..+" + ids.Sum() + " maxT=" + (ts.Count>0?ts.Max().ToString("F2"):"-") + " avgT=" + (ts.Count>0?ts.Average().ToString("F2"):"-");
