@@ -76,7 +76,7 @@
       "pathGlobsAny": ["**/*Localization*.*", "**/*Locale*.*", "**/*I18n*.*", "**/*Language*.*"],
       "requirementTermsAny": ["本地化", "多语言", "文案", "翻译", "语言包"],
       "trigger": "any",
-      "evidenceExpectation": "定位界面查找调用，并核对正式本地化键和值。",
+      "evidenceExpectation": "定位界面查找调用，并核对正式本地化键和值。客户端 i18n tsv 暂缺键不单独判缺口：开发环境 Unity 运行取在线翻译母表、打包前手动同步 tsv；以键名引用一致及母表/配置 #local 来源为准。",
       "notApplicableWhen": "客户端不展示用户可见文本。"
     },
     {
@@ -303,7 +303,7 @@
       "pathGlobsAny": ["*.xlsx", "**/*.xlsx", "**/*Language*.*", "**/*Locale*.*"],
       "requirementTermsAny": ["本地化键", "LcKey", "多语言键", "文案键"],
       "trigger": "all",
-      "evidenceExpectation": "核对正式键引用及匹配的本地化条目。",
+      "evidenceExpectation": "核对正式键引用及匹配的本地化条目（配置 #local 或翻译母表）；客户端 tsv 未同步不单独判缺口，运行验收以 Unity 实际显示为准。",
       "notApplicableWhen": "配置内容不展示为用户可见文本。"
     },
     {

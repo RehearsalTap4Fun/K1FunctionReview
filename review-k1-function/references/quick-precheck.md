@@ -23,7 +23,7 @@
 2. 本次冻结的 Git target SHA 定义实现。
 3. Config target SHA 上的正式 `.xlsx` 定义配置最终状态。
 4. 已有或生成用例只补充检查视角，不修改、替代或覆盖开发文档。
-5. 生成 JSON/TSV 是次级证据；《配置表结构》等文档仅定位 workbook、表、字段或 ID。
+5. 生成 JSON/TSV 是次级证据；《配置表结构》等文档仅定位 workbook、表、字段或 ID。客户端 `Assets/Res/i18n/*.tsv` 缺少新文案键或内容未同步，不单独构成“阻断”或“存在明显缺口”：开发环境的 Unity 以在线翻译母表为准、打包前手动同步 tsv；静态阶段核对代码引用的键名与配置 `#local`/母表来源一致即可，显示正确性留给运行验收按 Unity 实际显示判定，见 [文案来源与判定口径](ui-language-and-screen-adaptation.md#多语言文案来源与判定口径)。
 
 默认输入：
 
