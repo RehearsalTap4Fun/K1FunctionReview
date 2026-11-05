@@ -21,6 +21,7 @@ Windows 与 macOS 均须由用户为本轮明确提供 K1 工程根目录；不�
 | Word / PDF 需求材料 | 分别按文档路由使用 `documents:documents` / `pdf:pdf` | 对应 skill 自身运行依赖；本地文件不需要统一的额外 API Key |
 | Jira 单号定位 / Confluence 文档 | 按实际来源选择已配置连接；用 Confluence 时可配 `confluence` | 本人的 Jira/Confluence 访问凭证或有效登录态。直接提供分支与可读本地需求时，不强制配置这两项 |
 | 用户明确要求提交 K1 Jira Bug | 仓库内 `jira-bug-creator/`，需将完整目录注册到 Agent skills | 本人 Jira Token、NK 创建与附件权限、Python/uv、原始问题证据；建单前确认版本、经办人与优先级 |
+| 版本日验收后收集未通过项、建 Bug、修复并 Unity 复验 | `jira-bug-creator`；Unity 路径建议 `unity-mcp-orchestrator`；文档访问可用 `dws` | 指定版本日文档及其读取权限、Jira NK 建单/附件权限、用户指定客户端/服务器工种与对应 Git 写入权限、目标 Unity 工程、配置/多语言转换与专属服部署权限；只需 Unity 路径，不自动要求真机安装依赖 |
 
 `jenkins-hotfix` 不是测试环境链的依赖；不得用正式热更任务代替个人测试服部署。K1 配置检查不使用 `xcfg-tool`。`slg-testcase-generator`、`jira-bug-creator` 与本 skill 一同包含在 K1FunctionReview 仓库中，但仍需分别注册到 Agent skills 目录。其余外部 skill 不包含在当前 skill 文件夹内，分享时应列出名称并让接收者从团队维护来源安装；不要假设对方已有本机全部 skill。
 
