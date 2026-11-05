@@ -10,7 +10,7 @@
 | k1-lava-cave | 熔岩洞穴与科技扣费 | LavaCave、AP、批量科技升级 | NK-10750 / dev | Unity正常合法扣费、资源不足无副作用、单升/批升预算旅程通过 | [熔岩洞穴档案](k1-lava-cave/experience.md) | 2026-10-29 |
 | k1-strongest-trial | 强者试炼 | type151、CommonScoreRank、白金兑换券、紫箱 | NK-10648 / dev | Unity真实奖励预览与1194000分入榜前态；双榜邮件自然End仍待验 | [强者试炼档案](k1-strongest-trial/experience.md) | 2026-10-29 |
 | k1-commerce-shops | 次元商店与兑换商店 | UIMergeShop、TFWTab、头像框券、城堡预览 | NK-10651、NK-10644 / dev | 次元商店最小购买、三语及真实ESC重进闭环；兑换商店历史适配问题和人工完成决定分开保留 | [商业商店档案](k1-commerce-shops/experience.md) | 2026-10-29 |
-| k1-arena | 竞技场 | ArenaV2、阵容快照、重复挑战、积分分档匹配、三语与多图反馈 | NK-10402 / dev_NK-10402；NK-10371、NK-10459（已发MR，599排除） | 10/27历史21项保留；10/29原32/33仅开发参考；11/03 Unity定向复验3通过、2待补，非全需求通过 | [竞技场验收档案](k1-arena/experience.md) | 2026-11-03 |
+| k1-arena | 竞技场 | ArenaV2、阵容快照、重复挑战、积分分档匹配、三语与多图反馈 | NK-10402 / dev_NK-10402；NK-10371、NK-10459（已发MR，599排除） | 10/27历史21项保留；10/29原32/33仅开发参考；11/03 Unity定向复验3通过、2待补，非全需求通过；11/3一期中文定向3通过2待补，听感待人工，未宣称完整需求通过 | [竞技场验收档案](k1-arena/experience.md) | 2026-11-03 |
 | k1-gold-miner | 黄金矿工 | GoldMiner、Gold Miner、矿工、挖矿活动、特殊设备、矿工币、ESC、返回键、HUD | NK-8062 / dev_NK-8062 | 玩家体验、反馈与运行片段；含 MuMu 连续帧普通输入体验（4–18 关通过，含标记目标优先、每局免费炸弹、钻石补体力及规则文案歧义），返回键后 HUD 消失仍待复验，非全功能通过；10/29追加实例GM/跨服排行隔离前置只读核证 | [黄金矿工验收档案](k1-gold-miner/experience.md) | 2026-10-29 |
 | k1-world-map-rework | 大地图重构 | WorldMapV2、V2Fort、FogLayer、新大地图 | NK-8604 / dev_NK-8604 | 多批次静态预检；历史阻断待复核 | [大地图重构档案](k1-world-map-rework/experience.md) | 2026-10-21 |
 | k1-first-day-fog-spawn | 新服大地图出生与随机迁城首日迷雾一致性 | 首日迷雾、D0 出生区、随机迁城、FogLayer | 2026-08-11 专项请求；相关 NK-8604 / dev_NK-8604 | 静态可进入运行验收；未执行运行验证 | [出生与迷雾档案](k1-first-day-fog-spawn/experience.md) | 2026-10-21 |
