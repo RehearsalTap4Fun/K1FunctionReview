@@ -1,5 +1,19 @@
 # 竞技场：验收经验档案
 
+## 2026-11-05：600版本日验收后客户端修复与 Unity 定向复验
+
+来源 S600-FIX：`FunctionReviewRuns/fix-600-client-20261105/repair-status.json`、`ui-flip-probe.json`；新增 S600-FIX-RUN：同目录 `runtime/state.json`、真实快照及三语截图（本机私有证据，不随Skill分发）。客户端基线dev `ee4e3aced8da`，修复提交 `4ef019e1566a`，正式转换 #1338 SUCCESS。历史初始进度仍保留，最新运行结果以 runtime 台账为准；不继承原验收通过结论。
+
+| entryId | 结论 / 方法 | 状态、适用范围与下次动作 |
+|---|---|---|
+| arena-snapshot-zero-star-level | `HeroNewWidget.SetData(cfgId,level,star)`默认仅在level与star均大于0时刷新等级；防守主将卡和放大详情展示0星快照时须显式forceShowLevel，否则可能保留预制件LV.9或复用项旧值 | S600-FIX-RUN 实际正常候选条目打开两名玩家，真实Ack level1/star0，主将卡、放大详情及缓存复用均Lv.1。样本限0星1级，2级/非0星未制造；原生输入受阻后已获用户恢复，最终d96主页面真实ESC及重进补验通过，见下文 |
+| arena-hidden-refresh-rtl | 挑战页付费btnRefresh初始隐藏；UIFlipToos未包含隐藏节点时其Cost文字跳过阿语翻转。修复isFindInActiveObj=1包含初始隐藏文字 | S600-FIX-RUN 正常免费刷新3次后EN付费5，正常切RU实际5，付费5/10后AR实际20，关闭重进仍可读20。只修改预制件，不手写显示文本或旋转；实际三语截图已查看并对照原镜像图 |
+
+复验准备提醒：竞技场354为整服开关；授权、共享协调、原态与恢复回执每轮单独核实。服务器开启后旧客户端表缓存可能仍关闭，正常重登后回读；临时本地覆盖只能作为导航准备，不能代替实际ArenaQuery成功。资产不足时BtnCostWidget可能替换缓存点击回调，GM补资产后仅重开同一缓存页面仍可能走获取途径；本批用正常语言重启重新建立页面后实际扣费5/10成功，该邻近现象未纳入本次4ef修复，不伪称扣费先前已成功。
+
+S600-FIX-SUP（2026-11-05）：最终client d96c99dfacb7、转换#1340；相较4ef仅变更FTE与引导回调，Arena源码/预制件逐Git对象相同，保留原4条真实UI结果。新证据私有目录 `FunctionReviewRuns/fix-600-client-20261105/runtime/supplement-1334/final-session-guard`，报告 `reports/unity-recheck-final-20261105-1356`。真实ESC：核对独立Unity进程/HWND，MCP聚焦GameView后由sky发送原生按键；用FrameUpdateMgr.RenderingUpdate采样真实Input.GetKeyDown，再核主页面消失/HUD保留、正常重进。EditorApplication.update采样可能错过游戏帧；按键前焦点已核，最终采样瞬间focused=false原值仍保留，真实输入及页面后态均有证据。354当时整服关闭，只有本地导航覆盖，截图默认空数据不能当竞技场业务数据通过；收尾清除覆盖和采样器、正常Close页面，不改整服状态。首次原生失败与最终成功分开保留。
+
+
 featureId：`k1-arena`。关联：NK-10402 / dev_NK-10402（2026-10-27 历史）；NK-10371、NK-10459（599 表第 32/33 项，仅已发 MR、未合入 dev，本轮排除）。更新：2026-10-29（Asia/Shanghai）。10/27 Unity 21 项的 18 通过、3 失败（2 问题）仅属历史批次；10/29 误纳入两项的实测只保留开发参考，不计 599 本轮通过或失败，真机未执行。
 
 ## 再次验收先看

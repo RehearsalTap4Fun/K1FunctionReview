@@ -26,7 +26,9 @@
 | k1-throne-war-king-skill | 国王技能与城堡技能弹窗 | 王座战、禁锢、UIPlayerCityInfo、UIThroneWarKingSkill | NK-10866 / CS-305229 | 按用户指定原录屏城堡弹窗复验；技能使用与ESC正常，三语说明裁切；未通过 | [国王技能档案](k1-throne-war-king-skill/experience.md) | 2026-11-03 |
 
 | k1-save-egg-mail | 巨龙前置迁移补偿邮件 | SaveEgg、345、60010003、RoyalChest、版本迁移、防重 | NK-10875 / dev | Unity九项实现回归通过；完整产品规则待确认；只修既有模板ID无需机械三语 | [龙蛋邮件档案](k1-save-egg-mail/experience.md) | 2026-11-03 |
+| k1-fte-version-switch | FTE版本与开关会话 | FTEVerGroupCfg、SwitchID、BeginSession、OPENING_CG、Generation、UIGuid | NK-10720、NK-10748、NK-10909 / dev、NK-10915 | 最终d96：正常SDK双向首次切服5→1、冷启/同服重登/真实ESC，9条定向通过；含可选开场键和旧会话回调修复；完整需求待确认 | [FTE会话档案](k1-fte-version-switch/experience.md) | 2026-11-05 |
 
 新增功能按 [档案模板](../assets/feature-experience-template.md) 创建 `features/<featureId>/experience.md` 并登记在本表；同功能改名、换分支或新一轮验收更新原档案。泛称“矿工”“特殊设备”“迷雾”或“首杀”只作为搜索线索，按需求确认归属。出生与迷雾专项和大地图主档案相互链接，同一分支不自动合并不同范围的结论。
+
 
 每个功能的可复用脚本保存在该目录的 `scripts/`，先读其中 `usage.md`；没有适用脚本的档案明确注明，不创建空脚本目录。历史报告及原始回执留在原批次目录，Skill 只保存可追溯摘要与必要模板。以上状态都是历史批次的范围记录，不是本轮验收结论。
