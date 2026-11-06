@@ -140,3 +140,27 @@ def test_invalid_summary_cannot_enqueue(store, tmp_path, change, code):
     with pytest.raises(ValueError, match=code):
         store.summarize({**summary_request(store, tmp_path), **change})
     assert store.read()['outbox'] == []
+
+
+def test_display_metadata_is_persisted_and_used_by_round_summary(store, tmp_path):
+    proof = tmp_path / 'actual-result.txt'
+    proof.write_text('报告与在线表回读', encoding='utf-8')
+    request = {'eventId': 'a-failed', 'itemId': 'A', 'expectedItemRevision': 0,
+               'status': 'failed', 'conclusionFinal': True, 'conclusion': '阵容丢失',
+               'evidence': [str(proof)],
+               'display': {'issue': '重开后阵容丢失', 'expected': '保存阵容',
+                           'environment': 'Unity · 2650', 'screenshots': [
+                               {'url': 'https://images.example.test/real.png', 'caption': '失败现场'}]}}
+    store.record(request)
+    original = store.read()['outbox'][0]['payload']
+    assert 'real.png' in original['markdown']['text']
+    assert store.read()['items']['A']['display']['expected'] == '保存阵容'
+    # Replacing evidence presentation does not create a new business failure.
+    store.record({**request, 'eventId': 'a-new-image', 'expectedItemRevision': 1,
+                  'display': {**request['display'], 'screenshots': []}})
+    assert len(store.read()['outbox']) == 1
+    assert store.read()['outbox'][0]['payload'] == original
+    result(store, tmp_path, 'B', 'passed')
+    result(store, tmp_path, 'C', 'blocked')
+    store.summarize(summary_request(store, tmp_path))
+    assert '重开后阵容丢失' in store.read()['outbox'][1]['payload']['markdown']['text']

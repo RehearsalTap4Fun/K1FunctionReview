@@ -12,6 +12,7 @@ import re
 import time
 
 from .core import WorkflowError, atomic_json, canonical_hash, file_hash, read_json, reject_formal_write, require
+from .presentation import details, failure_message, summary_message
 
 MODES = {'development': '功能验收', 'mainline_regression': '版本日验收'}
 STATUSES = {'pending', 'running', 'passed', 'failed', 'blocked'}
@@ -107,16 +108,11 @@ def markdown(value):
     return re.sub(r'([\\`*_{}\[\]()#+.!|>~-])', r'\\\1', ' '.join(str(value).split())).replace('@', '＠')
 
 
-def message(data, item, sequence, recorded_at):
-    c = counts(data)
-    title = '进度播报｜' + data['versionDate']
-    body = (f'### {title}\n\n验收项：{markdown(item["title"])}\n\n'
-            f'验收模式：{MODES[data["acceptanceMode"]]}\n\n本项结果：{LABELS[item["status"]]}\n\n'
-            f'总需求：{c["total"]}\n\n已完成：{c["completed"]}\n\n'
-            f'待验收：{c["pending"]}｜正在验收：{c["running"]}\n\n未完成：{c["incomplete"]}\n\n'
-            f'记录时间：{recorded_at}（北京时间，以上为该时刻进度）\n\n'
-            f'播报编号：{canonical_hash(scope(data))[:12]}-{sequence}')
-    return {'msgtype': 'markdown', 'markdown': {'title': title, 'text': body}, 'at': {'isAtAll': False}}
+def message(data, item, sequence, recorded_at, conclusion='', display=None):
+    return failure_message(label=data['source'].get('versionLabel') or data['versionDate'],
+                           mode=MODES[data['acceptanceMode']], item=item, counters=counts(data),
+                           recorded_at=recorded_at, event_number=f'{canonical_hash(scope(data))[:12]}-{sequence}',
+                           conclusion=conclusion, display=display)
 
 
 class ProgressStore:
@@ -194,6 +190,9 @@ class ProgressStore:
                 conclusion_hash = canonical_hash([status, request['conclusion'].strip()])
             at = stamp()
             item.update(status=status, revision=item['revision'] + 1, updatedAt=at)
+            if status in FINAL:
+                item['conclusion'] = request['conclusion'].strip()
+                item['display'] = details(request.get('display'))
             data['revision'] += 1
             receipt = {'requestHash': request_hash, 'itemId': item['id'], 'status': status, 'at': at,
                        'evidence': proof, 'conclusion': request.get('conclusion', ''), 'counts': counts(data)}
@@ -201,7 +200,8 @@ class ProgressStore:
                 if status == 'failed':
                     seq = len(data['outbox']) + 1
                     data['outbox'].append({'sequence': seq, 'itemId': item['id'], 'eventId': request['eventId'],
-                                           'recordedAt': at, 'counts': counts(data), 'payload': message(data, item, seq, at),
+                                           'recordedAt': at, 'counts': counts(data),
+                                           'payload': message(data, item, seq, at, request['conclusion'], request.get('display')),
                                            'delivery': 'pending', 'attempts': 0, 'nextAttemptAt': 0})
                     receipt['sequence'] = seq
                 item['lastConclusionHash'] = conclusion_hash
@@ -230,17 +230,17 @@ class ProgressStore:
             require(all(i['status'] in FINAL for i in selected.values()), 'ROUND_NOT_FINISHED')
             proof = evidence(request.get('evidence'))
             c = counts({'items': selected})
-            failed = sum(i['status'] == 'failed' for i in selected.values())
-            blocked = sum(i['status'] == 'blocked' for i in selected.values())
             seq, at = len(data['outbox']) + 1, stamp()
-            title = '进度播报｜整轮验收汇总｜' + data['versionDate']
-            body = (f'### {title}\n\n验收模式：{MODES[data["acceptanceMode"]]}\n\n'
-                    f'验收批次：{markdown(request["roundId"])}\n\n本轮总需求：{c["total"]}\n\n'
-                    f'已完成：{c["completed"]}｜未通过：{failed}｜阻塞：{blocked}\n\n'
-                    f'待验收：{c["pending"]}｜正在验收：{c["running"]}\n\n'
-                    f'记录时间：{at}（北京时间，以上为本轮结束时进度）\n\n'
-                    f'播报编号：{canonical_hash(scope(data))[:12]}-{seq}')
-            payload = {'msgtype': 'markdown', 'markdown': {'title': title, 'text': body}, 'at': {'isAtAll': False}}
+            summary_items = deepcopy(list(selected.values()))
+            for item in summary_items:
+                if not item.get('conclusion'):
+                    previous = [e for e in data['events'].values()
+                                if e.get('itemId') == item['id'] and e.get('status') == item['status']]
+                    item['conclusion'] = previous[-1].get('conclusion', '') if previous else ''
+            payload = summary_message(label=data['source'].get('versionLabel') or data['versionDate'],
+                                      mode=MODES[data['acceptanceMode']], items=summary_items,
+                                      round_id=request['roundId'], recorded_at=at,
+                                      event_number=f'{canonical_hash(scope(data))[:12]}-{seq}', display=request.get('display'))
             data['outbox'].append({'sequence': seq, 'kind': 'round_summary', 'roundId': request['roundId'],
                                    'recordedAt': at, 'counts': c, 'payload': payload,
                                    'delivery': 'pending', 'attempts': 0, 'nextAttemptAt': 0})
