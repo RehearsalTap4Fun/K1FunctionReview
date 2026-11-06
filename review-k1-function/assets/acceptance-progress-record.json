@@ -3,6 +3,7 @@
   "itemId": "replace-with-stable-requirement-id",
   "expectedItemRevision": 0,
   "status": "failed",
+  "owners": [],
   "conclusionFinal": false,
   "scopeComplete": false,
   "conclusion": "替换为该需求本轮真实验收结论",
