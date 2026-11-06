@@ -1,4 +1,4 @@
-"""Record a version requirement conclusion and immediately drain its DingTalk outbox."""
+"""Record all results; notify failures immediately and summarize a finished round once."""
 import argparse
 import json
 from pathlib import Path
@@ -22,10 +22,12 @@ def execute(action, request, root, config_path=None):
     if action == 'resolve':
         return store.resolve(request)
     if action == 'preview':
-        return {'messages': [e['payload'] for e in store.read()['outbox'] if e['delivery'] != 'sent']}
-    if action not in {'record', 'flush'}:
+        return {'messages': [e['payload'] for e in store.read()['outbox']
+                             if e['delivery'] not in {'sent', 'suppressed', 'cancelled'}]}
+    if action not in {'record', 'flush', 'summarize'}:
         raise WorkflowError('COMMAND_NOT_SUPPORTED')
-    result = store.record(request) if action == 'record' else store.status()
+    result = (store.record(request) if action == 'record' else
+              store.summarize(request) if action == 'summarize' else store.status())
     try:
         result['notification'] = store.flush(RobotClient(config_path))
     except (WorkflowError, OSError) as error:
@@ -36,7 +38,7 @@ def execute(action, request, root, config_path=None):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('action', choices=['check-config', 'init', 'sync', 'record', 'flush', 'status', 'resolve', 'preview'])
+    parser.add_argument('action', choices=['check-config', 'init', 'sync', 'record', 'flush', 'summarize', 'status', 'resolve', 'preview'])
     parser.add_argument('--store-dir', type=Path)
     parser.add_argument('--request', type=Path)
     parser.add_argument('--config', type=Path)
