@@ -198,15 +198,57 @@ class ProgressStore:
             receipt = {'requestHash': request_hash, 'itemId': item['id'], 'status': status, 'at': at,
                        'evidence': proof, 'conclusion': request.get('conclusion', ''), 'counts': counts(data)}
             if conclusion_hash and conclusion_hash != item.get('lastConclusionHash'):
-                seq = len(data['outbox']) + 1
-                data['outbox'].append({'sequence': seq, 'itemId': item['id'], 'eventId': request['eventId'],
-                                       'recordedAt': at, 'counts': counts(data), 'payload': message(data, item, seq, at),
-                                       'delivery': 'pending', 'attempts': 0, 'nextAttemptAt': 0})
-                receipt['sequence'] = seq
+                if status == 'failed':
+                    seq = len(data['outbox']) + 1
+                    data['outbox'].append({'sequence': seq, 'itemId': item['id'], 'eventId': request['eventId'],
+                                           'recordedAt': at, 'counts': counts(data), 'payload': message(data, item, seq, at),
+                                           'delivery': 'pending', 'attempts': 0, 'nextAttemptAt': 0})
+                    receipt['sequence'] = seq
                 item['lastConclusionHash'] = conclusion_hash
             data['events'][request['eventId']] = receipt
             atomic_json(self.path, data)
             return {'counts': counts(data), 'revision': data['revision'], 'event': receipt}
+
+    def summarize(self, request):
+        """Queue one evidence-backed summary for an explicitly finished round."""
+        require(text(request.get('roundId')), 'ROUND_ID_REQUIRED')
+        request_hash = canonical_hash(request)
+        with locked(self.root):
+            data = self.read()
+            summaries = data.setdefault('roundSummaries', {})
+            prior = summaries.get(request['roundId'])
+            if prior:
+                require(prior['requestHash'] == request_hash, 'ROUND_ID_CONFLICT')
+                return {'counts': prior['counts'], 'revision': data['revision'], 'duplicate': True}
+            require(request.get('expectedRevision') == data['revision'], 'REVISION_CONFLICT')
+            require(request.get('roundComplete') is True, 'ROUND_NOT_FINISHED')
+            ids = request.get('itemIds')
+            require(isinstance(ids, list) and bool(ids) and all(text(i) for i in ids)
+                    and len(set(ids)) == len(ids), 'ROUND_ITEMS_REQUIRED')
+            require(all(i in data['items'] for i in ids), 'ITEM_NOT_IN_VERSION')
+            selected = {i: data['items'][i] for i in ids}
+            require(all(i['status'] in FINAL for i in selected.values()), 'ROUND_NOT_FINISHED')
+            proof = evidence(request.get('evidence'))
+            c = counts({'items': selected})
+            failed = sum(i['status'] == 'failed' for i in selected.values())
+            blocked = sum(i['status'] == 'blocked' for i in selected.values())
+            seq, at = len(data['outbox']) + 1, stamp()
+            title = '进度播报｜整轮验收汇总｜' + data['versionDate']
+            body = (f'### {title}\n\n验收模式：{MODES[data["acceptanceMode"]]}\n\n'
+                    f'验收批次：{markdown(request["roundId"])}\n\n本轮总需求：{c["total"]}\n\n'
+                    f'已完成：{c["completed"]}｜未通过：{failed}｜阻塞：{blocked}\n\n'
+                    f'待验收：{c["pending"]}｜正在验收：{c["running"]}\n\n'
+                    f'记录时间：{at}（北京时间，以上为本轮结束时进度）\n\n'
+                    f'播报编号：{canonical_hash(scope(data))[:12]}-{seq}')
+            payload = {'msgtype': 'markdown', 'markdown': {'title': title, 'text': body}, 'at': {'isAtAll': False}}
+            data['outbox'].append({'sequence': seq, 'kind': 'round_summary', 'roundId': request['roundId'],
+                                   'recordedAt': at, 'counts': c, 'payload': payload,
+                                   'delivery': 'pending', 'attempts': 0, 'nextAttemptAt': 0})
+            summaries[request['roundId']] = {'requestHash': request_hash, 'sequence': seq, 'counts': c,
+                                              'itemIds': ids, 'at': at, 'evidence': proof}
+            data['revision'] += 1
+            atomic_json(self.path, data)
+        return {'counts': c, 'revision': data['revision'], 'sequence': seq}
 
     def flush(self, sender, clock=time.time, limit=5):
         """One bounded drain; future retries run on the next event/resume/flush.
@@ -221,6 +263,17 @@ class ProgressStore:
                 for entry in data['outbox']:
                     if entry['delivery'] == 'sending':
                         entry.update(delivery='unknown', code='INTERRUPTED_SEND')
+                    # Old ledgers queued every result. Keep receipts/ambiguous sends,
+                    # but never drain known-unsent success or blocker notifications.
+                    if entry['delivery'] == 'pending' and entry.get('kind') != 'round_summary':
+                        result = data['events'].get(entry.get('eventId'), {})
+                        if result.get('status') != 'failed':
+                            entry.update(delivery='suppressed', code='FAILURE_ONLY_POLICY')
+                        else:
+                            item = data['items'].get(entry.get('itemId'), {})
+                            conclusion_hash = canonical_hash(['failed', result.get('conclusion', '').strip()])
+                            if item.get('status') != 'failed' or item.get('lastConclusionHash') != conclusion_hash:
+                                entry.update(delivery='suppressed', code='SUPERSEDED_RESULT')
                 atomic_json(self.path, data)
             for _ in range(limit):
                 with locked(self.root):
