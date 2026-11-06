@@ -13,6 +13,7 @@ import time
 
 from .core import WorkflowError, atomic_json, canonical_hash, file_hash, read_json, reject_formal_write, require
 from .presentation import details, failure_message, summary_message
+from .owners import owner_names, apply_mentions
 
 MODES = {'development': '功能验收', 'mainline_regression': '版本日验收'}
 STATUSES = {'pending', 'running', 'passed', 'failed', 'blocked'}
@@ -140,7 +141,7 @@ class ProgressStore:
         return {'versionDate': data['versionDate'], 'acceptanceMode': data['acceptanceMode'],
                 'source': data['source'], 'revision': data['revision'], 'counts': counts(data),
                 'items': list(data['items'].values()),
-                'notifications': [{k: e.get(k) for k in ('sequence', 'itemId', 'delivery', 'attempts', 'nextAttemptAt', 'code')}
+                'notifications': [{k: e.get(k) for k in ('sequence', 'itemId', 'delivery', 'attempts', 'nextAttemptAt', 'code', 'mentionResolution')}
                                   for e in data['outbox']]}
 
     def sync(self, snapshot):
@@ -157,6 +158,8 @@ class ProgressStore:
                 if old:
                     require(old['status'] == item['status'], 'SYNC_CANNOT_CHANGE_RESULTS')
                     incoming[ident] = {**old, 'title': item['title']}
+                    if 'owners' in item:
+                        incoming[ident]['owners'] = owner_names(item['owners'])
                 else:
                     require(item['status'] == 'pending', 'NEW_ITEM_MUST_BE_PENDING')
                     incoming[ident] = {**item, 'revision': 0}
@@ -193,6 +196,8 @@ class ProgressStore:
             if status in FINAL:
                 item['conclusion'] = request['conclusion'].strip()
                 item['display'] = details(request.get('display'))
+                if 'owners' in request:
+                    item['owners'] = owner_names(request['owners'])
             data['revision'] += 1
             receipt = {'requestHash': request_hash, 'itemId': item['id'], 'status': status, 'at': at,
                        'evidence': proof, 'conclusion': request.get('conclusion', ''), 'counts': counts(data)}
@@ -200,6 +205,7 @@ class ProgressStore:
                 if status == 'failed':
                     seq = len(data['outbox']) + 1
                     data['outbox'].append({'sequence': seq, 'itemId': item['id'], 'eventId': request['eventId'],
+                                           'mentionPolicy': 'failed_owner', 'owners': owner_names(item.get('owners')),
                                            'recordedAt': at, 'counts': counts(data),
                                            'payload': message(data, item, seq, at, request['conclusion'], request.get('display')),
                                            'delivery': 'pending', 'attempts': 0, 'nextAttemptAt': 0})
@@ -208,6 +214,28 @@ class ProgressStore:
             data['events'][request['eventId']] = receipt
             atomic_json(self.path, data)
             return {'counts': counts(data), 'revision': data['revision'], 'event': receipt}
+
+    def prepare_mentions(self, sequence, sender):
+        prepare = getattr(sender, 'prepare_failure', None)
+        if not callable(prepare):
+            return
+        with locked(self.root):
+            entry = deepcopy(self.read()['outbox'][sequence - 1])
+        if (entry['delivery'] != 'pending' or entry.get('kind') == 'round_summary'
+                or entry.get('mentionPolicy') != 'failed_owner' or 'mentionResolution' in entry):
+            return
+        try:
+            resolution = prepare(entry.get('owners', []))
+        except Exception:
+            resolution = {'userIds': [], 'unresolved': [{'name': name, 'code': 'OWNER_LOOKUP_UNAVAILABLE'}
+                          for name in entry.get('owners', []) or ['负责人']]}
+        with locked(self.root):
+            data = self.read()
+            current = data['outbox'][sequence - 1]
+            if current['delivery'] == 'pending' and 'mentionResolution' not in current:
+                current['payload'] = apply_mentions(current['payload'], resolution)
+                current['mentionResolution'] = {**resolution, 'checkedAt': stamp()}
+                atomic_json(self.path, data)
 
     def summarize(self, request):
         """Queue one evidence-backed summary for an explicitly finished round."""
@@ -288,6 +316,26 @@ class ProgressStore:
                                   and e['nextAttemptAt'] <= current), None)
                     if entry is None:
                         break
+                    sequence = entry['sequence']
+                # Identity lookup may call DWS; never hold the acceptance ledger lock.
+                self.prepare_mentions(sequence, sender)
+                with locked(self.root):
+                    data = self.read()
+                    entry = data['outbox'][sequence - 1]
+                    if entry['delivery'] != 'pending':
+                        continue
+                    current = clock()
+                    recent = [t for t in data.get('attemptTimes', []) if t > current - 60]
+                    if current < data.get('sendNotBefore', 0) or len(recent) >= 15:
+                        break
+                    if entry.get('mentionPolicy') == 'failed_owner':
+                        latest = data['items'].get(entry.get('itemId'), {})
+                        event = data['events'].get(entry.get('eventId'), {})
+                        expected_hash = canonical_hash(['failed', event.get('conclusion', '').strip()])
+                        if latest.get('status') != 'failed' or latest.get('lastConclusionHash') != expected_hash:
+                            entry.update(delivery='suppressed', code='SUPERSEDED_RESULT')
+                            atomic_json(self.path, data)
+                            continue
                     entry.update(delivery='sending', attempts=entry['attempts'] + 1)
                     sequence, payload = entry['sequence'], deepcopy(entry['payload'])
                     data['attemptTimes'] = recent + [current]

@@ -83,6 +83,39 @@ def test_configuration_check_never_returns_token(robot):
     assert 'TEST_ONLY' not in json.dumps(check)
 
 
+def test_transport_accepts_scoped_user_id_mentions(robot):
+    module, config = robot
+    client = module.RobotClient(config)
+    data = payload()
+    data['at']['atUserIds'] = ['user-a']
+    data['markdown']['text'] += '\n\n@user-a'
+    class Transport:
+        def open(self, request, timeout):
+            assert json.loads(request.data)['at'] == {'atUserIds': ['user-a'], 'isAtAll': False}
+            return io.BytesIO(b'{"errcode":0,"errmsg":"ok"}')
+    client.opener = Transport()
+    assert client(data)['outcome'] == 'sent'
+
+
+@pytest.mark.parametrize('at', [{'isAtAll': True}, {'isAtAll': False, 'atMobiles': ['not-allowed']},
+                                {'isAtAll': False, 'atUserIds': ['bad\n@all']}])
+def test_transport_forbids_at_all_phones_and_invalid_user_ids(robot, at):
+    module, config = robot
+    data = payload()
+    data['at'] = at
+    with pytest.raises(ValueError, match='ROBOT_MESSAGE_INVALID'):
+        module.RobotClient(config)(data)
+
+
+def test_transport_rejects_mentions_on_round_summary(robot):
+    module, config = robot
+    data = payload()
+    data['markdown']['title'] = '进度播报｜整轮验收汇总'
+    data['at']['atUserIds'] = ['user-a']
+    with pytest.raises(ValueError, match='SUMMARY_MUST_NOT_MENTION'):
+        module.RobotClient(config)(data)
+
+
 def test_redirect_is_not_followed_with_credentials(robot):
     module, _ = robot
     assert module.NoRedirect().redirect_request(None, None, 302, '', {}, 'https://example.invalid') is None
