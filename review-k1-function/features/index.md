@@ -10,9 +10,10 @@
 | k1-alliance-bi-recommendations | 联盟 BI 推荐场景 1–5 | 联盟BI推荐、union_bi_rec、BI 干预、AI 盟主、付费邀请 | NK-8728 / dev_NK-8728 | 静态预检及配置快照；历史阻断待复核 | [联盟 BI 档案](k1-alliance-bi-recommendations/experience.md) | 2026-10-21 |
 | k1-hero-bonds | 羁绊系统调整 | 英雄羁绊、HeroBondMech、羁绊战斗机制 | NK-8953 / dev_NK-8953 | 静态预检；Mock 与真实链路待复核 | [羁绊档案](k1-hero-bonds/experience.md) | 2026-10-21 |
 | k1-treasure-wear | 宝藏磨损度 | KingdomTreasure、Wear、王国宝藏磨损、最低磨损记录 | NK-8946 / dev_NK-8946 | 静态预检及生成 JSON 辅助检查；未运行 | [宝藏磨损度档案](k1-treasure-wear/experience.md) | 2026-10-21 |
-| k1-cold-server-recruitment | 冷库服与召集活动调整 | 冷库迁服、冷库召集、ColdServer、coldsrc、UnionCross | NK-9710 / dev_NK-9710、dev | 静态及三服运行；7 通过、34 部分、10 失败、15 阻塞或未执行 | [冷库服档案](k1-cold-server-recruitment/experience.md) | 2026-10-21 |
+| k1-cold-server-recruitment | 冷库服与召集活动调整 | 冷库迁服、冷库召集、ColdServer、coldsrc、UnionCross | NK-9710 / dev_NK-9710、dev | 静态及三服运行；7 通过、34 部分、10 失败、15 阻塞或未执行。2026-10-22 2600 已进服并核对冷库表，迁服/BI/收口未通过 | [冷库服档案](k1-cold-server-recruitment/experience.md) | 2026-10-22 |
 | k1-google-play-achievements | Google Play 成就接入 | Google Play 成就、CPE 成就、CpeTask、LittleGameAchievement | NK-8028 / dev_NK-8028 | 0 完整通过、8 部分、24 阻塞、8 待 Android | [Google Play 成就档案](k1-google-play-achievements/experience.md) | 2026-10-21 |
 | k1-radar-monster-first-kill | 雷达怪物击杀计数优化 | 普通雷达怪、雷达规则更新、选级、攻击、首杀隔离 | NK-9973、配套 NK-9974 / dev_NK-9973 | 1 通过、3 部分、20 阻塞；真实战斗未闭环 | [雷达怪物档案](k1-radar-monster-first-kill/experience.md) | 2026-10-21 |
+| k1-arena-optimization-phase1 | 竞技场优化1期 | NewArena、对撞辅音、结算分差颜色、挑战 N 次竞技场 | NK-10371 / dev_NK-10371 | 静态预审；服务端分支缺失，不是运行通过 | [竞技场优化1期档案](k1-arena-optimization-phase1/experience.md) | 2026-10-27 |
 
 新增功能按 [档案模板](../assets/feature-experience-template.md) 创建 `features/<featureId>/experience.md` 并登记在本表；同功能改名、换分支或新一轮验收更新原档案。泛称“矿工”“特殊设备”“迷雾”或“首杀”只作为搜索线索，按需求确认归属。出生与迷雾专项和大地图主档案相互链接，同一分支不自动合并不同范围的结论。
 
