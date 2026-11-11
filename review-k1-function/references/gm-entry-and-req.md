@@ -10,6 +10,8 @@
 | Unity Editor | 进入 Play 后打开 `Tools/工具箱` → `调试工具` → `GM输入`；同组的 `GM工具` 提供快捷按钮。运行中的游戏主界面也有上述 GM 面板入口。 | “GM输入”可填命令、切换 `PlayerID`、执行及复用历史；“GM工具”用于实际显示的快捷操作。 |
 | 已连接的 Unity 运行时 | 通过可用的 Unity MCP/运行时代码执行入口调用下述 `UI.UIGM.SendGMReq` | 不必为了发送服务端 GM 再打开输入面板；只在本轮账号和测试服的授权范围内发送。 |
 
+[Feval](feval-runtime.md) 也能在已连接的客户端运行时执行表达式；如用它发送 GM 请求，仍按下述参数、权限及回包规则记录，不能把发送成功当业务通过。
+
 定位依据（客户端源码相对 `K1Client/k1_client/client/Assets/k1/`）：`Script/HotfixScripts/UI/Main2/GM/UIMain.GM.cs` 绑定主界面按钮并打开 `UIGmWindow`；`Script/HotfixScripts/K1D1/Code/Game/Data/Dynamic/GM/GMGameData.cs` 的“命令行GM”打开 `UIGM`；`Editor/Tools/ToolSet/ToolboxWindow.cs` 注册 `Tools/工具箱`，`GMInputpanel.cs` 与 `GMPanel.cs` 提供输入和快捷面板。图标外观来自用户当前真机观察，具体包上仍以实际画面为准。
 
 ## 直接调用服务端 GM

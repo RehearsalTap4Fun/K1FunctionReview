@@ -43,6 +43,8 @@ description: Align K1 requirements and run static prechecks or runtime acceptanc
 
 需要 GM 前置或调试时，先看 [真机、Unity GM 入口与 Req](references/gm-entry-and-req.md)：已启用 GM 的真机包可从主界面按钮进入快捷面板及命令行；Unity Play 模式可用 `Tools/工具箱` 的“GM输入”“GM工具”，也可在已连接的运行时直接发送 `GMReq`。按本轮权限、角色和服务器核对命令作用范围，GM 结果不代替正常业务验收。
 
+项目已集成 [Feval 运行时诊断工具](references/feval-runtime.md)。Unity 可从 `Window/Feval` 检查运行时状态，已启用服务的真机可通过 Feval CLI 连接；它用于受控的表达式检查或已授权的运行时操作，不代替 ADB 玩家点击、正常业务回包和画面证据。
+
 Android 真机路径的普通界面点击优先用 [ADB 模拟点击](references/learned-runtime-flows.md) 发送到已确认的设备，按当前画面定位坐标并核对点击后的实际游戏状态；不要用直接调用 UI 回调或业务 Req 冒充玩家点击。需要验证真实手指、多点触控或设备特有手势时另按断言选择输入方式。
 
 ## 入口路由
