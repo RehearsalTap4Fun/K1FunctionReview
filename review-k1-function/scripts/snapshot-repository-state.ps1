@@ -186,6 +186,33 @@ function Get-StatusSummary {
     }
 }
 
+function Get-DirtyFileStatSha {
+    # Status text alone cannot see a second edit to a file that is already
+    # dirty or untracked. Fingerprint size and write time of every listed file
+    # (stat only; no content is read or kept) so such edits change the digest.
+    param([string]$Repository, [string]$Porcelain)
+    $builder = New-Object System.Text.StringBuilder
+    $records = @($Porcelain -split "`0")
+    $index = 0
+    while ($index -lt $records.Count) {
+        $record = $records[$index]
+        $index += 1
+        if ($record.Length -lt 4) { continue }
+        $category = $record.Substring(0, 2)
+        if ($category.Contains('R') -or $category.Contains('C')) { $index += 1 }
+        $relative = $record.Substring(3)
+        $stat = 'missing'
+        try {
+            $info = New-Object System.IO.FileInfo((Join-Path $Repository $relative))
+            if ($info.Exists) { $stat = "$($info.Length):$($info.LastWriteTimeUtc.Ticks)" }
+        } catch {
+            $stat = 'unreadable'
+        }
+        $builder.Append($relative).Append([char]0).Append($stat).Append([char]0) | Out-Null
+    }
+    return Get-Sha256Text $builder.ToString()
+}
+
 function Write-JsonExclusive {
     param([string]$Path, [object]$Value)
     if (Test-Path -LiteralPath $Path) { throw 'OUTPUT_ALREADY_EXISTS' }
@@ -273,6 +300,7 @@ try {
             Get-Sha256Text ''
         }
         $statusSha = Get-Sha256Text $statusResult.StdOut
+        $dirtyStatSha = Get-DirtyFileStatSha -Repository $repository -Porcelain $statusResult.StdOut
         $summary = Get-StatusSummary $statusResult.StdOut
         $branch = if ($branchResult.ExitCode -eq 0) { $branchResult.StdOut.Trim() } else { $null }
         $head = $headResult.StdOut.Trim()
@@ -281,6 +309,7 @@ try {
             head = $head
             indexSha256 = $indexSha
             statusSha256 = $statusSha
+            dirtyFileStatSha256 = $dirtyStatSha
             entryCount = $summary.EntryCount
             categories = $summary.Categories
         }

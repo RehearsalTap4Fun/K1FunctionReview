@@ -16,7 +16,7 @@ K1 功能审核 skill：需求对齐、静态预检、运行验收，以及线�
 - `jira-bug-creator/`：随仓库分发的 K1/NK Jira 建单 Skill；用户明确要求提 Bug 时整理证据、提交并回读。
 - `review-k1-function/features/`：[按功能整理的验收经验与可复用脚本](review-k1-function/features/index.md)；验收前读取对应档案，阶段结束或中断前更新。历史结论与本轮验证分开记录。
 - `review-k1-function/assets/`：空配置/请求模板、Unity 执行配方、场景/重放定义及本地验收工作台资源；不是运行记录。
-- `tests/`：使用本地协议 fixture 的 Jenkins 与环境整链回归，不连接实际 Jenkins/钉钉/SSH。
+- `tests/`：使用本地协议 fixture 的 Jenkins 与环境整链回归、运行验收台账回归，以及静态预检脚本（缓存、配置 JSON 校验、对齐交接、PowerShell 取证脚本）的本地回归；不连接实际 Jenkins/钉钉/SSH 或远端 Git。
 
 ## 安装与依赖
 

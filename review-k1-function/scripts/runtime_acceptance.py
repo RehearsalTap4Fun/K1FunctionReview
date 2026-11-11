@@ -10,8 +10,10 @@ from collections import Counter
 import hashlib
 import html
 import json
+import os
 from pathlib import Path
 import sys
+import uuid
 from activity_lifecycle import (LifecycleError, validate_runtime_handoff,
                                 validate_runtime_observations)
 
@@ -23,6 +25,8 @@ class RuntimeContractError(ValueError):
 KINDS = {'ui', 'protocol', 'server', 'runtime', 'platform', 'isolated', 'static', 'gm'}
 STATUSES = {'pending', 'partial', 'passed', 'failed', 'blocked', 'excluded', 'missed'}
 MODES = {'development': '功能验收（测试用例范围）', 'mainline_regression': '版本日验收（按原单类型确定范围）'}
+CLIENT_PATHS = {'unity': 'Unity', 'device': '真机'}
+PATCH_FIELDS = {'results', 'currentPhase', 'environmentEvidence', 'cleanup'}
 
 
 def require(condition, code):
@@ -48,6 +52,17 @@ def write_new(path, value):
         f.write('\n')
 
 
+def write_replace(path, value):
+    """Replace an existing ledger atomically so a crash never leaves half a file."""
+    path = Path(path)
+    temporary = path.with_name('.%s-%s.tmp' % (path.name, uuid.uuid4().hex))
+    try:
+        write_new(temporary, value)
+        os.replace(temporary, path)
+    finally:
+        temporary.unlink(missing_ok=True)
+
+
 def validate_plan(plan, root):
     require(plan.get('schemaVersion') in {1, 2} and nonempty(plan.get('runId')), 'PLAN_INVALID')
     if plan['schemaVersion'] == 1:
@@ -61,14 +76,21 @@ def validate_plan(plan, root):
     case_ids = {c['id'] for c in cases}
     require(bool(case_ids) and len(case_ids) == len(cases), 'BASELINE_CASES_INVALID')
     assertions = plan.get('assertions', [])
+    require(isinstance(assertions, list) and all(isinstance(a, dict) for a in assertions), 'ASSERTION_INVALID')
+    for index, a in enumerate(assertions):
+        label = a['id'] if nonempty(a.get('id')) else '#%d' % index
+        missing = [k for k in ('id', 'testcaseId', 'expected', 'action') if not nonempty(a.get(k))]
+        require(not missing, 'ASSERTION_INVALID:%s 缺少或为空字段 %s' % (label, ','.join(missing)))
     ids = {a['id'] for a in assertions}
     require(bool(ids) and len(ids) == len(assertions), 'ASSERTION_IDS_INVALID')
-    require({a['testcaseId'] for a in assertions} == case_ids, 'CASE_COVERAGE')
+    uncovered = sorted(case_ids - {a['testcaseId'] for a in assertions})
+    unknown = sorted({a['testcaseId'] for a in assertions} - case_ids)
+    require(not uncovered and not unknown,
+            'CASE_COVERAGE:基线用例缺少断言 %s；断言引用了基线外用例 %s' % (uncovered, unknown))
     for a in assertions:
-        require(all(nonempty(a.get(k)) for k in ('id', 'expected', 'action')), 'ASSERTION_INVALID')
-        require(type(a.get('phase')) is int and a['phase'] >= 0, 'PHASE_INVALID')
-        require(isinstance(a.get('requiredEvidence'), list) and bool(a['requiredEvidence']) and set(a['requiredEvidence']) <= KINDS, 'EVIDENCE_SCOPE_INVALID')
-        require(isinstance(a.get('dependsOn'), list) and set(a['dependsOn']) <= ids, 'DEPENDENCY_INVALID')
+        require(type(a.get('phase')) is int and a['phase'] >= 0, 'PHASE_INVALID:' + a['id'])
+        require(isinstance(a.get('requiredEvidence'), list) and bool(a['requiredEvidence']) and set(a['requiredEvidence']) <= KINDS, 'EVIDENCE_SCOPE_INVALID:' + a['id'])
+        require(isinstance(a.get('dependsOn'), list) and set(a['dependsOn']) <= ids, 'DEPENDENCY_INVALID:' + a['id'])
     by_id = {a['id']: a for a in assertions}
     visited, visiting = set(), set()
 
@@ -99,6 +121,7 @@ def ordered_groups(plan):
 
 def validate_planning(plan, baseline, root):
     require(plan.get('acceptanceMode') in MODES, 'ACCEPTANCE_MODE_INVALID')
+    validate_client_paths(plan)
     doc = plan.get('documentBaseline', {})
     require(doc.get('status') in {'precheck_confirmed', 'needs_review'}
             and all(nonempty(doc.get(k)) for k in ('source', 'checkedAt')), 'DOCUMENT_BASELINE_INVALID')
@@ -151,10 +174,47 @@ def validate_planning(plan, baseline, root):
             occupied[resource['id']] = resource['access']
 
 
+def validate_client_paths(plan):
+    """Optional scope record: which client paths this run covers.
+
+    When present, every assertion names its path so a single-path pass can
+    never be reported as the complete two-path stage conclusion.
+    """
+    paths = plan.get('clientPaths')
+    tagged = [a['id'] for a in plan['assertions'] if 'clientPath' in a]
+    if paths is None:
+        require(not tagged, 'CLIENT_PATHS_REQUIRED:断言 %s 填了 clientPath 但计划缺少 clientPaths' % tagged)
+        return
+    require(isinstance(paths, dict) and set(paths) == set(CLIENT_PATHS)
+            and all(v in {'in_scope', 'out_of_scope'} for v in paths.values()), 'CLIENT_PATHS_INVALID')
+    in_scope = {k for k, v in paths.items() if v == 'in_scope'}
+    require(bool(in_scope), 'CLIENT_PATHS_INVALID:至少一条路径在本轮范围内')
+    covered = set()
+    for a in plan['assertions']:
+        wanted = set(CLIENT_PATHS) if a.get('clientPath') == 'both' else {a.get('clientPath')}
+        require(wanted <= set(CLIENT_PATHS), 'CLIENT_PATH_INVALID:%s 需为 unity/device/both' % a['id'])
+        require(wanted <= in_scope, 'CLIENT_PATH_OUT_OF_SCOPE:' + a['id'])
+        covered |= wanted
+    require(covered == in_scope, 'CLIENT_PATH_UNCOVERED:' + ','.join(sorted(in_scope - covered)))
+
+
+def client_path_results(plan, results):
+    paths = plan.get('clientPaths')
+    if paths is None:
+        return None
+    summary = {}
+    for key, scope in paths.items():
+        statuses = [results[a['id']]['status'] for a in plan['assertions'] if a['clientPath'] in {key, 'both'}]
+        summary[key] = {'scope': scope, 'counts': dict(Counter(statuses)),
+                        'allPassed': bool(statuses) and all(s == 'passed' for s in statuses)}
+    return summary
+
+
 def schedule(plan, root):
     validate_plan(plan, root)
     require(plan['schemaVersion'] == 2, 'SCHEDULE_REQUIRES_SCHEMA_2')
     return {'runId': plan['runId'], 'acceptanceMode': plan['acceptanceMode'],
+            'clientPaths': plan.get('clientPaths'),
             'documentBaseline': plan['documentBaseline'], 'executionGroups': ordered_groups(plan),
             'assertions': plan['assertions']}
 
@@ -171,7 +231,9 @@ def dispatch_groups(plan, state, next_actions, unfinished):
     active_wave = (groups[0]['phase'], groups[0]['batch']) if groups else None
     dispatch, selected = [], []
     for g in groups:
-        if (g['phase'], g['batch']) != active_wave or g['phase'] != state['currentPhase']:
+        # Earlier phases stay dispatchable so a reopened assertion can be retested
+        # after the clock moved on; only future phases wait for the time gate.
+        if (g['phase'], g['batch']) != active_wave or g['phase'] > state['currentPhase']:
             continue
         first = next(aid for aid in g['assertionIds'] if aid in open_ids)
         if first in actions:
@@ -201,6 +263,49 @@ def evidence_kinds(entries, root, required=False):
     return kinds
 
 
+def evaluate_assertion(a, results, root):
+    """Validate one ledger entry; return its queue item when it is still actionable."""
+    r = results[a['id']]
+    require(isinstance(r, dict), 'RESULT_INVALID')
+    status = r.get('status')
+    require(status in STATUSES, 'STATUS_INVALID')
+    kinds = evidence_kinds(r.get('evidence', []), root)
+    actionable = status in {'pending', 'partial'}
+    action = r.get('nextAction') or a['action']
+    if status in {'passed', 'failed', 'partial'}:
+        require(nonempty(r.get('observation')) and bool(kinds), 'OBSERVATION_REQUIRED')
+    if status == 'passed':
+        require(set(a['requiredEvidence']) <= kinds, 'EVIDENCE_SCOPE_MISMATCH')
+    if status == 'failed':
+        require(bool(set(a['requiredEvidence']) & kinds), 'EVIDENCE_SCOPE_MISMATCH')
+    if status == 'blocked':
+        b = r.get('blocker', {})
+        require(b.get('kind') in {'environment', 'dependency', 'permission', 'information', 'tool'}, 'BLOCKER_INVALID')
+        require(nonempty(b.get('reason')) and nonempty(b.get('nextAction')), 'BLOCKER_INVALID')
+        attempts = b.get('attempts', [])
+        require(bool(attempts) and all(nonempty(x.get('action')) and nonempty(x.get('outcome')) for x in attempts), 'BLOCKER_ATTEMPTS_REQUIRED')
+        options = b.get('options', {})
+        require(all(v in {'available', 'exhausted', 'unavailable', 'out_of_scope'} for v in options.values()), 'BLOCKER_OPTIONS_INVALID')
+        if b['kind'] == 'environment':
+            require({'gm', 'jenkins'} <= set(options), 'ENVIRONMENT_RECOVERY_NOT_ASSESSED')
+        if b['kind'] == 'dependency':
+            require(b.get('assertionId') in results, 'BLOCKER_DEPENDENCY_INVALID')
+            require(b['assertionId'] in a['dependsOn'], 'BLOCKER_DEPENDENCY_INVALID')
+        actionable = 'available' in options.values()
+        if b['kind'] == 'dependency' and results[b['assertionId']]['status'] in {'passed', 'pending', 'partial'}:
+            actionable = True
+        action = b['nextAction']
+    if status == 'excluded':
+        require(nonempty(r.get('reason')) and nonempty(r.get('userDecision')), 'USER_DECISION_REQUIRED')
+    if status == 'missed':
+        require(nonempty(r.get('reason')) and nonempty(r.get('nextAction')) and nonempty(r.get('responsibility')), 'MISSED_WINDOW_RECORD_REQUIRED')
+    if not actionable:
+        return None
+    deps = [d for d in a['dependsOn'] if results[d].get('status') != 'passed']
+    item = {'id': a['id'], 'testcaseId': a['testcaseId'], 'action': action, 'phase': a['phase']}
+    return {**item, 'waitingFor': deps} if deps else item
+
+
 def evaluate(plan, state, root):
     require(state.get('schemaVersion') == 1 and state.get('planSha256') == digest(plan), 'PLAN_CHANGED')
     baseline = validate_plan(plan, root)
@@ -210,47 +315,13 @@ def evaluate(plan, state, root):
     require(type(state.get('currentPhase')) is int and state['currentPhase'] >= 0, 'PHASE_INVALID')
     next_actions, waiting, unfinished = [], [], []
     for a in sorted(assertions, key=lambda x: (x['phase'], x['id'])):
-        r = results[a['id']]
-        status = r.get('status')
-        require(status in STATUSES, 'STATUS_INVALID')
-        kinds = evidence_kinds(r.get('evidence', []), root)
-        actionable = status in {'pending', 'partial'}
-        action = r.get('nextAction') or a['action']
-        if status in {'passed', 'failed', 'partial'}:
-            require(nonempty(r.get('observation')) and bool(kinds), 'OBSERVATION_REQUIRED')
-        if status == 'passed':
-            require(set(a['requiredEvidence']) <= kinds, 'EVIDENCE_SCOPE_MISMATCH')
-        if status == 'failed':
-            require(bool(set(a['requiredEvidence']) & kinds), 'EVIDENCE_SCOPE_MISMATCH')
-        if status == 'blocked':
-            b = r.get('blocker', {})
-            require(b.get('kind') in {'environment', 'dependency', 'permission', 'information', 'tool'}, 'BLOCKER_INVALID')
-            require(nonempty(b.get('reason')) and nonempty(b.get('nextAction')), 'BLOCKER_INVALID')
-            attempts = b.get('attempts', [])
-            require(bool(attempts) and all(nonempty(x.get('action')) and nonempty(x.get('outcome')) for x in attempts), 'BLOCKER_ATTEMPTS_REQUIRED')
-            options = b.get('options', {})
-            require(all(v in {'available', 'exhausted', 'unavailable', 'out_of_scope'} for v in options.values()), 'BLOCKER_OPTIONS_INVALID')
-            if b['kind'] == 'environment':
-                require({'gm', 'jenkins'} <= set(options), 'ENVIRONMENT_RECOVERY_NOT_ASSESSED')
-            if b['kind'] == 'dependency':
-                require(b.get('assertionId') in results, 'BLOCKER_DEPENDENCY_INVALID')
-                require(b['assertionId'] in a['dependsOn'], 'BLOCKER_DEPENDENCY_INVALID')
-            actionable = 'available' in options.values()
-            if b['kind'] == 'dependency' and results[b['assertionId']]['status'] in {'passed', 'pending', 'partial'}:
-                actionable = True
-            action = b['nextAction']
-        if status == 'excluded':
-            require(nonempty(r.get('reason')) and nonempty(r.get('userDecision')), 'USER_DECISION_REQUIRED')
-        if status == 'missed':
-            require(nonempty(r.get('reason')) and nonempty(r.get('nextAction')) and nonempty(r.get('responsibility')), 'MISSED_WINDOW_RECORD_REQUIRED')
-        if actionable:
+        try:
+            item = evaluate_assertion(a, results, root)
+        except RuntimeContractError as e:
+            raise RuntimeContractError('%s:%s' % (e, a['id'])) from None
+        if item:
             unfinished.append(a['id'])
-            deps = [d for d in a['dependsOn'] if results[d]['status'] != 'passed']
-            item = {'id': a['id'], 'testcaseId': a['testcaseId'], 'action': action, 'phase': a['phase']}
-            if deps:
-                waiting.append({**item, 'waitingFor': deps})
-            else:
-                next_actions.append(item)
+            (waiting if 'waitingFor' in item else next_actions).append(item)
     case_results = {}
     for case in baseline['testcases']:
         statuses = [results[a['id']]['status'] for a in assertions if a['testcaseId'] == case['id']]
@@ -272,12 +343,16 @@ def evaluate(plan, state, root):
     if plan['schemaVersion'] == 2:
         next_actions, dispatch, deferred = dispatch_groups(plan, state, next_actions, unfinished)
     followups = validate_runtime_observations(baseline, plan, state, root, evidence_kinds)
+    fully = ready and (doc_ready or plan['schemaVersion'] == 1) and all(r['status'] == 'passed' for r in results.values())
+    paths = client_path_results(plan, results)
     return {'runId': plan['runId'], 'nextActions': next_actions, 'waiting': waiting,
             'acceptanceMode': mode, 'documentStatus': doc_status,
             'dispatchGroups': dispatch, 'deferredActions': deferred,
             'unfinished': unfinished, 'canFinalize': ready,
             'followupResults': followups,
-            'fullyAccepted': ready and (doc_ready or plan['schemaVersion'] == 1) and all(r['status'] == 'passed' for r in results.values()),
+            'fullyAccepted': fully,
+            'clientPaths': paths,
+            'stageFullyAccepted': fully and paths is not None and all(p['scope'] == 'in_scope' for p in paths.values()),
             'caseResults': case_results, 'counts': dict(Counter(case_results.values())),
             'missingClosure': [k for k, ok in [('environmentEvidence', bool(env)), ('cleanup', cleanup_ready)] if not ok]}
 
@@ -286,9 +361,33 @@ def check_advance(plan, state, root, target_phase):
     require(type(target_phase) is int and target_phase > state['currentPhase'], 'TIME_MUST_ADVANCE')
     evaluate(plan, state, root)
     expiring = [a['id'] for a in plan['assertions'] if a['phase'] < target_phase
-                and state['results'][a['id']]['status'] not in {'passed', 'failed', 'excluded'}]
+                and state['results'][a['id']]['status'] not in {'passed', 'failed', 'excluded', 'missed'}]
     require(not expiring, 'PHASE_INCOMPLETE:' + ','.join(expiring))
     return {'allowed': True, 'targetPhase': target_phase, 'note': '检查不修改游戏时间；推进后回读逐服时间再更新 currentPhase'}
+
+
+def record(plan, state, root, patch):
+    """Apply a ledger patch and validate the whole ledger before it is saved.
+
+    results entries replace the named assertion record; currentPhase may only
+    move forward and must pass the same gate as check-advance.
+    """
+    require(isinstance(patch, dict) and bool(patch) and set(patch) <= PATCH_FIELDS,
+            'PATCH_INVALID:仅支持 ' + ','.join(sorted(PATCH_FIELDS)))
+    require(state.get('schemaVersion') == 1 and isinstance(state.get('results'), dict), 'STATE_INVALID')
+    updated = json.loads(json.dumps(state))
+    changes = patch.get('results', {})
+    require(isinstance(changes, dict), 'PATCH_INVALID:results 需为 {断言ID: 记录}')
+    unknown = sorted(set(changes) - set(updated['results']))
+    require(not unknown, 'PATCH_ASSERTION_UNKNOWN:' + ','.join(unknown))
+    updated['results'].update(changes)
+    for field in ('environmentEvidence', 'cleanup'):
+        if field in patch:
+            updated[field] = patch[field]
+    if 'currentPhase' in patch and patch['currentPhase'] != updated.get('currentPhase'):
+        check_advance(plan, updated, root, patch['currentPhase'])
+        updated['currentPhase'] = patch['currentPhase']
+    return updated, evaluate(plan, updated, root)
 
 
 def publish(plan, state, root, output):
@@ -304,7 +403,11 @@ def publish(plan, state, root, output):
         next_step = r.get('nextAction') or r.get('blocker', {}).get('nextAction', '')
         rows.append('<tr>' + ''.join('<td>' + h(str(v)) + '</td>' for v in [a['testcaseId'], a['id'], a['expected'], r['status'], detail, next_step]) + '<td>' + links + '</td></tr>')
     mode_label = MODES.get(result['acceptanceMode'], '运行验收（旧计划未区分模式）')
-    verdict = mode_label + '通过' if result['fullyAccepted'] else mode_label + '：本轮结束，未完整通过'
+    paths = result['clientPaths']
+    scope_label = ''
+    if paths is not None and not all(p['scope'] == 'in_scope' for p in paths.values()):
+        scope_label = '（仅%s路径）' % '、'.join(CLIENT_PATHS[k] for k, p in paths.items() if p['scope'] == 'in_scope')
+    verdict = mode_label + scope_label + '通过' if result['fullyAccepted'] else mode_label + scope_label + '：本轮结束，未完整通过'
     document = '<!doctype html><meta charset="utf-8"><title>运行验收</title><style>body{font:16px sans-serif;margin:32px}table{border-collapse:collapse}td,th{border:1px solid #ccc;padding:10px;text-align:left}</style>'
     document += '<h1>' + h(verdict) + '</h1><p>' + h(result['documentStatus']) + '</p><p>' + h(json.dumps(result['counts'], ensure_ascii=False)) + '</p><p>通过结论仅适用于本轮模式和计划范围。用例与断言分别统计；隔离、GM、静态证据不能替代所需运行证据。台账校验不证明证据真实性。</p>'
     if result['followupResults']:
@@ -313,6 +416,17 @@ def publish(plan, state, root, output):
                             (oid, item['status'], ', '.join(item['sourceRefs']), item['nextAction'], item['closureCriteria'])) + '</tr>'
             for oid, item in result['followupResults'].items()) + '</table>'
     if plan['schemaVersion'] == 2:
+        document += '<h2>客户端路径</h2>'
+        if paths is None:
+            document += '<p>计划未记录客户端路径；结论仅针对已列断言，不代表 Unity 与真机双路径均已验收。</p>'
+        else:
+            document += '<table><tr><th>路径</th><th>本轮范围</th><th>断言状态</th><th>路径结果</th></tr>' + ''.join(
+                '<tr>' + ''.join('<td>' + h(v) + '</td>' for v in (
+                    CLIENT_PATHS[k], '范围内' if p['scope'] == 'in_scope' else '本轮范围外（未验收）',
+                    json.dumps(p['counts'], ensure_ascii=False) if p['counts'] else '—',
+                    '—' if p['scope'] != 'in_scope' else '已列断言全部通过' if p['allPassed'] else '未全部通过')) + '</tr>'
+                for k, p in paths.items()) + '</table><p>' + h(
+                    '完整阶段结论（Unity 与真机双路径）：' + ('通过' if result['stageFullyAccepted'] else '不成立，仅可报告上表范围内路径的限定结论')) + '</p>'
         doc = plan['documentBaseline']
         document += '<h2>文档基线</h2><p>' + h('；'.join(str(doc.get(k, '')) for k in
                       ('source', 'confirmedVersion', 'currentVersion', 'checkedAt', 'reason'))) + '</p>'
@@ -321,19 +435,35 @@ def publish(plan, state, root, output):
                              for g in ordered_groups(plan))
         document += '<h2>验收计划</h2><table><tr><th>阶段</th><th>批次</th><th>分组</th><th>执行人</th><th>前置</th><th>断言顺序</th></tr>' + group_rows + '</table>'
     document += '<table><tr><th>用例</th><th>断言</th><th>预期</th><th>状态</th><th>观察/原因</th><th>补验动作</th><th>证据</th></tr>' + ''.join(rows) + '</table><h2>留存变化</h2><p>' + h(state['cleanup']['retainedChanges']) + '</p>'
-    output.mkdir(parents=True, exist_ok=False)
-    write_new(output / 'runtime-result.json', {'summary': result, 'plan': plan, 'state': state})
-    (output / 'summary.html').write_text(document, encoding='utf-8')
+
+    def links(entries):
+        return ' '.join('<a href="' + h((root / e['path']).resolve().as_uri(), quote=True) + '">' + h(e['kind']) + '</a>' for e in entries)
+
+    document += '<h2>环境与收尾证据</h2><p>环境：' + links(state['environmentEvidence']) + '</p><p>收尾：' + links(state['cleanup']['evidence']) + '</p>'
+    require(not output.exists(), 'OUTPUT_ALREADY_EXISTS')
+    output.parent.mkdir(parents=True, exist_ok=True)
+    partial = output.with_name('.%s-%s.partial' % (output.name, uuid.uuid4().hex))
+    partial.mkdir()
+    try:
+        write_new(partial / 'runtime-result.json', {'summary': result, 'plan': plan, 'state': state})
+        (partial / 'summary.html').write_text(document, encoding='utf-8')
+        partial.rename(output)
+    except OSError:
+        for leftover in partial.glob('*'):
+            leftover.unlink()
+        partial.rmdir()
+        raise
     return result
 
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('command', choices=['schedule', 'init', 'next', 'check-advance', 'publish'])
+    parser.add_argument('command', choices=['schedule', 'init', 'next', 'record', 'check-advance', 'publish'])
     parser.add_argument('--plan', required=True)
     parser.add_argument('--state')
     parser.add_argument('--target-phase', type=int)
     parser.add_argument('--output')
+    parser.add_argument('--patch', help='record: JSON 文件，可含 results/currentPhase/environmentEvidence/cleanup')
     args = parser.parse_args()
     try:
         path = Path(args.plan).resolve()
@@ -350,6 +480,10 @@ def main():
             state = read_json(args.state)
             if args.command == 'check-advance':
                 result = check_advance(plan, state, root, args.target_phase)
+            elif args.command == 'record':
+                require(bool(args.patch), 'PATCH_REQUIRED')
+                state, result = record(plan, state, root, read_json(args.patch))
+                write_replace(args.state, state)
             elif args.command == 'publish':
                 require(bool(args.output), 'OUTPUT_REQUIRED')
                 result = publish(plan, state, root, Path(args.output))
@@ -358,7 +492,12 @@ def main():
         print(json.dumps(result, ensure_ascii=False))
         return 0
     except (RuntimeContractError, OSError, ValueError, KeyError, TypeError) as e:
-        print(json.dumps({'error': str(e) if isinstance(e, RuntimeContractError) else type(e).__name__}))
+        if isinstance(e, RuntimeContractError):
+            error = {'error': str(e)}
+        else:
+            detail = '缺少字段 %s' % e if isinstance(e, KeyError) else str(e)
+            error = {'error': type(e).__name__, 'detail': detail}
+        print(json.dumps(error, ensure_ascii=False))
         return 1
 
 

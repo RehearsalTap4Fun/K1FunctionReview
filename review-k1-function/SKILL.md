@@ -1,6 +1,6 @@
 ---
 name: review-k1-function
-description: Align K1 requirements and run static prechecks or runtime acceptance, including multilingual UI and screen adaptation checks. Use for version package acceptance and DingTalk progress broadcasts, preparing a personal test environment from an online game or battle server, backing up via Jenkins, obtaining the DingTalk DownKey, deploying independent code/config branches, or continuing partially verified cases.
+description: Align K1 requirements and run static prechecks or runtime acceptance, including multilingual UI and screen adaptation checks. Use for version package acceptance and DingTalk progress broadcasts, preparing a personal test environment from an online game or battle server, backing up via Jenkins, obtaining the DingTalk DownKey, deploying independent code/config branches, or continuing partially verified cases. 触发词：功能预检、静态预审、需求对齐、功能验收、版本日验收、运行验收、继续补验、版本进包内容表验收、验收进度播报、备份线上服并建测试环境、复制战场服。
 ---
 
 # K1 需求对齐与静态预审、运行验收
@@ -30,16 +30,14 @@ description: Align K1 requirements and run static prechecks or runtime acceptanc
 - 运行验收接收两个独立参数：`自动刷新配置` 与 `自动部署服务器`，默认均为“是”（旧任务未提供字段时也按“是”）。前者控制配置表与多语言转换，后者控制测试服部署/重建。为“否”时不得自动执行对应操作，只核对现有产物或服务器及其版本；不满足本轮条件时记录受影响路径阻塞，继续文档、反馈、计划、版本及工具连接等独立准备，不暗中重新启用。功能预检不适用这两个参数，仍禁止转换和部署。具体前置见 [验收节点与客户端路径](references/runtime-client-modes.md)。
 - 自动刷新配置开启时，开测前优先使用 `K1_Build_Config_I18N_Mac` 完成转换；自动部署服务器开启时，按 [设备与测试服隔离](references/device-server-isolation.md) 为本轮所选客户端实例准备专属服务器。两项均须核对实际产物、目标服和连接结果；两条路径使用完全相同的转换输入和产物时可共用本轮转换回执，默认每个客户端实例独占服务器，同轮续跑可复用已核实仍有效的实例。缺分配或必要部署信息时先查后问，只暂停受影响客户端的部署和游戏操作；同服例外需用户明确指定，服务器级 GM 统一协调。
 - 已有明确验收列表时，开测前先输出有序计划：检查状态和时间依赖、合并可共享准备与操作的项目、保留逐项结果和证据，再按资源隔离情况安排协作者分批并发。具体字段和派发规则见 [运行验收 §3](references/runtime-acceptance.md#3-冻结可执行断言计划)。
-- 验收项涉及新增界面或旧界面改动时，两类验收都按 [UI 多语言与屏幕适配规则](references/ui-language-and-screen-adaptation.md) 对受影响界面切换英语、俄语、阿拉伯语，逐语言检查显示并保存截图。多项任务默认按语言集中验证，减少重启切语；每项完成全部必要验证后立即更新文档状态并回读，不等待整批结束。缺少必要语言验证时保留补验/阻塞，不能整项通过；结束恢复原语言。版本日的 Unity 与真机路径同样执行这三语检查，范围限于受影响界面，不自动扩展全部功能或屏幕组合。
+- 验收项涉及新增界面或旧界面改动时，两类验收的所选路径都执行 [UI 多语言与屏幕适配规则](references/ui-language-and-screen-adaptation.md)：受影响界面实际切换英语、俄语、阿拉伯语并逐语言留截图，缺少必要语言证据不能整项通过，结束恢复原语言。
 - 每次功能任务先按 [经验读写规则](references/feature-experience.md) 查询 [功能索引](features/index.md)，读取对应档案及需要的脚本说明；每阶段结束、交接或中断前自动合并有证据的新经验，并报告回写结果。版本变化先核对适用性，历史验收结论不直接沿用。黄金矿工使用 [独立档案](features/k1-gold-miner/experience.md)。
-- 两个验收节点的所选路径均按 [运行验收规则](references/runtime-acceptance.md) 检查相关界面/玩法的返回操作：Unity 按 ESC，真机用设备返回键或模拟返回键，核对弹窗、页面和 HUD 在返回前后的状态，分别留证。
+- 两个验收节点的所选路径均检查相关界面/玩法的 ESC / 返回键行为，Unity 与真机分别留证，见 [运行验收 §1](references/runtime-acceptance.md#1-接续依据与权限)。
 - 重复运行操作先查 [已学习流程](references/learned-runtime-flows.md)：首次学习入口与成功条件，后续复用有时限的状态流程，用回包/权威状态确认；新界面、异常和视觉断言再看图。固定导航可复用，关卡策略与本轮授权不能盲目沿用。
-- 反馈表复验必须逐项查看原问题截图及预期/参考图，记录原图与本次实测的对应关系；新增反馈附本次问题截图，并验证在线附件可打开。图片读取为空不代表无图，未查看原图不得认定原问题已复现或已修复；具体记录和附件核验见运行验收规则。
-- 两类运行验收先按 [反馈文档准备与维护](references/feedback-document.md) 查找反馈表并检查必需字段。未提供链接先查任务与功能经验，确实找不到才确认“补链接或新建（推荐）”；已有授权直接沿用。字段有则语义映射，缺则在原表补建；没有整表才走新建表分支。逐项验收后维护反馈、回读及核验附件，再进入需求结论播报与归档清理；待同步时保留证据，独立验收继续。
-- 同步或整理反馈表时，截图统一追加到对应行的“问题截图”单元格，保留原图并支持多图；验收只保留一个状态字段，必要说明合并到“验收详情”。按 [运行验收规则 §4.2](references/runtime-acceptance.md#42-反馈表字段整理与格式保留) 做最小范围写入，并回读核对原有下拉验证、选项、颜色与适用范围。
-- 结果已写入文档并回读、逐图核验后，按 [过程文件归档与清理](references/runtime-artifact-cleanup.md) 自动删除本轮不可复用且无依赖的临时文件；先迁移可迁移的引用，保留未同步、待补验、机器校验依赖的证据及正式台账，不清空整个工作区。
+- 涉及反馈表的运行验收：开测前按 [反馈文档准备与维护](references/feedback-document.md) 查找来源并检查必需字段（确实找不到才请用户选择补链接或新建，缺字段在原表补建）；复验时逐项查看原问题截图，未查看原图不得认定已复现或已修复，新增反馈附本次截图并验证在线附件可打开，见 [运行验收 §1.1](references/runtime-acceptance.md#11-反馈原图是复验基线的一部分) 与 [§4.1](references/runtime-acceptance.md#41-新增反馈的截图与在线附件)；写回与整理按 [§4.2](references/runtime-acceptance.md#42-反馈表字段整理与格式保留) 做最小范围写入并回读原有下拉验证。逐项验收后即维护并回读，不等整轮结束；待同步时保留证据，独立验收继续。
+- 结果已写入文档并回读、逐图核验后，按 [过程文件归档与清理](references/runtime-artifact-cleanup.md) 清理本轮无依赖的一次性临时文件；未同步、待补验和机器校验依赖的证据及正式台账保留，不清空整个工作区。
 - 运行阶段缺环境：读取 [references/jenkins-test-environment.md](references/jenkins-test-environment.md)，从 Jira 关联、远端分支及 Jenkins 历史分别解析代码和配置来源，在已授权测试服范围内准备并部署。部署成功后验证实际运行状态，再继续原补验队列。不能把本地仓库位于其他分支、Jira 无验收描述或 MCP 返回 `auth required` 直接当作整轮终止理由；分别查目标版本的隔离运行入口、关联文档及连接修复路径，并记录实际尝试。
-- 不把“部分验证”当作结束状态。每轮调用 `scripts/runtime_acceptance.py next`，执行可继续动作；推进时间前调用 `check-advance`；最终运行验收报告只能由 `publish` 在收尾检查通过后生成。尚未确定节点或文档基线、无法建立有效计划时，只能交付明确标为“前置检查／待续”的记录，列出已完成、未尝试、真正阻塞及各自下一步，不称为运行验收结论；交付前核对本地报告链接确实存在。
+- 不把“部分验证”当作结束状态。每轮调用 `scripts/runtime_acceptance.py next`，执行可继续动作，结果用 `record` 写入台账（不手工编辑 `state.json`）；推进时间前调用 `check-advance`；最终运行验收报告只能由 `publish` 在收尾检查通过后生成。尚未确定节点或文档基线、无法建立有效计划时，只能交付明确标为“前置检查／待续”的记录，列出已完成、未尝试、真正阻塞及各自下一步，不称为运行验收结论；交付前核对本地报告链接确实存在。
 
 ## 功能审核开始前必读
 
@@ -131,7 +129,7 @@ description: Align K1 requirements and run static prechecks or runtime acceptanc
 - 远端 `.xlsx` 若为 LFS pointer，必须使用 `-MaterializeLfs -Remote origin -ExpectedLfsPath <exact-path>`；脚本只能在 FunctionPreview 缓存 fetch 精确路径并在本次 `.tmp` 原子输出。
 - LFS/正式 workbook 无法物化时，相关配置需求为 `无法确认`；不得改用生成 JSON 或旧文档形成确定性结论。
 - 若同一 config target SHA 存在该表的直接生成 JSON，可导出到本次 `.tmp` 并调用 `scripts/validate-config-json.py` 检查字段、主键、区间和权重；结果写入 `configurationChecks`，显著标为次级证据且不能替代正式 XLSX，相关正式表需求仍为 `无法确认`。
-- 对物化副本使用 `config-table-editor` 只读解析；K1 禁止 `xcfg-tool`。
+- 对物化副本使用 `config-table-editor` 只读解析；本机未注册时改用 `openpyxl` 只读打开同一副本并在证据中注明解析方式（见 quick-precheck 第 5 节步骤 8）；K1 禁止 `xcfg-tool`。
 - 在需求证据完成映射后，调用 `scripts/review_rule_matcher.py`，输入 `references/k1-review-rules.json`、当前 PrecheckResult 和本次 `collect-git-evidence.ps1` 的冻结输出。规则按仓库角色、需求已映射路径和需求信号叠加命中，不采用首条命中即停止。
 - 没有映射证据的需求不得回退到该仓库全部 changed paths 触发路径规则；仍可由需求信号触发。
 - 路径 glob 中的 `**/` 表示零层或多层目录，因此同一规则同时覆盖仓库根目录文件和嵌套文件。

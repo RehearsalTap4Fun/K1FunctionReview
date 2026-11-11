@@ -2,6 +2,10 @@
   "schemaVersion": 2,
   "runId": "REPLACE_WITH_UNIQUE_RUN_ID",
   "acceptanceMode": "REPLACE_WITH_development_OR_mainline_regression",
+  "clientPaths": {
+    "unity": "REPLACE_WITH_in_scope_OR_out_of_scope",
+    "device": "REPLACE_WITH_in_scope_OR_out_of_scope"
+  },
   "documentBaseline": {
     "status": "needs_review",
     "source": "REPLACE_WITH_DOCUMENT_SOURCE",
@@ -33,6 +37,7 @@
     {
       "id": "TC-1/main",
       "testcaseId": "TC-1",
+      "clientPath": "REPLACE_WITH_unity_OR_device_OR_both",
       "expected": "填写已确认用例中的一个独立预期",
       "action": "填写实际正常业务入口和前置准备动作",
       "phase": 0,

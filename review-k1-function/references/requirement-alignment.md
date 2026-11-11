@@ -101,8 +101,8 @@
 
 示例中的 repositories/evidence 字符串是结构说明，必须替换为实际对象，不可直接运行。需求已调整必须 applied=true 且有证据；实现有问题/证据不足必须 applied=false。后两类必须有保留的 requirementIds 与 followup；只有已批准删除的需求可以没有后续 requirementIds。
 
-```powershell
-python C:/Project/FunctionPreview/review-k1-function/scripts/requirement_alignment.py --input C:/Project/FunctionPreview/.tmp/<run-id>/handoff.json
+```shell
+python <FunctionPreview根目录>/review-k1-function/scripts/requirement_alignment.py --input <FunctionPreview根目录>/.tmp/<run-id>/handoff.json
 ```
 
 校验失败不进入用例工作流。校验成功后将 alignment 原样加入 PrecheckResult，校准完成才记录 `metadata.testcaseDocumentVersion=metadata.documentVersion`。renderer 再核对三端 SHA/refs、文档版本、回写状态、确认记录和需求交接；并核对差异引用的代码定位。校验只证明记录一致性，不能代替真实用户确认与在线文档回读。

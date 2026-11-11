@@ -95,6 +95,7 @@
 - 活动 baseline 还必须保留 [生命周期合同](activity-lifecycle.md) 的完整需求、阶段、独立断言和补验义务。用 `lifecycleAssertionId` 一对一承接 required 断言；expected/action 与基线一致，证据范围不得缩减。运行 passed 逐项填写 `observedEffects`；状态变更和 Ack 成功不能替代邮件、附件、资产和跨期结果。非结算问题用 kind=requirement 的独立断言承接。
 - `acceptanceMode` 只允许 `development / mainline_regression`，分别对应用户指定的功能验收 / 版本日验收；这是沿用的机器 ID，不代表实际 Git 分支。`documentBaseline.status=precheck_confirmed` 需要来源、确认版本/时间、预检批次、当前版本/核对时间和存在的证据文件，确认版本、当前版本、基线文档版本必须相同；`needs_review` 写来源、核对时间、原因和已取得证据，不得宣称完整通过。CLI 只核验记录，不替代读取原文或自动写回经验。
 - 普通用例在 Unity 与真机都需要验证时，保留原 `testcaseId`，建立分别标明路径的断言 ID（例如 `TC-1/unity`、`TC-1/device`）并放入各自 `executionGroup`，明确不同客户端与服务器资源。仅指定一条路径时只建立该路径断言，另一条记录为范围外。活动生命周期的 required 断言必须遵守 `lifecycleAssertionId` 一对一绑定，不能复制同一绑定；需要双端验收时，在该断言的观察与证据中分别标明 Unity、真机的实测结果。本轮所选路径的必要验证都须进入冻结计划；不得借 `runtime publish` 的全部通过状态声称范围外路径已通过。
+- 新计划填写 `clientPaths`：`{"unity":"in_scope|out_of_scope","device":"in_scope|out_of_scope"}`，按用户所选路径如实记录，至少一条在范围内。填写后每条断言必须带 `clientPath`（`unity` / `device`，生命周期等单条断言同时承接两端时用 `both`）；校验器拒绝引用范围外路径的断言，以及范围内却没有任何断言的路径。未填 `clientPaths` 的在途计划仍可继续，报告会注明未记录路径，不能据此声称双路径通过。
 - `requiredEvidence` 只能选 `ui / protocol / server / runtime / platform / isolated / static / gm`。按原需求确定，正常业务验收不以 gm/isolated/static 代替 runtime/protocol/server；界面和原生 SDK 还需相应 UI/平台证据。
 - 新增或改动界面的英、俄、阿检查在冻结前加入原需求的独立断言，写明界面/状态、语言、显示预期和含 `ui` 的证据要求。按 [三语排程](ui-language-and-screen-adaptation.md#纳入验收计划与协作) 处理共享客户端/账号的语言写操作，不能并发切换同一环境；语言间只有顺序关系时不设置成功依赖。没有新增机器字段，沿用现有断言和分组合同。
 - `phase` 为 0 起整数，同阶段先可重复/负向，再资源消耗与不可逆操作；只编排本模式实际纳入的分支，版本日普通需求不自动增加异常/边界矩阵，缺陷/故障与快速任务按其详细用例覆盖。共享账号/联盟/Unity/服务器时钟等有影响的写操作串行。
@@ -104,15 +105,20 @@
 
 在技能目录执行（示例路径需换为本轮实际路径）：
 
-```powershell
-python scripts/runtime_acceptance.py schedule --plan C:/Project/FunctionPreview/.tmp/<run-id>/plan.json
-python scripts/runtime_acceptance.py init --plan C:/Project/FunctionPreview/.tmp/<run-id>/plan.json --state C:/Project/FunctionPreview/.tmp/<run-id>/state.json
-python scripts/runtime_acceptance.py next --plan C:/Project/FunctionPreview/.tmp/<run-id>/plan.json --state C:/Project/FunctionPreview/.tmp/<run-id>/state.json
+`<FunctionPreview根目录>` 指本技能所在项目根目录；`python` 指本机 Python 3.10+ 解释器，macOS/Linux 通常写作 `python3`。
+
+```shell
+python scripts/runtime_acceptance.py schedule --plan <FunctionPreview根目录>/.tmp/<run-id>/plan.json
+python scripts/runtime_acceptance.py init --plan <FunctionPreview根目录>/.tmp/<run-id>/plan.json --state <FunctionPreview根目录>/.tmp/<run-id>/state.json
+python scripts/runtime_acceptance.py next --plan <FunctionPreview根目录>/.tmp/<run-id>/plan.json --state <FunctionPreview根目录>/.tmp/<run-id>/state.json
+python scripts/runtime_acceptance.py record --plan <plan.json> --state <state.json> --patch <FunctionPreview根目录>/.tmp/<run-id>/patch.json
 ```
 
-`schedule` 校验并输出完整有序计划，不创建台账、不执行游戏动作；先将其整理成上述可读计划。`init/next` 的 `dispatchGroups` 与 `nextActions` 仅列出当前阶段最早未闭环批次中，各独立组下一条可执行断言；`waiting` 是业务依赖未通过，`deferredActions` 是因阶段/批次/组内顺序暂缓的动作。需要推进阶段时先走 `check-advance`，不把暂缓项当作已完成。
+`schedule` 校验并输出完整有序计划，不创建台账、不执行游戏动作；先将其整理成上述可读计划。`record` 是写入台账的入口：补丁 JSON 可含 `results`（`{断言ID: 完整记录}`，整条替换）、`currentPhase`、`environmentEvidence`、`cleanup`；先对合并后的整份台账做与 `next` 相同的校验，通过才原子替换 `state.json` 并返回新的队列，失败时原文件不变。不要手工编辑 `state.json`。校验失败的错误码后带断言 ID 或缺失字段，按提示修正记录本身，不为通过校验改写事实。
 
-**调用此技能的 Agent 必须执行队列，汇总协作者回执后更新 state，再次 next；不是把计划交给用户就结束。** 旧 schemaVersion=1 台账可继续读取、补验和发布，报告注明旧计划未区分模式；新任务使用版本 2，不改旧计划哈希。迁移旧任务时新建修订计划并逐项说明继承情况，不能因切换回归模式删除已经承诺的详细验收项。
+`init/next/record` 的 `dispatchGroups` 与 `nextActions` 仅列出不晚于当前阶段的最早未闭环批次中，各独立组下一条可执行断言（推进阶段后重新打开复测的早期断言也在此派发，未来阶段仍等待时间闸门）；`waiting` 是业务依赖未通过，`deferredActions` 是因阶段/批次/组内顺序暂缓的动作。需要推进阶段时先走 `check-advance`，不把暂缓项当作已完成。
+
+**调用此技能的 Agent 必须执行队列，汇总协作者回执后用 `record` 写入 state，再按返回的队列继续；不是把计划交给用户就结束。** 旧 schemaVersion=1 台账可继续读取、补验和发布，报告注明旧计划未区分模式；新任务使用版本 2，不改旧计划哈希。迁移旧任务时新建修订计划并逐项说明继承情况，不能因切换回归模式删除已经承诺的详细验收项。
 
 ## 4. 执行与证据
 
@@ -120,7 +126,7 @@ python scripts/runtime_acceptance.py next --plan C:/Project/FunctionPreview/.tmp
 
 GM 构造前置、故障注入、隔离生产逻辑测试分别标注。强迁、强制结算不计作正常迁移或自然定时器通过；配置内存 A/B 不计作完整配置发布通过；已存在的 OutOfTime 不等于实测跨期转换。异常返回也检查正确错误码及无意外扣费/发奖。
 
-证据文件为运行目录内路径或绝对本地路径，不能为空。`evidence` 条目格式：`{"kind":"server","path":"evidence/step-01.json"}`。执行状态保存在 `state.results[断言ID]`：
+证据文件为运行目录内路径或绝对本地路径，不能为空。`evidence` 条目格式：`{"kind":"server","path":"evidence/step-01.json"}`。执行状态保存在 `state.results[断言ID]`，用 `record` 写入：
 
 | status | 字段和处理 |
 |---|---|
@@ -130,7 +136,7 @@ GM 构造前置、故障注入、隔离生产逻辑测试分别标注。强迁�
 | failed | observation + 至少一种 requiredEvidence 范围内的实际失败证据；仅静态推断不能关闭运行断言。归因可另记 implementation/configuration/environment/design，其他独立断言继续 |
 | blocked | blocker.kind、reason、attempts、nextAction；每个 attempt 有 action/outcome。环境类另填 options.gm 与 options.jenkins |
 | excluded | reason + userDecision，必须能追溯用户明确排除，不把超时/沉默当排除 |
-| missed | reason + responsibility + nextAction；如因提前推进错过窗口，直记执行遗漏 |
+| missed | reason + responsibility + nextAction；如因提前推进错过窗口，直记执行遗漏。窗口已失去，不再阻止后续阶段推进，但本轮不能完整通过；只有窗口确已错过才可使用，不能用来绕过仍可执行的断言 |
 
 `blocker.options` 值为 available / exhausted / unavailable / out_of_scope。任一 available 仍进入补验队列；环境阻塞不评估 GM 和 Jenkins 就不能结案。新建依赖阻塞需 `kind=dependency`、`assertionId` 引用本断言 dependsOn 中已 failed/blocked 的项；依赖开始重试时进入 waiting，依赖转为 passed 后脚本自动将原阻塞项重新排入队列。记录仅反映实际尝试，不为满足字段编造失败。
 
@@ -181,10 +187,10 @@ GM 构造前置、故障注入、隔离生产逻辑测试分别标注。强迁�
 5. 场景/阶段结束、版本变化及交接或中断前，按 [经验更新规则](feature-experience.md) 保存本轮增量并合入功能档案；必要的可复用运行模板一并归档。失败、阻塞或部分验证也记录已掌握的事实和下次动作；恢复时先处理尚未回写的笔记。
 
 推进时间之前：
-```powershell
+```shell
 python scripts/runtime_acceptance.py check-advance --plan <plan.json> --state <state.json> --target-phase 1
 ```
-涉及其他设备/协作者的共享服或跨服依赖时，先按隔离规则统一核对所有受影响台账与安全节点；`check-advance` 只检查当前台账。返回 allowed 才按确认的 GM 语法读取当前逐服时钟，计算正增量并操作。工具不替你改时间；推进后再次回读各服和客户端时钟，保存证据，再更新 `currentPhase`。尚未闭环且会过期的断言会拒绝推进，包括真实阻塞；优先准备可重测的新环境，不擅自牺牲覆盖。确实决定放弃的分支需用户已有明确决定才可 excluded。当前会话规定不能回拨时，禁止使用其他 skill 示例中的 timeset/timereset 或旧快照规避。
+涉及其他设备/协作者的共享服或跨服依赖时，先按隔离规则统一核对所有受影响台账与安全节点；`check-advance` 只检查当前台账。返回 allowed 才按确认的 GM 语法读取当前逐服时钟，计算正增量并操作。工具不替你改时间；推进后再次回读各服和客户端时钟，保存证据，再用 `record` 更新 `currentPhase`（会再过一次同样的闸门）。尚未闭环且会过期的断言会拒绝推进，包括真实阻塞；已终态的 passed / failed / excluded / missed 不阻止推进；优先准备可重测的新环境，不擅自牺牲覆盖。确实决定放弃的分支需用户已有明确决定才可 excluded。当前会话规定不能回拨时，禁止使用其他 skill 示例中的 timeset/timereset 或旧快照规避。
 
 环境改动/重启前保存易丢失日志。重启后的暂时缺广播、缓存未就绪与真实数据丢失分开验证。运行版本变化时记录新证据批次，核对语义差异后才复用旧结果。
 
@@ -194,11 +200,11 @@ python scripts/runtime_acceptance.py check-advance --plan <plan.json> --state <s
 
 本轮触发 UI 三语检查时，收尾核对英、俄、阿逐界面记录及截图，缺少必要语言证据不能整项通过；恢复原语言并回读，无法恢复则披露当前语言及后续动作。三语覆盖、恢复结果和可复用切换入口写入分功能经验，历史检查不替代本轮证据。
 
-```powershell
-python scripts/runtime_acceptance.py publish --plan <plan.json> --state <state.json> --output C:/Project/FunctionPreview/reports/<unique-runtime-run-id>
+```shell
+python scripts/runtime_acceptance.py publish --plan <plan.json> --state <state.json> --output <FunctionPreview根目录>/reports/<unique-runtime-run-id>
 ```
 
-发布入口强制检查基线/计划未漂移、本轮模式内用例与断言未丢失、证据范围及文件、可继续项为零、清理和环境记录。可继续项存在时失败且不生成报告目录。真实阻塞、已明确排除、执行遗漏或文档待复核可结束本轮，但不能给完整通过；版本 2 只有文档已确认、全部已列断言 passed 且收尾完成才 fullyAccepted=true；校验器不自动识别漏列的客户端路径，发布前还须核对用户所选路径的断言均已纳入计划，此字段仅针对当前节点及计划范围。尚未建有效计划的前置检查不得借手写报告代替发布。
+发布入口强制检查基线/计划未漂移、本轮模式内用例与断言未丢失、证据范围及文件、可继续项为零、清理和环境记录。可继续项存在时失败且不生成报告目录。真实阻塞、已明确排除、执行遗漏或文档待复核可结束本轮，但不能给完整通过；版本 2 只有文档已确认、全部已列断言 passed 且收尾完成才 fullyAccepted=true；计划填写 `clientPaths` 后，报告逐路径列出范围、断言状态和范围外路径，单路径通过的标题标明“仅某路径”，`stageFullyAccepted` 只有两条路径都在范围内且全部通过才为 true；校验器只能确认范围内路径有断言，不能发现某条路径内漏拆的断言，发布前还须核对用户所选路径的必要断言均已纳入计划。`fullyAccepted` 仅针对当前节点及计划范围。报告目录先写临时目录再一次重命名，目标已存在时拒绝覆盖。尚未建有效计划的前置检查不得借手写报告代替发布。
 
 活动发布额外校验生命周期独立断言和逐副作用观察。`followupResults` 保留每项补验来源及关闭标准，仅关联断言全部 passed 才 verified；排除、阻塞或遗漏保持 open。旧 schemaVersion=1 活动计划须在新副本补合同后重新交接，旧报告仍可读；不得用旧计划兼容通道绕过活动门槛。产品缺陷表不收录测试不足，不代表相应补验义务被关闭。
 

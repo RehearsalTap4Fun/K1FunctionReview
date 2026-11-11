@@ -4,14 +4,18 @@
 
 ## 目录
 
-- 输入与权威
-- 远端快照合同
-- 只读命令边界
-- 固定执行顺序
-- 证据边界
-- PrecheckResult
-- 降级映射
-- 缓存与报告
+1. 输入与权威
+2. 时间合同
+3. 远端快照合同
+4. 只读命令边界
+5. 固定执行顺序
+6. 需求驱动的证据边界（含规则选择与强制留痕）
+7. PrecheckResult（含发布前代码定位校验）
+8. 测试用例
+9. 降级映射
+10. 缓存与报告
+
+命令示例中 `<FunctionPreview根目录>` 指本技能所在项目根目录；`python` 指本机 Python 3.10+ 解释器，macOS/Linux 通常写作 `python3`；`.ps1` 在 macOS/Linux 由 `pwsh` 执行。
 
 ## 1. 输入与权威
 
@@ -96,7 +100,7 @@
 5. **先执行 `references/requirement-alignment.md`**：完整文档与三端累计提交/target 最终状态双向比对，向用户展示增删改清单，取得逐项决定，最小维护原文及变更记录并回读。校验 `alignment` 完成记录才进入下一步。
 6. 使用回读后的同版文档建立需求矩阵；校准已有用例或用 `$slg-testcase-generator` 补齐 Markdown 用例，无条数上限。记录 `testcaseDocumentVersion`；实现问题和证据不足项必须通过 requirementIds 交接。
 7. 用 `baseSha...targetSha` 的 changed paths/symbols 建立索引，沿需求相关调用链检查冻结 target 的完整业务路径，记录扩展理由和已查范围。可继续补证，不限一跳或一轮。
-8. 为需求及关联调用命中的正式 workbook 调用 `export-git-file.ps1`。LFS pointer 使用 `-MaterializeLfs -Remote origin -ExpectedLfsPath <exact-path>`，输出到本次 `.tmp`。对物化副本使用 `config-table-editor` 只读解析；不得操作正式 Config 工作区或使用 `xcfg-tool`。
+8. 为需求及关联调用命中的正式 workbook 调用 `export-git-file.ps1`。LFS pointer 使用 `-MaterializeLfs -Remote origin -ExpectedLfsPath <exact-path>`，输出到本次 `.tmp`。对物化副本使用 `config-table-editor` 只读解析；本机未注册该 skill 时，用 `openpyxl`（见 `requirements-optional.txt`）以 `load_workbook(<物化副本>, read_only=True, data_only=True)` 只读打开同一副本，只读取直接相关的表、字段和 ID，并在证据 `summary` 写明解析方式。两种方式都不可用时按“workbook 无法物化”降级，不改用其他来源充当正式表。不得操作正式 Config 工作区或使用 `xcfg-tool`。
 9. 正式 workbook 无法物化时，只对同一 config target SHA 中直接对应的生成 JSON 调用 `validate-config-json.py`；写入 `configurationChecks` 次级证据，不能替代正式 XLSX。
 10. 按更新后文档顺序为所有需求赋值，建立用例—需求—证据双向矩阵；逐条给出前置工作流交接问题的核查结论。
 11. 调用 `review_rule_matcher.py`，传入 `k1-review-rules.json`、当前结果和 collector 原始冻结输出。按仓库角色、需求已映射路径和需求信号叠加命中规则，为每个 selected checkId 完成一条 reviewChecks 审计记录。
@@ -123,12 +127,8 @@ collector 为 `error` 或 `requires_input` 时仍保留角色和请求的冻结 
 
 先生成选择结果，供审查者逐项完成检查：
 
-```powershell
-python C:/Project/FunctionPreview/review-k1-function/scripts/review_rule_matcher.py `
-  --rules C:/Project/FunctionPreview/review-k1-function/references/k1-review-rules.json `
-  --input C:/Project/FunctionPreview/.tmp/<run-id>/result-draft.json `
-  --git-evidence C:/Project/FunctionPreview/.tmp/<run-id>/git-evidence.json `
-  --output C:/Project/FunctionPreview/.tmp/<run-id>/selected-review-rules.json
+```shell
+python <FunctionPreview根目录>/review-k1-function/scripts/review_rule_matcher.py --rules <FunctionPreview根目录>/review-k1-function/references/k1-review-rules.json --input <FunctionPreview根目录>/.tmp/<run-id>/result-draft.json --git-evidence <FunctionPreview根目录>/.tmp/<run-id>/git-evidence.json --output <FunctionPreview根目录>/.tmp/<run-id>/selected-review-rules.json
 ```
 
 每个 selected `checkId` 在 `reviewChecks` 中必须恰好出现一次：
@@ -215,12 +215,8 @@ limits[]:
 
 远端模式直接使用 `prepare-remote-snapshots.ps1` 的本次输出；本地冻结模式构造同形 manifest，每项包含 `role/source=local/repository/targetSha`。manifest 中的 targetSha 必须与报告 target 完全一致，remote 路径必须位于 FunctionPreview 的 `.cache` 或 `.tmp`。不读取或重新解析移动 ref。
 
-```powershell
-python C:/Project/FunctionPreview/review-k1-function/scripts/render-fast-precheck.py `
-  --input C:/Project/FunctionPreview/.tmp/<run-id>/result.json `
-  --evidence-manifest C:/Project/FunctionPreview/.tmp/<run-id>/remote-manifest.json `
-  --git-evidence C:/Project/FunctionPreview/.tmp/<run-id>/git-evidence.json `
-  --reports-root C:/Project/FunctionPreview/reports
+```shell
+python <FunctionPreview根目录>/review-k1-function/scripts/render-fast-precheck.py --input <FunctionPreview根目录>/.tmp/<run-id>/result.json --evidence-manifest <FunctionPreview根目录>/.tmp/<run-id>/remote-manifest.json --git-evidence <FunctionPreview根目录>/.tmp/<run-id>/git-evidence.json --reports-root <FunctionPreview根目录>/reports
 ```
 
 校验行为：
@@ -246,11 +242,11 @@ python C:/Project/FunctionPreview/review-k1-function/scripts/render-fast-prechec
 
 ## 8. 测试用例
 
-活动类同时执行 [活动全生命周期、独立结算断言与补验合同](activity-lifecycle.md)。同一 PrecheckResult 保存 `activityLifecycle`、`followupObligations`，历史待验来源另以 `followupSources` 登记。发布器在写文件前校验全阶段、检查链、六类独立结算预期和未决来源去向；时间边界、状态、持久化和幂等由生命周期信号叠加触发。未完整核查可以明确 unknown 并绑定补验，不能靠一条“检查活动已结束”用例覆盖所有副作用。
-
 前置对齐完成后，逐条校准已有用例的前置条件、操作和期望，保留来源及稳定 ID；新增需求补用例、修改需求更新期望、已确认删除需求移出当前用例集合并保留变更记录。缺少覆盖时生成主流程、关键边界和明显异常 Markdown 用例，无时限或数量上限，只使用更新后文档支持的期望。记录 testcaseDocumentVersion 与回读后的文档版本相同；不能仅改版本号而沿用旧期望。
 
 用例是证据链一部分：requirement 通过 `testcaseIds` 关联用例，用例通过 `requirementIds` 反向关联需求。用例不能代替开发文档，也不能把运行时表现改写成静态确定性结论。
+
+活动类同时执行 [活动全生命周期、独立结算断言与补验合同](activity-lifecycle.md)。同一 PrecheckResult 保存 `activityLifecycle`、`followupObligations`，历史待验来源另以 `followupSources` 登记。发布器在写文件前校验全阶段、检查链、六类独立结算预期和未决来源去向；时间边界、状态、持久化和幂等由生命周期信号叠加触发。未完整核查可以明确 unknown 并绑定补验，不能靠一条“检查活动已结束”用例覆盖所有副作用。
 
 ## 9. 降级映射
 
@@ -259,7 +255,7 @@ python C:/Project/FunctionPreview/review-k1-function/scripts/render-fast-prechec
 | 远端 target 不存在 | 受影响端/需求 `无法确认`；不替换当前分支或 tracking ref |
 | 远端网络、认证、filter 失败 | 受影响端 `无法确认`；不做 local fallback |
 | 单端超时 | 仅该端相关需求 `无法确认`；成功端继续 |
-| LFS/workbook 无法物化 | 相关配置需求 `无法确认`；同一 target SHA 的生成 JSON 可写入 `configurationChecks` 作次级证据，但不得替代正式 XLSX |
+| LFS/workbook 无法物化，或 `config-table-editor` 与 `openpyxl` 均不可用 | 相关配置需求 `无法确认`；同一 target SHA 的生成 JSON 可写入 `configurationChecks` 作次级证据，但不得替代正式 XLSX |
 | 文档写入/回读失败或用户尚未确认 | 前置工作流未完成，保留差异与进度，不生成后续用例或发布预审报告 |
 | 文档或审核对象改变 | 重新对齐受影响内容；新提交必须开始新对齐记录 |
 | 开发文档不可读 | `预检信息不足` |
@@ -270,7 +266,17 @@ python C:/Project/FunctionPreview/review-k1-function/scripts/render-fast-prechec
 
 ## 10. 缓存与报告
 
-分析缓存只位于 `C:/Project/FunctionPreview/.cache/fast-precheck`，TTL 24 小时；键包含合同版本 `alignment-v1-unlimited`、回读后的文档版本、base/target SHA 和相关配置 blob SHA。旧快速模式缓存失效；分析缓存不得替代本次对齐与用户确认记录。不得缓存凭证或完整在线文档正文。
+分析缓存只位于 `<FunctionPreview根目录>/.cache/fast-precheck`，TTL 24 小时；键包含合同版本 `alignment-v1-unlimited`、回读后的文档版本、base/target SHA 和相关配置 blob SHA。旧快速模式缓存失效；分析缓存不得替代本次对齐与用户确认记录。不得缓存凭证或完整在线文档正文。
+
+缓存是可选加速，由 `scripts/fast-precheck-cache.py` 读写，仅用于第 5 节步骤 6–8 的中间产物：`--kind` 取 `requirements`（需求矩阵）、`testcases`（已校准用例）、`diff-index`（changed paths/symbols 索引）、`config-query`（正式表查询结果）。键输入、写入内容和读取输出都必须是 FunctionPreview 内的 JSON 文件；含 token、cookie、文档全文等敏感字段名的内容会被拒绝。
+
+```shell
+python scripts/fast-precheck-cache.py key --input <FunctionPreview根目录>/.tmp/<run-id>/cache-key.json
+python scripts/fast-precheck-cache.py get --root <FunctionPreview根目录>/.cache/fast-precheck/analysis --kind diff-index --key <上一步输出的64位键> --output <FunctionPreview根目录>/.tmp/<run-id>/diff-index.json
+python scripts/fast-precheck-cache.py put --root <FunctionPreview根目录>/.cache/fast-precheck/analysis --kind diff-index --key <同一键> --input <FunctionPreview根目录>/.tmp/<run-id>/diff-index.json
+```
+
+`cache-key.json` 是包含上述全部键成分的对象。`get` 退出码 0 为命中并写出 `--output`（不覆盖已有文件），2 为未命中或已过期，3 为条目损坏，4 为合同错误；未命中、过期或损坏都按无缓存重新计算，再 `put`。同一键只写一次，已存在时返回 `CACHE_EXISTS`。命中内容只是中间产物：需求结论、规则留痕和代码定位仍须在本次冻结 manifest 上重新通过 renderer 校验。
 
 远端 Git 对象缓存可复用本地已有 objects 和上次增量对象，但每次完整工作流开始时仍实时 fetch 指定 refs；同一次对齐和预审不刷新移动 refs。代码 blob 按需求相关调用链按需获取；LFS 只获取直接命中 workbook。
 

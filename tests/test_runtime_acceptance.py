@@ -369,3 +369,149 @@ def test_different_document_source_cannot_reuse_confirmation(runtime, scheduled)
     plan['baselineSha256'] = hashlib.sha256((root / 'baseline.json').read_bytes()).hexdigest()
     with pytest.raises(runtime.RuntimeContractError, match='DOCUMENT_SOURCE_MISMATCH'):
         runtime.initialize(plan, root)
+
+
+def test_missed_window_does_not_freeze_later_phases_but_denies_full_acceptance(runtime, scheduled):
+    plan, root = scheduled
+    plan['assertions'][1]['dependsOn'] = []
+    state = runtime.initialize(plan, root)
+    state['results']['TC-1/migrate'] = {'status': 'missed', 'reason': '活动窗口已过',
+                                     'responsibility': '执行遗漏', 'nextAction': '下一期活动补验'}
+    assert runtime.check_advance(plan, state, root, 1)['allowed'] is True
+    state['currentPhase'] = 1
+    assert [a['id'] for a in runtime.evaluate(plan, state, root)['nextActions']] == ['TC-1/relogin']
+    passed(state, 'TC-1/relogin', 'runtime')
+    finish(state)
+    result = runtime.evaluate(plan, state, root)
+    assert result['canFinalize'] is True and result['fullyAccepted'] is False
+
+
+def test_unresolved_blocker_still_refuses_time_advance(runtime, scheduled):
+    plan, root = scheduled
+    state = runtime.initialize(plan, root)
+    state['results']['TC-1/migrate'] = {'status': 'blocked', 'blocker': {
+        'kind': 'permission', 'reason': '无迁移权限', 'attempts': [{'action': '申请权限', 'outcome': '被拒绝'}],
+        'nextAction': '等待授权', 'options': {}}}
+    with pytest.raises(runtime.RuntimeContractError, match='PHASE_INCOMPLETE:TC-1/migrate'):
+        runtime.check_advance(plan, state, root, 1)
+
+
+def test_reopened_earlier_phase_is_dispatched_after_time_advanced(runtime, scheduled):
+    plan, root = scheduled
+    plan['assertions'][1]['dependsOn'] = []
+    state = runtime.initialize(plan, root)
+    state['results']['TC-1/migrate'] = {'status': 'failed', 'observation': '未落地', 'evidence': evidence('server')}
+    runtime.check_advance(plan, state, root, 1)
+    state['currentPhase'] = 1
+    state['results']['TC-1/migrate'] = {'status': 'pending', 'nextAction': '修复部署后复测迁移'}
+    result = runtime.evaluate(plan, state, root)
+    assert [a['action'] for a in result['nextActions']] == ['修复部署后复测迁移']
+    assert [a['id'] for a in result['deferredActions']] == ['TC-1/relogin']
+    passed(state, 'TC-1/migrate', 'protocol', 'server')
+    assert [a['id'] for a in runtime.evaluate(plan, state, root)['nextActions']] == ['TC-1/relogin']
+
+
+def run_cli(*args):
+    import subprocess
+    import sys
+    result = subprocess.run([sys.executable, str(SCRIPT), *map(str, args)], capture_output=True, encoding='utf-8')
+    return result.returncode, json.loads(result.stdout)
+
+
+def test_record_cli_validates_before_saving_and_gates_phase(scheduled):
+    plan, root = scheduled
+    files = {'plan': root / 'plan.json', 'state': root / 'state.json', 'patch': root / 'patch.json'}
+    files['plan'].write_text(json.dumps(plan), encoding='utf-8')
+    assert run_cli('init', '--plan', files['plan'], '--state', files['state'])[0] == 0
+    before = files['state'].read_text(encoding='utf-8')
+
+    def record(patch):
+        files['patch'].write_text(json.dumps(patch), encoding='utf-8')
+        return run_cli('record', '--plan', files['plan'], '--state', files['state'], '--patch', files['patch'])
+
+    code, output = record({'results': {'TC-1/migrate': {'status': 'passed', 'observation': '只有截图'}}})
+    assert code == 1 and output['error'] == 'OBSERVATION_REQUIRED:TC-1/migrate'
+    code, output = record({'results': {'TC-9': {'status': 'pending'}}})
+    assert code == 1 and output['error'] == 'PATCH_ASSERTION_UNKNOWN:TC-9'
+    code, output = record({'currentPhase': 1})
+    assert code == 1 and output['error'].startswith('PHASE_INCOMPLETE')
+    assert files['state'].read_text(encoding='utf-8') == before
+
+    code, output = record({'results': {'TC-1/migrate': {'status': 'passed', 'observation': '权威状态已核对',
+                                                       'evidence': evidence('protocol', 'server')}},
+                           'currentPhase': 1})
+    assert code == 0 and [a['id'] for a in output['nextActions']] == ['TC-1/relogin']
+    saved = json.loads(files['state'].read_text(encoding='utf-8'))
+    assert saved['currentPhase'] == 1 and saved['results']['TC-1/migrate']['status'] == 'passed'
+    assert [p.name for p in root.iterdir() if p.name.endswith('.tmp')] == []
+
+
+def test_cli_names_the_assertion_and_field_behind_a_malformed_plan(scheduled):
+    plan, root = scheduled
+    del plan['assertions'][1]['testcaseId']
+    (root / 'plan.json').write_text(json.dumps(plan), encoding='utf-8')
+    code, output = run_cli('schedule', '--plan', root / 'plan.json')
+    assert code == 1 and 'TC-1/relogin' in output['error'] and 'testcaseId' in output['error']
+    del plan['baselineFile']
+    (root / 'plan.json').write_text(json.dumps(plan), encoding='utf-8')
+    code, output = run_cli('schedule', '--plan', root / 'plan.json')
+    assert code == 1 and output['error'] == 'KeyError' and 'baselineFile' in output['detail']
+
+
+def test_single_client_path_pass_is_reported_as_limited_conclusion(runtime, scheduled):
+    plan, root = scheduled
+    plan['clientPaths'] = {'unity': 'in_scope', 'device': 'out_of_scope'}
+    for a in plan['assertions']:
+        a['clientPath'] = 'unity'
+    state = runtime.initialize(plan, root)
+    passed(state, 'TC-1/migrate', 'protocol', 'server')
+    passed(state, 'TC-1/relogin', 'runtime')
+    finish(state)
+    result = runtime.publish(plan, state, root, root / 'report')
+    assert result['fullyAccepted'] is True and result['stageFullyAccepted'] is False
+    assert result['clientPaths']['device'] == {'scope': 'out_of_scope', 'counts': {}, 'allPassed': False}
+    report = (root / 'report/summary.html').read_text(encoding='utf-8')
+    assert '（仅Unity路径）通过' in report and '本轮范围外（未验收）' in report and '环境与收尾证据' in report
+    assert [p.name for p in root.iterdir() if 'partial' in p.name] == []
+
+
+def test_both_client_paths_passing_gives_complete_stage_conclusion(runtime, scheduled):
+    plan, root = scheduled
+    plan['clientPaths'] = {'unity': 'in_scope', 'device': 'in_scope'}
+    plan['assertions'][0]['clientPath'] = 'unity'
+    plan['assertions'][1]['clientPath'] = 'device'
+    state = runtime.initialize(plan, root)
+    passed(state, 'TC-1/migrate', 'protocol', 'server')
+    passed(state, 'TC-1/relogin', 'runtime')
+    finish(state)
+    assert runtime.evaluate(plan, state, root)['stageFullyAccepted'] is True
+
+
+@pytest.mark.parametrize('paths,tags,error', [
+    ({'unity': 'in_scope', 'device': 'in_scope'}, ['unity', 'unity'], 'CLIENT_PATH_UNCOVERED:device'),
+    ({'unity': 'in_scope', 'device': 'out_of_scope'}, ['unity', 'device'], 'CLIENT_PATH_OUT_OF_SCOPE:TC-1/relogin'),
+    ({'unity': 'in_scope', 'device': 'out_of_scope'}, ['unity', None], 'CLIENT_PATH_INVALID:TC-1/relogin'),
+    ({'unity': 'out_of_scope', 'device': 'out_of_scope'}, [None, None], 'CLIENT_PATHS_INVALID'),
+    (None, ['unity', None], 'CLIENT_PATHS_REQUIRED'),
+])
+def test_client_path_scope_must_match_assertions(runtime, scheduled, paths, tags, error):
+    plan, root = scheduled
+    if paths is not None:
+        plan['clientPaths'] = paths
+    for a, tag in zip(plan['assertions'], tags):
+        if tag:
+            a['clientPath'] = tag
+    with pytest.raises(runtime.RuntimeContractError, match=error):
+        runtime.initialize(plan, root)
+
+
+def test_publish_refuses_to_overwrite_existing_report(runtime, scheduled):
+    plan, root = scheduled
+    state = runtime.initialize(plan, root)
+    passed(state, 'TC-1/migrate', 'protocol', 'server')
+    passed(state, 'TC-1/relogin', 'runtime')
+    finish(state)
+    (root / 'report').mkdir()
+    with pytest.raises(runtime.RuntimeContractError, match='OUTPUT_ALREADY_EXISTS'):
+        runtime.publish(plan, state, root, root / 'report')
+    assert list((root / 'report').iterdir()) == []
