@@ -367,14 +367,20 @@ def get_downkey(client, plan, root, services, receipt, build):
     return key
 
 
-def verify_builds(client, plan, receipt, build):
+def built_revisions(build):
     revisions = {}
     for action in build.get('actions', []):
         for remote in action.get('remoteUrls', []):
             for role, repo in [('server', 'game'), ('config', 'dataconfig')]:
                 if re.search(r'/' + repo + r'(?:\.git)?$', remote):
                     revisions.setdefault(role, set()).add(action.get('lastBuiltRevision', {}).get('SHA1'))
-    require(all(revisions.get(role) == {plan['sources'][role]['sha']} for role in ['server', 'config']), 'ACTUAL_REVISION_MISMATCH_OR_UNPROVEN')
+    return revisions
+
+
+def verify_builds(client, plan, receipt, build):
+    # The parent pipeline checks out game@dev for its own scripts; the server
+    # image is compiled by the child job, so code is proven there and config here.
+    require(built_revisions(build).get('config') == {plan['sources']['config']['sha']}, 'ACTUAL_REVISION_MISMATCH_OR_UNPROVEN')
     _, _, raw = client.request(receipt['buildUrl'] + 'consoleText')
     numbers = set(re.findall(re.escape(CHILD_JOB) + r'\s+#([0-9]+)', raw.decode('utf-8', 'replace')))
     require(len(numbers) == 1, 'DOWNSTREAM_BUILD_UNPROVEN')
@@ -382,6 +388,7 @@ def verify_builds(client, plan, receipt, build):
     child_url = client.base + job_path(CHILD_JOB) + str(number) + '/'
     child = client.get(child_url + 'api/json', FIELDS)
     require(child.get('number') == number and not child.get('building') and child.get('result') == 'SUCCESS', 'DOWNSTREAM_NOT_SUCCESSFUL')
+    require(built_revisions(child).get('server') == {plan['sources']['server']['sha']}, 'ACTUAL_REVISION_MISMATCH_OR_UNPROVEN')
     require(any(c.get('upstreamProject') == DEPLOY_JOB and c.get('upstreamBuild') == receipt['buildNumber']
                 for a in child.get('actions', []) for c in a.get('causes', [])), 'DOWNSTREAM_CAUSE_MISMATCH')
     p, r = parameters(child), plan['request']

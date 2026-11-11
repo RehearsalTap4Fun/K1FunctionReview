@@ -103,14 +103,16 @@ class Protocol:
                  'actions': [{'parameters': [{'name': k, 'value': v} for k, v in params.items()],
                               'causes': [{'userId': 'tester'}]}]}
         if job == self.f.DEPLOY_JOB:
-            for repo, sha in [('game', self.revision), ('dataconfig', 'b' * 40)]:
+            # The parent pipeline checks out game@dev for its scripts; the child compiles corebranch.
+            for repo, sha in [('game', 'd' * 40), ('dataconfig', 'b' * 40)]:
                 build['actions'].append({'remoteUrls': ['ssh://git/k1/' + repo + '.git'], 'lastBuiltRevision': {'SHA1': sha}})
             cp = {'APP': params['app'], 'SID': params['server_id'], 'DB_TAG': 'dev' + params['server_id'],
                   'NACOS': 'dev', 'BRANCH': params['corebranch'], 'DownKey': params['DownKey'],
                   'KVK_KEEP_SERVERS': params['kvk_keep_servers']}
             self.builds[(self.f.CHILD_JOB, 301)] = {**build, 'number': 301,
                 'actions': [{'parameters': [{'name': k, 'value': v} for k, v in cp.items()],
-                             'causes': [{'upstreamProject': job, 'upstreamBuild': number}]}]}
+                             'causes': [{'upstreamProject': job, 'upstreamBuild': number}]},
+                            {'remoteUrls': ['ssh://git/k1/game.git'], 'lastBuiltRevision': {'SHA1': self.revision}}]}
         self.builds[(job, number)] = build
         self.queues[qid] = {'id': qid, 'executable': {'number': number, 'url': build['url']}}
         if self.unknown:
