@@ -4,7 +4,7 @@
 |---|---|
 | featureId | k1-kvk-sea-world |
 | 关联需求 | NK-10712、NK-10714、NK-10707、NK-10715、NK-10735 |
-| 更新时间 / 实际验证 | 2026-10-29 Asia/Shanghai；599版本日Unity |
+| 更新时间 / 实际验证 | 2026-11-12 Asia/Shanghai；601版本日Unity（NK-10924）；2026-10-29 599版本日Unity |
 | 版本 | 客户端529503da；服务器242b2db3；配置f904ffa7 |
 
 ## 再次验收先看
@@ -26,5 +26,6 @@ status=needs_review；本档案没有独立功能PRD确认标记。原599行和�
 | KVK-SHARED-MATCH | 本批共享match实际版本92c8e7e3。真实85 OnStart/OnTick同步GS，GS再SyncKvkUnionStat2Match；新空tag也可能改变最近两届历史选择。只拥有独立game/battle不代表完整匹配隔离。未执行openkvk、全局Match配置或RecordTag写入。下轮按实际运行版本重新核。 | 已核源码与部署；共享操作未授权执行 |
 | KVK-THRONE-FIXTURE | 注册kvkfort setowner可准备真实归属，冻结版本不发首占奖、不收赛季；仍会清争夺/驻军并更新领土、属性、任务与纪事。只能对已核实全自控场景操作。kvk_reduce会动全部未开放建筑，若还有早领窗口，应避免全量操作；本批仅对单个王座解锁截止准备，正常tick开放。GM归属不等于个人真实驻守时长。 | 已验证：前置副作用；正常占领/时长未通过 |
 | KVK-ENTRY-CLEANUP | kvk_gm_enter_scene异步后，GS City字段可仍本服；真实battle日志、跨服客户端与实体需联合判断。配对leave后本批客户端已回本服/CITY且inWar=false、CN、观察器卸载；私有地图日志仍保留1个City/MapPlayer记录，不能宣称地图数据已删除。保留场景并披露，勿为清理擅自强End/删库。 | 已验证：客户端恢复；服务器夹具保留 |
+| KVK-SEAWORLD-WILDHUNT-601 | 2026-11-12 NK-10924 用这条链在本人 gs+新建 battle 上取得真实海世界路径（kvkTag=4、SceneTypeKvk）：新建 battle（SID 后三位须与主机所有容器不同，端口=base+sid%1000）→ door `create_test_union <pid>` → `openkvk 100004 <pid> <battle> 5 4`（共享 match 只新增一条空匹配记录）→ `settrainlv <pid> 101`（满足进入门槛 >100）→ 客户端重登 → HUD「深海遗迹」「进入」→ `actv newActv 1093502`（荒野狩猎 KvkTag=4）→ `actv wildHuntSummon <pid>`。荒野狩猎宫格要在 KVK 场景内才能点开；宫格/页签需用射线点击（down/up/click），直接发 pointerClick 不生效。退出走海世界页「退出」→「确认返回本服」。 | 已验证：Unity 路径，单账号；「加入」路径需同盟第二账号 |
 
 没有可直接运行的通用造场脚本；本批辅助脚本含绑定身份，不分享为默认执行入口。三语、ESC、真正85生命周期及结算仍需完整活动前置。

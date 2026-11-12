@@ -6,7 +6,7 @@
 |---|---|---|---|---|---|---|
 | k1-giant-snake-phase4 | 巨蛇大作战4期 | 肉鸽塔防4期、Phase4Minion、混合无尽、计次盾 | NK-10652、NK-10657 / dev_NK-10652 | S-04反馈定向复验9项5通过/4失败：P18、多束及文案（Unity显示为准）、ESC结算显示修复；服务端全选不去重、英/阿通行证与退出文案仍在母表、俄语标题压按钮；含Editor拉母表、冷启动切语与反馈插图限制经验 | [巨蛇四期档案](k1-giant-snake-phase4/experience.md) | 2026-11-04 |
 | k1-gm-auto-occupy | GM 自动占领 | LGmAutoOccupy、王座、禁迁、自动迁城 | dev_NK-9557 / 用户定向修复实测 | Unity真实迁城及107项回归通过；出兵被王战None状态拦截，待整服前置授权 | [自动占领档案](k1-gm-auto-occupy/experience.md) | 2026-11-02 |
-| k1-kvk-sea-world | KVK海底世界 | 王座、KVK4、独立地图、85模板、匹配隔离 | NK-10712、NK-10714、NK-10707、NK-10715、NK-10735 / dev | 独立地图/真实归属前置已验证；缺真实85模板，上下文不能替业务验收 | [KVK海世界档案](k1-kvk-sea-world/experience.md) | 2026-10-29 |
+| k1-kvk-sea-world | KVK海底世界 | 王座、KVK4、独立地图、85模板、匹配隔离、深海遗迹、荒野狩猎 | NK-10712、NK-10714、NK-10707、NK-10715、NK-10735、NK-10924 / dev | 601 NK-10924：本人gs+新建battle用door GM搭出真实海世界（kvkTag=4、SceneTypeKvk），荒野狩猎「围剿」后集结弹窗不被遮挡，Unity通过；「加入」路径需同盟第二账号未覆盖；独立地图/真实归属前置已验证，缺真实85模板 | [KVK海世界档案](k1-kvk-sea-world/experience.md) | 2026-11-12 |
 | k1-lava-cave | 熔岩洞穴与科技扣费 | LavaCave、AP、批量科技升级 | NK-10750 / dev | Unity正常合法扣费、资源不足无副作用、单升/批升预算旅程通过 | [熔岩洞穴档案](k1-lava-cave/experience.md) | 2026-10-29 |
 | k1-strongest-trial | 强者试炼 | type151、CommonScoreRank、白金兑换券、紫箱 | NK-10648 / dev | Unity真实奖励预览与1194000分入榜前态；双榜邮件自然End仍待验 | [强者试炼档案](k1-strongest-trial/experience.md) | 2026-10-29 |
 | k1-commerce-shops | 次元商店与兑换商店 | UIMergeShop、TFWTab、头像框券、城堡预览 | NK-10651、NK-10644 / dev | 次元商店最小购买、三语及真实ESC重进闭环；兑换商店历史适配问题和人工完成决定分开保留 | [商业商店档案](k1-commerce-shops/experience.md) | 2026-10-29 |
@@ -27,6 +27,7 @@
 
 | k1-save-egg-mail | 巨龙前置迁移补偿邮件 | SaveEgg、345、60010003、RoyalChest、版本迁移、防重 | NK-10875 / dev | Unity九项实现回归通过；完整产品规则待确认；只修既有模板ID无需机械三语 | [龙蛋邮件档案](k1-save-egg-mail/experience.md) | 2026-11-03 |
 | k1-fte-version-switch | FTE版本与开关会话 | FTEVerGroupCfg、SwitchID、BeginSession、OPENING_CG、Generation、UIGuid | NK-10720、NK-10748、NK-10909 / dev、NK-10915 | 最终d96：正常SDK双向首次切服5→1、冷启/同服重登/真实ESC，9条定向通过；含可选开场键和旧会话回调修复；完整需求待确认 | [FTE会话档案](k1-fte-version-switch/experience.md) | 2026-11-05 |
+| k1-first-charge | 首充三日购 | FirstCharge、UIFirstCharge3dayNew、Ver1首充、克劳蒂亚spine、Hero_Spine_207_GiftBag、fly00 | NK-10604 / dev（c23f9d12、17e9cc94） | 601 Unity：删spine后当前玩家（Old/分组101）首充弹窗与HUD入口正常；Ver1展示位空、标题仍为克劳蒂亚（600已存在，开关213服才可见）待经办人确认；含三套首充界面路由与残留引用排查法 | [首充档案](k1-first-charge/experience.md) | 2026-11-12 |
 
 新增功能按 [档案模板](../assets/feature-experience-template.md) 创建 `features/<featureId>/experience.md` 并登记在本表；同功能改名、换分支或新一轮验收更新原档案。泛称“矿工”“特殊设备”“迷雾”或“首杀”只作为搜索线索，按需求确认归属。出生与迷雾专项和大地图主档案相互链接，同一分支不自动合并不同范围的结论。
 

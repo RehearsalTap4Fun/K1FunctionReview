@@ -25,6 +25,14 @@
 
 在对应版本 Unity 项目中确认已加载本轮转换产物与多语言资源，进入 Play 模式并登录本路径专属服。记录项目/客户端版本、资源版本、Unity 实例和实际登录目标，按本节点范围执行断言。Unity 观察不能证明真机触控、安全区或原生 SDK 表现；这些结论由真机路径提供证据。
 
+**长时间运行时注意 Editor 内存，必要时自行重启。** 内存较小的验收机上，Unity Editor 运行一天可能涨到十几 GB。在长时间操作（无尽局、批量截图、多语言轮换）之间用 `sysctl vm.swapusage`（macOS）查看 swap 用量。swap 用量明显偏高（8 GB 机器上约 10 GB）时，在安全节点重启 Editor，不要等到整机卡死。安全节点指已停 Play、证据已落盘、在线表已回写。重启不需要用户介入，前提是一次性把 EditorPrefs `MCPForUnity.AutoStartOnLoad` 设为 `true`（MCP for Unity 每次域加载都会读取它，Editor 启动后自动拉起 HTTP 服务）：
+
+1. 用 `EditorApplication.Exit(0)` 退出 Editor，这样不会弹保存框。
+2. 用对应版本的 Unity 可执行文件加 `-projectPath <客户端工程>` 重新启动。
+3. 轮询 MCP 的 HTTP 端口（默认 8080），GET 返回 406 即表示服务已就绪。
+
+如果端口一直没起来，先检查这个 EditorPrefs 是否被改回，最后才请用户在 `Window → MCP for Unity` 手动点 Start。重启后重新核对项目、提交、登录目标和 Play 状态。
+
 ## 真机包路径
 
 按目标平台构建真实设备安装包，确认包使用本轮转换结果。目标平台有适用的 Mac 出包任务时优先使用，例如 Android 的 `K1_Android_Build_FromMac`；先核对现行任务参数、渠道和产物，其他平台按实际可用任务选择。Android 依照 [Mac 出包通知、APK 下载与真机安装](android-package-install.md) 核对 Jenkins、钉钉通知、下载文件、ADB 安装和实际登录目标；记录包构建号、客户端版本、渠道与安装设备，按本节点范围执行断言并保留触控、安全区、原生 SDK 等适用证据。
