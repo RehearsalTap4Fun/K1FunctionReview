@@ -25,3 +25,9 @@ UI.UIGM.SendGMReq(command, needPlayerId, parameters);
 它构造 `cspb.GMReq`，按 **命令 → 可选当前角色 PlayerID → 参数** 排列 `args`，再交给 `MessageMgr.Send`。Unity 工具箱的 `GM输入` 在不是本地 GM 时走同一发送函数；`GmToolboxCommands.SendPlayerGmCmd` / `SendSystemGmCmd` 也按带/不带 PlayerID 两种顺序发送。`needPlayerId` 不能凭命令名字猜：核对该命令在目标服务端的注册和权限，避免把系统级命令发成玩家级命令。`Helper.LocalGM.GMMap` 中的本地命令由输入面板本地执行，不能用服务端 `GMReq` 代替。
 
 发送请求只证明尝试了 GM；按回包、日志和前后权威状态确认实际效果。现有 GM 帮助查询代码注明 `GMAck` 没有请求命令标识，避免并发发送后把下一条回包误认作本条结果。服务器级开关、时间、联盟等指令可能影响共享实例，先按 [运行验收的 GM 能力表](runtime-acceptance.md) 记录授权、作用域、副作用及恢复限制；GM 造出的前置不能计为正常玩家业务通过。
+
+## 一键变强后重新登录
+
+真机 GM 快捷面板的“一键变强，变的很强”和 Unity 工具箱的“一键变强”均向当前玩家发送 `oneclickstrength`（现有按钮传档位 `3`）。使用任一按钮，或经命令输入、直接 `GMReq`、Feval 发送该命令后，等待本次请求结果，然后**正常退出当前登录会话并重新登录同一账号、同一角色**。回读登录后的 PlayerID、SID 和本轮需要的属性/资源状态，确认仍连接目标测试服；这一步完成前不继续依赖“变强”前置的业务用例，也不把按钮提示或 Req 已发送当作生效证据。重登失败时保留断点，恢复同一身份后再验收，不用切换其他角色或仅关闭重开面板代替。
+
+此重登要求来自用户的操作规则，适用于 Unity 与真机；客户端定位分别为 `Editor/Tools/ToolSet/GMPanel.cs` 和 `Script/HotfixScripts/K1D1/Code/Game/Data/Dynamic/GM/GMGameData.cs`（相对 `K1Client/k1_client/client/Assets/k1/`）。
