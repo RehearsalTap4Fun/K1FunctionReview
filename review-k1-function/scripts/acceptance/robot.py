@@ -11,6 +11,7 @@ import urllib.parse
 import urllib.request
 
 from .core import WorkflowError, read_json, require
+from .owners import OwnerResolver, USER_ID
 
 
 def default_config():
@@ -54,12 +55,18 @@ class RobotClient:
             valid = False
         require(valid, 'ROBOT_WEBHOOK_INVALID')
         self.opener = urllib.request.build_opener(NoRedirect())
+        self.owner_resolver = OwnerResolver(self.config)
 
     def check(self):
         return {'configured': True, 'groupName': self.config['groupName'], 'keyword': self.config['keyword']}
 
     def __call__(self, payload):
-        require('进度播报' in payload['markdown']['text'] and payload['at'] == {'isAtAll': False}, 'ROBOT_MESSAGE_INVALID')
+        at = payload.get('at', {})
+        ids = at.get('atUserIds', [])
+        require('进度播报' in payload['markdown']['text'] and at.get('isAtAll') is False
+                and set(at) <= {'isAtAll', 'atUserIds'} and isinstance(ids, list)
+                and all(isinstance(uid, str) and USER_ID.fullmatch(uid) for uid in ids), 'ROBOT_MESSAGE_INVALID')
+        require(not ids or '整轮验收汇总' not in payload['markdown']['title'], 'SUMMARY_MUST_NOT_MENTION')
         request = urllib.request.Request(self.config['webhook'],
                                          data=json.dumps(payload, ensure_ascii=False).encode('utf-8'),
                                          headers={'Content-Type': 'application/json; charset=utf-8'}, method='POST')
@@ -83,3 +90,6 @@ class RobotClient:
             return {'outcome': 'retry' if definite else 'unknown', 'code': 'CONNECT_FAILED' if definite else 'DELIVERY_UNKNOWN'}
         except (OSError, ValueError, UnicodeError):
             return {'outcome': 'unknown', 'code': 'DELIVERY_UNKNOWN'}
+
+    def prepare_failure(self, owners):
+        return self.owner_resolver.resolve(owners)

@@ -123,6 +123,8 @@ python scripts/jenkins_test_environment.py poll --receipt <deploy-receipt.json>
 - submit 的 Location 对应 queue item，poll 只跟踪该队列产生的具体 build。不得以 lastBuild/lastSuccessfulBuild 代替本次构建。每次 poll 是一次短查询，间隔安排独立工作；不因排队时间长重新提交。
 - 回执已有、POST 超时/503、未取得 Location：保存 submission_unknown，先从队列/精确时间和参数匹配的构建记录核对。不能删除回执或换名字盲目重发；确证未接收后记录依据，另建关联的尝试回执。队列 404 时使用已保存 buildUrl；尚无 buildUrl 时继续只读核对构建来源。
 - canceled / FAILURE 等保留具体构建记录，诊断日志时屏蔽凭证。脚本不输出原始错误响应体，不跨服务跟随重定向。
+- 部署 Job 的控制台会打印钉钉通知插件的其他机器人 webhook `access_token`、`SEC…` 加签密钥等第三方凭证。保存控制台原文作为证据前，先把这些值替换掉，并检查确认已经没有残留；不转发原文，也不把这些凭证用于本轮通知。
+- **新建 battle 服时，SID 的后三位不能和宿主上任何容器重复。** 服务端端口由 `app/config/port.go` 的 `MakePort(base1, base2, sid) = 10000*base1 + 1000*base2 + sid%10000%1000` 计算，所以 battle 12605 和 gs 2605 会争同一个 pprof 端口 30605。后启动的容器报 `bind: address already in use` 并立刻 Exited，Jenkins 只显示「容器未启动，部署失败」。在已授权范围内选 SID 前，先用 `docker ps -a`（含已停止的容器）列出全部容器 SID，挑一个 `%1000` 没被占用的值，不要直接用 gs SID + 10000。2026-11-12 battle 12605 部署失败，改用 12685 后正常运行。
 
 ## 从构建成功到可验收
 

@@ -12,6 +12,8 @@ import re
 import time
 
 from .core import WorkflowError, atomic_json, canonical_hash, file_hash, read_json, reject_formal_write, require
+from .presentation import details, failure_message, summary_message
+from .owners import owner_names, apply_mentions
 
 MODES = {'development': '功能验收', 'mainline_regression': '版本日验收'}
 STATUSES = {'pending', 'running', 'passed', 'failed', 'blocked'}
@@ -107,16 +109,11 @@ def markdown(value):
     return re.sub(r'([\\`*_{}\[\]()#+.!|>~-])', r'\\\1', ' '.join(str(value).split())).replace('@', '＠')
 
 
-def message(data, item, sequence, recorded_at):
-    c = counts(data)
-    title = '进度播报｜' + data['versionDate']
-    body = (f'### {title}\n\n验收项：{markdown(item["title"])}\n\n'
-            f'验收模式：{MODES[data["acceptanceMode"]]}\n\n本项结果：{LABELS[item["status"]]}\n\n'
-            f'总需求：{c["total"]}\n\n已完成：{c["completed"]}\n\n'
-            f'待验收：{c["pending"]}｜正在验收：{c["running"]}\n\n未完成：{c["incomplete"]}\n\n'
-            f'记录时间：{recorded_at}（北京时间，以上为该时刻进度）\n\n'
-            f'播报编号：{canonical_hash(scope(data))[:12]}-{sequence}')
-    return {'msgtype': 'markdown', 'markdown': {'title': title, 'text': body}, 'at': {'isAtAll': False}}
+def message(data, item, sequence, recorded_at, conclusion='', display=None):
+    return failure_message(label=data['source'].get('versionLabel') or data['versionDate'],
+                           mode=MODES[data['acceptanceMode']], item=item, counters=counts(data),
+                           recorded_at=recorded_at, event_number=f'{canonical_hash(scope(data))[:12]}-{sequence}',
+                           conclusion=conclusion, display=display)
 
 
 class ProgressStore:
@@ -144,7 +141,7 @@ class ProgressStore:
         return {'versionDate': data['versionDate'], 'acceptanceMode': data['acceptanceMode'],
                 'source': data['source'], 'revision': data['revision'], 'counts': counts(data),
                 'items': list(data['items'].values()),
-                'notifications': [{k: e.get(k) for k in ('sequence', 'itemId', 'delivery', 'attempts', 'nextAttemptAt', 'code')}
+                'notifications': [{k: e.get(k) for k in ('sequence', 'itemId', 'delivery', 'attempts', 'nextAttemptAt', 'code', 'mentionResolution')}
                                   for e in data['outbox']]}
 
     def sync(self, snapshot):
@@ -161,6 +158,8 @@ class ProgressStore:
                 if old:
                     require(old['status'] == item['status'], 'SYNC_CANNOT_CHANGE_RESULTS')
                     incoming[ident] = {**old, 'title': item['title']}
+                    if 'owners' in item:
+                        incoming[ident]['owners'] = owner_names(item['owners'])
                 else:
                     require(item['status'] == 'pending', 'NEW_ITEM_MUST_BE_PENDING')
                     incoming[ident] = {**item, 'revision': 0}
@@ -194,19 +193,90 @@ class ProgressStore:
                 conclusion_hash = canonical_hash([status, request['conclusion'].strip()])
             at = stamp()
             item.update(status=status, revision=item['revision'] + 1, updatedAt=at)
+            if status in FINAL:
+                item['conclusion'] = request['conclusion'].strip()
+                item['display'] = details(request.get('display'))
+                if 'owners' in request:
+                    item['owners'] = owner_names(request['owners'])
             data['revision'] += 1
             receipt = {'requestHash': request_hash, 'itemId': item['id'], 'status': status, 'at': at,
                        'evidence': proof, 'conclusion': request.get('conclusion', ''), 'counts': counts(data)}
             if conclusion_hash and conclusion_hash != item.get('lastConclusionHash'):
-                seq = len(data['outbox']) + 1
-                data['outbox'].append({'sequence': seq, 'itemId': item['id'], 'eventId': request['eventId'],
-                                       'recordedAt': at, 'counts': counts(data), 'payload': message(data, item, seq, at),
-                                       'delivery': 'pending', 'attempts': 0, 'nextAttemptAt': 0})
-                receipt['sequence'] = seq
+                if status == 'failed':
+                    seq = len(data['outbox']) + 1
+                    data['outbox'].append({'sequence': seq, 'itemId': item['id'], 'eventId': request['eventId'],
+                                           'mentionPolicy': 'failed_owner', 'owners': owner_names(item.get('owners')),
+                                           'recordedAt': at, 'counts': counts(data),
+                                           'payload': message(data, item, seq, at, request['conclusion'], request.get('display')),
+                                           'delivery': 'pending', 'attempts': 0, 'nextAttemptAt': 0})
+                    receipt['sequence'] = seq
                 item['lastConclusionHash'] = conclusion_hash
             data['events'][request['eventId']] = receipt
             atomic_json(self.path, data)
             return {'counts': counts(data), 'revision': data['revision'], 'event': receipt}
+
+    def prepare_mentions(self, sequence, sender):
+        prepare = getattr(sender, 'prepare_failure', None)
+        if not callable(prepare):
+            return
+        with locked(self.root):
+            entry = deepcopy(self.read()['outbox'][sequence - 1])
+        if (entry['delivery'] != 'pending' or entry.get('kind') == 'round_summary'
+                or entry.get('mentionPolicy') != 'failed_owner' or 'mentionResolution' in entry):
+            return
+        try:
+            resolution = prepare(entry.get('owners', []))
+        except Exception:
+            resolution = {'userIds': [], 'unresolved': [{'name': name, 'code': 'OWNER_LOOKUP_UNAVAILABLE'}
+                          for name in entry.get('owners', []) or ['负责人']]}
+        with locked(self.root):
+            data = self.read()
+            current = data['outbox'][sequence - 1]
+            if current['delivery'] == 'pending' and 'mentionResolution' not in current:
+                current['payload'] = apply_mentions(current['payload'], resolution)
+                current['mentionResolution'] = {**resolution, 'checkedAt': stamp()}
+                atomic_json(self.path, data)
+
+    def summarize(self, request):
+        """Queue one evidence-backed summary for an explicitly finished round."""
+        require(text(request.get('roundId')), 'ROUND_ID_REQUIRED')
+        request_hash = canonical_hash(request)
+        with locked(self.root):
+            data = self.read()
+            summaries = data.setdefault('roundSummaries', {})
+            prior = summaries.get(request['roundId'])
+            if prior:
+                require(prior['requestHash'] == request_hash, 'ROUND_ID_CONFLICT')
+                return {'counts': prior['counts'], 'revision': data['revision'], 'duplicate': True}
+            require(request.get('expectedRevision') == data['revision'], 'REVISION_CONFLICT')
+            require(request.get('roundComplete') is True, 'ROUND_NOT_FINISHED')
+            ids = request.get('itemIds')
+            require(isinstance(ids, list) and bool(ids) and all(text(i) for i in ids)
+                    and len(set(ids)) == len(ids), 'ROUND_ITEMS_REQUIRED')
+            require(all(i in data['items'] for i in ids), 'ITEM_NOT_IN_VERSION')
+            selected = {i: data['items'][i] for i in ids}
+            require(all(i['status'] in FINAL for i in selected.values()), 'ROUND_NOT_FINISHED')
+            proof = evidence(request.get('evidence'))
+            c = counts({'items': selected})
+            seq, at = len(data['outbox']) + 1, stamp()
+            summary_items = deepcopy(list(selected.values()))
+            for item in summary_items:
+                if not item.get('conclusion'):
+                    previous = [e for e in data['events'].values()
+                                if e.get('itemId') == item['id'] and e.get('status') == item['status']]
+                    item['conclusion'] = previous[-1].get('conclusion', '') if previous else ''
+            payload = summary_message(label=data['source'].get('versionLabel') or data['versionDate'],
+                                      mode=MODES[data['acceptanceMode']], items=summary_items,
+                                      round_id=request['roundId'], recorded_at=at,
+                                      event_number=f'{canonical_hash(scope(data))[:12]}-{seq}', display=request.get('display'))
+            data['outbox'].append({'sequence': seq, 'kind': 'round_summary', 'roundId': request['roundId'],
+                                   'recordedAt': at, 'counts': c, 'payload': payload,
+                                   'delivery': 'pending', 'attempts': 0, 'nextAttemptAt': 0})
+            summaries[request['roundId']] = {'requestHash': request_hash, 'sequence': seq, 'counts': c,
+                                              'itemIds': ids, 'at': at, 'evidence': proof}
+            data['revision'] += 1
+            atomic_json(self.path, data)
+        return {'counts': c, 'revision': data['revision'], 'sequence': seq}
 
     def flush(self, sender, clock=time.time, limit=5):
         """One bounded drain; future retries run on the next event/resume/flush.
@@ -221,6 +291,17 @@ class ProgressStore:
                 for entry in data['outbox']:
                     if entry['delivery'] == 'sending':
                         entry.update(delivery='unknown', code='INTERRUPTED_SEND')
+                    # Old ledgers queued every result. Keep receipts/ambiguous sends,
+                    # but never drain known-unsent success or blocker notifications.
+                    if entry['delivery'] == 'pending' and entry.get('kind') != 'round_summary':
+                        result = data['events'].get(entry.get('eventId'), {})
+                        if result.get('status') != 'failed':
+                            entry.update(delivery='suppressed', code='FAILURE_ONLY_POLICY')
+                        else:
+                            item = data['items'].get(entry.get('itemId'), {})
+                            conclusion_hash = canonical_hash(['failed', result.get('conclusion', '').strip()])
+                            if item.get('status') != 'failed' or item.get('lastConclusionHash') != conclusion_hash:
+                                entry.update(delivery='suppressed', code='SUPERSEDED_RESULT')
                 atomic_json(self.path, data)
             for _ in range(limit):
                 with locked(self.root):
@@ -235,6 +316,26 @@ class ProgressStore:
                                   and e['nextAttemptAt'] <= current), None)
                     if entry is None:
                         break
+                    sequence = entry['sequence']
+                # Identity lookup may call DWS; never hold the acceptance ledger lock.
+                self.prepare_mentions(sequence, sender)
+                with locked(self.root):
+                    data = self.read()
+                    entry = data['outbox'][sequence - 1]
+                    if entry['delivery'] != 'pending':
+                        continue
+                    current = clock()
+                    recent = [t for t in data.get('attemptTimes', []) if t > current - 60]
+                    if current < data.get('sendNotBefore', 0) or len(recent) >= 15:
+                        break
+                    if entry.get('mentionPolicy') == 'failed_owner':
+                        latest = data['items'].get(entry.get('itemId'), {})
+                        event = data['events'].get(entry.get('eventId'), {})
+                        expected_hash = canonical_hash(['failed', event.get('conclusion', '').strip()])
+                        if latest.get('status') != 'failed' or latest.get('lastConclusionHash') != expected_hash:
+                            entry.update(delivery='suppressed', code='SUPERSEDED_RESULT')
+                            atomic_json(self.path, data)
+                            continue
                     entry.update(delivery='sending', attempts=entry['attempts'] + 1)
                     sequence, payload = entry['sequence'], deepcopy(entry['payload'])
                     data['attemptTimes'] = recent + [current]

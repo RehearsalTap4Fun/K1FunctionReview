@@ -16,11 +16,13 @@ Windows 与 macOS 均须由用户为本轮明确提供 K1 工程根目录；不�
 | 正式 K1 配置检查 | `config-table-editor`，检查正式 `.xlsx` 时需要 | 配置仓库读取权限；需要时 Git LFS；Excel 解析环境，例如 `openpyxl`。只读导出副本，不修改正式配置 |
 | 缺少用例、需要从需求生成用例 | 仓库内 `slg-testcase-generator/`，需将完整目录注册到 Agent skills | 可访问已确认并回读的需求文档；K1 静态 Markdown 用例无累计时间或数量上限，不要求 Google Drive/API Key。独立在线写表流程才需该 Skill 的额外依赖 |
 | 功能开发完成时或版本日运行验收（默认含真机包与 Unity，用户可限定路径） | Unity 路径建议 `unity-mcp-orchestrator`（目录也可能名为 `unity-mcp-skill`）；钉钉出包通知走 `dws` | 客户端 Jenkins 的配置/多语言转换任务权限（优先 `K1_Build_Config_I18N_Mac`）；真机路径另需目标平台出包任务、通知群读取权限、APK 下载内网、Android SDK 的 ADB/包校验工具与已授权设备；Unity 路径需对应版本 Editor、打开的 K1 客户端项目、MCP for Unity 连接和授权测试账号；所选路径均需专属测试服，详见 [真机包安装链](android-package-install.md) |
+| Unity / 真机 Feval 运行时诊断（需要时） | 项目内 `com.tfw.feval`；终端连接另需 `Feval.Cli` | Unity 可使用 `Window/Feval`；真机需本轮包已启动 Feval 服务、`.NET SDK` 与 Feval CLI，ADB 连接时还需目标设备和端口转发。见 [Feval 入口与连接](feval-runtime.md)；不作为普通验收的统一前置 |
 | 钉钉需求文档、反馈表 | 走 CLI 时使用 `dws`；已连接的文档工具也可按原路由使用 | 本人的钉钉登录态和目标文档/表格权限；维护时需要编辑权限；图片追加等浏览器步骤还需可用的浏览器工具及登录态 |
 | 版本进包项进度播报 | 本 skill 的 Python 脚本 | 用户指定并授权的自定义机器人 Webhook；按 [播报配置](acceptance-progress.md#机器人私有配置) 存本地私有文件，不随 Skill 分享 |
 | Word / PDF 需求材料 | 分别按文档路由使用 `documents:documents` / `pdf:pdf` | 对应 skill 自身运行依赖；本地文件不需要统一的额外 API Key |
 | Jira 单号定位 / Confluence 文档 | 按实际来源选择已配置连接；用 Confluence 时可配 `confluence` | 本人的 Jira/Confluence 访问凭证或有效登录态。直接提供分支与可读本地需求时，不强制配置这两项 |
 | 用户明确要求提交 K1 Jira Bug | 仓库内 `jira-bug-creator/`，需将完整目录注册到 Agent skills | 本人 Jira Token、NK 创建与附件权限、Python/uv、原始问题证据；建单前确认版本、经办人与优先级 |
+| 版本日验收后收集未通过项、建 Bug、修复并 Unity 复验 | `jira-bug-creator`；Unity 路径建议 `unity-mcp-orchestrator`；文档访问可用 `dws` | 指定版本日文档及其读取权限、Jira NK 建单/附件权限、用户指定客户端/服务器工种与对应 Git 写入权限、目标 Unity 工程、配置/多语言转换与专属服部署权限；只需 Unity 路径，不自动要求真机安装依赖 |
 
 `jenkins-hotfix` 不是测试环境链的依赖；不得用正式热更任务代替个人测试服部署。K1 配置检查不使用 `xcfg-tool`。`slg-testcase-generator`、`jira-bug-creator` 与本 skill 一同包含在 K1FunctionReview 仓库中，但仍需分别注册到 Agent skills 目录。其余外部 skill 不包含在当前 skill 文件夹内，分享时应列出名称并让接收者从团队维护来源安装；不要假设对方已有本机全部 skill。
 
