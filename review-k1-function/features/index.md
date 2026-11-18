@@ -6,7 +6,7 @@
 |---|---|---|---|---|---|---|
 | k1-giant-snake-phase4 | 巨蛇大作战4期 | 肉鸽塔防4期、Phase4Minion、混合无尽、计次盾 | NK-10652、NK-10657 / dev_NK-10652 | S-07第41关无尽体验（client 96a62eb8）：满星三新阵容12,082分/13:40；结算与同步被247172拒、排行只记早期同步（#61）、结算被拒后旧局不关闭致主动退出需重登（新增#68）、#63血量成长通过、#65返回提示截断；含无尽监控/bot/探针模板 | [巨蛇四期档案](k1-giant-snake-phase4/experience.md) | 2026-11-11 |
 | k1-gm-auto-occupy | GM 自动占领 | LGmAutoOccupy、王座、禁迁、自动迁城 | dev_NK-9557 / 用户定向修复实测 | Unity真实迁城及107项回归通过；出兵被王战None状态拦截，待整服前置授权 | [自动占领档案](k1-gm-auto-occupy/experience.md) | 2026-11-02 |
-| k1-kvk-sea-world | KVK海底世界 | 王座、KVK4、独立地图、85模板、匹配隔离、深海遗迹、荒野狩猎 | NK-10712、NK-10714、NK-10707、NK-10715、NK-10735、NK-10924 / dev | 601 NK-10924：本人gs+新建battle用door GM搭出真实海世界（kvkTag=4、SceneTypeKvk），荒野狩猎「围剿」后集结弹窗不被遮挡，Unity通过；「加入」路径需同盟第二账号未覆盖；独立地图/真实归属前置已验证，缺真实85模板 | [KVK海世界档案](k1-kvk-sea-world/experience.md) | 2026-11-12 |
+| k1-kvk-sea-world | KVK海底世界 | 王座、KVK4、独立地图、85模板、匹配隔离、深海遗迹、荒野狩猎 | NK-10712、NK-10714、NK-10707、NK-10715、NK-10735、NK-10924、NK-10993 / dev | 601 NK-10924：本人gs+新建battle用door GM搭出真实海世界（kvkTag=4、SceneTypeKvk），荒野狩猎「围剿」后集结弹窗不被遮挡，Unity通过；「加入」路径需同盟第二账号未覆盖；独立地图/真实归属前置已验证，缺真实85模板；602 NK-10993 恶魔守卫因 dev 配置 FATAL 起不了 battle，阻塞未验 | [KVK海世界档案](k1-kvk-sea-world/experience.md) | 2026-11-18 |
 | k1-lava-cave | 熔岩洞穴与科技扣费 | LavaCave、AP、批量科技升级 | NK-10750 / dev | Unity正常合法扣费、资源不足无副作用、单升/批升预算旅程通过 | [熔岩洞穴档案](k1-lava-cave/experience.md) | 2026-10-29 |
 | k1-strongest-trial | 强者试炼 | type151、CommonScoreRank、白金兑换券、紫箱 | NK-10648 / dev | Unity真实奖励预览与1194000分入榜前态；双榜邮件自然End仍待验 | [强者试炼档案](k1-strongest-trial/experience.md) | 2026-10-29 |
 | k1-commerce-shops | 次元商店与兑换商店 | UIMergeShop、TFWTab、头像框券、城堡预览 | NK-10651、NK-10644 / dev | 次元商店最小购买、三语及真实ESC重进闭环；兑换商店历史适配问题和人工完成决定分开保留 | [商业商店档案](k1-commerce-shops/experience.md) | 2026-10-29 |
@@ -30,6 +30,9 @@
 | k1-save-egg-mail | 巨龙前置迁移补偿邮件 | SaveEgg、345、60010003、RoyalChest、版本迁移、防重 | NK-10875 / dev | Unity九项实现回归通过；完整产品规则待确认；只修既有模板ID无需机械三语 | [龙蛋邮件档案](k1-save-egg-mail/experience.md) | 2026-11-03 |
 | k1-fte-version-switch | FTE版本与开关会话 | FTEVerGroupCfg、SwitchID、BeginSession、OPENING_CG、Generation、UIGuid | NK-10720、NK-10748、NK-10909 / dev、NK-10915 | 最终d96：正常SDK双向首次切服5→1、冷启/同服重登/真实ESC，9条定向通过；含可选开场键和旧会话回调修复；完整需求待确认 | [FTE会话档案](k1-fte-version-switch/experience.md) | 2026-11-05 |
 | k1-first-charge | 首充三日购 | FirstCharge、UIFirstCharge3dayNew、Ver1首充、克劳蒂亚spine、Hero_Spine_207_GiftBag、fly00 | NK-10604 / dev（c23f9d12、17e9cc94） | 601 Unity：删spine后当前玩家（Old/分组101）首充弹窗与HUD入口正常；Ver1展示位空、标题仍为克劳蒂亚（600已存在，开关213服才可见）待经办人确认；含三套首充界面路由与残留引用排查法 | [首充档案](k1-first-charge/experience.md) | 2026-11-12 |
+| k1-hero-treasure | 英雄秘宝 | 秘宝、TreasureRoot、UITreasureMain、奖励版本、setrewardver、NewHeroUI 349 | NK-10994 / dev（38d33514） | 602 Unity：奖励版本≥1 时新版英雄详情与背包秘宝入口显示、版本0隐藏，通过；新版英雄界面需开关349 | [秘宝档案](k1-hero-treasure/experience.md) | 2026-11-18 |
+| k1-radar-one-click-dispatch | 雷达一键派遣 | 情报站、ExploreAtlasBatchCompleteReq、AtlasDispatchTroop 329、AP 未派遣原因 | NK-10951 / dev（7ca914ce10） | 602 Unity+协议直发4用例通过（体力预扣、连点不重复、AP原因）；客户端未适配AP原因提示待确认 | [雷达派遣档案](k1-radar-one-click-dispatch/experience.md) | 2026-11-18 |
+| k1-skin-ui | 皮肤（装扮）界面 | UIShopSkin、喜欢、未拥有筛选、城堡【新】、SetSkinFavorite、ClearSkinNew | NK-10777（NK-10786/10787）/ dev | 602 Unity未通过：城堡【新】客户端未接服务端，重登丢失；喜欢/筛选/二次进入/三语布局正常；俄语「Нет」、阿语属性标题字形为待确认/既有问题 | [皮肤界面档案](k1-skin-ui/experience.md) | 2026-11-18 |
 
 新增功能按 [档案模板](../assets/feature-experience-template.md) 创建 `features/<featureId>/experience.md` 并登记在本表；同功能改名、换分支或新一轮验收更新原档案。泛称“矿工”“特殊设备”“迷雾”或“首杀”只作为搜索线索，按需求确认归属。出生与迷雾专项和大地图主档案相互链接，同一分支不自动合并不同范围的结论。
 

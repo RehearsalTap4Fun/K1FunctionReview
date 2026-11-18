@@ -125,6 +125,7 @@ python scripts/jenkins_test_environment.py poll --receipt <deploy-receipt.json>
 - canceled / FAILURE 等保留具体构建记录，诊断日志时屏蔽凭证。脚本不输出原始错误响应体，不跨服务跟随重定向。
 - 部署 Job 的控制台会打印钉钉通知插件的其他机器人 webhook `access_token`、`SEC…` 加签密钥等第三方凭证。保存控制台原文作为证据前，先把这些值替换掉，并检查确认已经没有残留；不转发原文，也不把这些凭证用于本轮通知。
 - **新建 battle 服时，SID 的后三位不能和宿主上任何容器重复。** 服务端端口由 `app/config/port.go` 的 `MakePort(base1, base2, sid) = 10000*base1 + 1000*base2 + sid%10000%1000` 计算，所以 battle 12605 和 gs 2605 会争同一个 pprof 端口 30605。后启动的容器报 `bind: address already in use` 并立刻 Exited，Jenkins 只显示「容器未启动，部署失败」。在已授权范围内选 SID 前，先用 `docker ps -a`（含已停止的容器）列出全部容器 SID，挑一个 `%1000` 没被占用的值，不要直接用 gs SID + 10000。2026-11-12 battle 12605 部署失败，改用 12685 后正常运行。
+- **用 dataconfig dev 新部署前，先看 dev 最新几次合并。** 两张单分别合入时可能互相冲突：602 时 NK-10778 给 AvatarFrameNewCfg 新增必填列 LevelGroup，NK-10779 新增的 103140 行没填，服务端加载配置直接 FATAL，所有用 dev 配置新部署或重启的服都起不来（Jenkins #12384）。换成旧配置分支也不行，新代码会缺新表（#12385 缺 AvatarFrameLevelCfg）。遇到这种情况记为环境阻塞，把坏行和两张单的经办人报给用户转配置同学；已在运行的旧配置实例不要重启。
 
 ## 从构建成功到可验收
 
