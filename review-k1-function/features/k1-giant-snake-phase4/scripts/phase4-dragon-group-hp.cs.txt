@@ -1,0 +1,12 @@
+var types = System.AppDomain.CurrentDomain.GetAssemblies().SelectMany(a => { try { return a.GetTypes(); } catch { return new System.Type[0]; } }).ToList();
+var bf = System.Reflection.BindingFlags.Public|System.Reflection.BindingFlags.NonPublic|System.Reflection.BindingFlags.Static|System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.FlattenHierarchy;
+var worldT = types.First(x => x.Name == "World" && x.GetField("LogicMgr") != null); var w = worldT.GetProperty("I", bf).GetValue(null); if (w == null) return "no world"; var mgr = worldT.GetField("LogicMgr").GetValue(w);
+var api = types.First(x => x.Name == "SystemAPI" && x.GetMethods().Any(m => m.Name == "QueryEntities"));
+var q = api.GetMethods().First(m => m.Name == "QueryEntities" && m.IsGenericMethodDefinition && m.GetGenericArguments().Length == 1 && m.GetParameters().Length == 1);
+var gT = types.First(x => x.Name == "DragonGroupComponent");
+var en = q.MakeGenericMethod(gT).Invoke(null, new[]{ mgr }); var e = en.GetType().GetMethod("GetEnumerator").Invoke(en, null); var et = e.GetType();
+var rows = new System.Collections.Generic.List<(int g, ulong hp, ulong max, int seg)>();
+while ((bool)et.GetMethod("MoveNext").Invoke(e, null)) { var it = et.GetProperty("Current").GetValue(e); var c = it.GetType().GetField("Item2").GetValue(it); var ct = c.GetType();
+  rows.Add((System.Convert.ToInt32(ct.GetField("GroupId").GetValue(c)), System.Convert.ToUInt64(ct.GetField("Hp").GetValue(c)), System.Convert.ToUInt64(ct.GetField("MaxHp").GetValue(c)), System.Convert.ToInt32(ct.GetField("SpawnedBodySegmentCount").GetValue(c)))); }
+var st = types.FirstOrDefault(x => x.Name == "MRogueLikeLevelMgr"); string sp = "";
+return System.DateTime.Now.ToString("HH:mm:ss") + " groups=" + rows.Count + " maxHp(min/med/max)=" + (rows.Count == 0 ? "-" : rows.Min(r => r.max) + "/" + rows.OrderBy(r => r.max).ElementAt(rows.Count / 2).max + "/" + rows.Max(r => r.max)) + " seg(min/max)=" + (rows.Count == 0 ? "-" : rows.Min(r => r.seg) + "/" + rows.Max(r => r.seg)) + " | " + string.Join(" ", rows.OrderBy(r => r.seg).Where((r, i) => i % System.Math.Max(1, rows.Count / 8) == 0).Select(r => r.seg + ":" + r.max));

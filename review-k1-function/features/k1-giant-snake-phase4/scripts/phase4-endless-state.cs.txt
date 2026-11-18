@@ -1,0 +1,10 @@
+// eend.cs: endless battle state. END|texts  PLAY|score  NONE|canvases
+var all = UnityEngine.Object.FindObjectsOfType<UnityEngine.Canvas>(false).Where(c => c.isRootCanvas).ToList();
+var ge = all.FirstOrDefault(c => c.name.StartsWith("UITowerDefenseGameEnd"));
+if (ge != null) return "END|" + string.Join(" / ", ge.GetComponentsInChildren<UnityEngine.UI.Text>(false).Select(t => t.text).Where(s => !string.IsNullOrWhiteSpace(s)).Take(16));
+var gp = all.FirstOrDefault(c => c.name.StartsWith("UITowerDefenseGamePlay"));
+var types = System.AppDomain.CurrentDomain.GetAssemblies().SelectMany(a => { try { return a.GetTypes(); } catch { return new System.Type[0]; } });
+var bf = System.Reflection.BindingFlags.Public|System.Reflection.BindingFlags.NonPublic|System.Reflection.BindingFlags.Static|System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.FlattenHierarchy;
+var rtT = types.First(x => x.Name == "Phase4EndlessRuntime"); var rt = rtT.GetProperty("Active", bf).GetValue(null);
+if (gp != null && rt != null) return "PLAY|score=" + rtT.GetProperty("Score").GetValue(rt) + " killed=" + rtT.GetProperty("KilledUnits").GetValue(rt);
+return "NONE|" + string.Join(",", all.Select(c => c.name.Split('(')[0]).Take(10));

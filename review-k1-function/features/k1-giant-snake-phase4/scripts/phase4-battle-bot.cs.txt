@@ -1,0 +1,116 @@
+// In-Unity battle bot: card pick / popup close / guide tap / king aim. __MODE__ on|off
+var D = System.AppDomain.CurrentDomain;
+var oldR = D.GetData("k1botR") as UnityEngine.Events.UnityAction;
+if (oldR != null) { UnityEngine.Application.onBeforeRender -= oldR; D.SetData("k1botR", null); }
+var oldA = D.GetData("k1aimR") as UnityEngine.Events.UnityAction;
+if (oldA != null) { UnityEngine.Application.onBeforeRender -= oldA; D.SetData("k1aimR", null); }
+if ("__MODE__" == "off") return "bot off";
+var types = D.GetAssemblies().SelectMany(a => { try { return a.GetTypes(); } catch { return new System.Type[0]; } }).ToList();
+var bf = System.Reflection.BindingFlags.Public|System.Reflection.BindingFlags.NonPublic|System.Reflection.BindingFlags.Static|System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.FlattenHierarchy;
+var fsmT = types.First(x => x.Name == "FormationSlotManager");
+var worldT = types.First(x => x.Name == "World" && x.GetField("LogicMgr") != null);
+var api = types.First(x => x.Name == "SystemAPI" && x.GetMethods().Any(m => m.Name == "QueryEntities"));
+var q = api.GetMethods().First(m => m.Name == "QueryEntities" && m.IsGenericMethodDefinition && m.GetGenericArguments().Length == 1 && m.GetParameters().Length == 1);
+var posT = types.First(x => x.FullName == "ECS.Position");
+var dt = types.First(x => x.Name == "DragonUnitMoveComponent"); var mt = types.First(x => x.Name == "Phase4MinionComponent");
+var fKing = fsmT.GetField("currentKing", bf); var fMode = fsmT.GetField("currentMode", bf);
+var fPD = fsmT.GetField("pointerDownWorldPos", bf); var fDS = fsmT.GetField("dragStartPosition", bf);
+var mMove = fsmT.GetMethod("HandleMovableModeMovement", bf); var mRot = fsmT.GetMethod("HandleCenterModeRotation", bf);
+var pmT = types.First(x => x.FullName == "DeepUI.PopupManager"); var ecT = types.First(x => x.FullName == "UI.UIEnhanceCard");
+var findPop = pmT.GetMethods().First(m => m.Name == "FindPopup" && !m.IsGenericMethod); var fIds = ecT.GetField("m_EnhanceCardIds", bf);
+var star = new System.Collections.Generic.HashSet<int>{111020618,111020627,111020619,111020620,111020628,112010625,112010626,112010617,112010618,112010627,113010613,113010621,113010622,113010614,113010623};
+var optT = types.First(x => x.FullName == "Cfg.C.CDragonLevelOptions"); var optI = optT.GetMethods(bf).First(m => m.Name == "I" && m.GetParameters().Length >= 1 && m.GetParameters()[0].ParameterType == typeof(int));
+System.Func<int, int> Q = id => { try { var c = optI.Invoke(null, optI.GetParameters().Select((p, i) => i == 0 ? (object)id : p.DefaultValue).ToArray()); var pp = c.GetType().GetProperty("Quality", bf); return System.Convert.ToInt32(pp != null ? pp.GetValue(c) : c.GetType().GetField("Quality", bf).GetValue(c)); } catch { return 0; } };
+var mRefRem = ecT.GetMethod("GetActvRefreshRemainTimes", bf); var mAllRem = ecT.GetMethod("GetActvGetAllRemainTimes", bf); var mCost = ecT.GetMethod("GetActvTierCost", bf);
+var mRefId = ecT.GetMethod("GetActvRefreshItemId", bf); var mAllId = ecT.GetMethod("GetActvGetAllItemId", bf); var mCanReq = ecT.GetMethod("CanRequestRewardAction", bf);
+var mRefClick = ecT.GetMethod("OnActivityRefreshBtnClick", bf); var mAllClick = ecT.GetMethod("OnActivityGetAllCardBtnClick", bf);
+var ctxT = types.First(x => x.Name == "RoguelikeTowerContext" && x.GetProperty("DataProvider", bf) != null); var dpP = ctxT.GetProperty("DataProvider", bf);
+var paT = types.First(x => x.Name == "PlayerAssetsMgr" && x.GetField("m_ItemMap", bf) != null); var paI = paT.GetProperty("I", bf); var mCnt = paT.GetMethod("GetItemCountByID");
+var tried = new System.Collections.Generic.HashSet<string>(); var useStats = new int[2]; D.SetData("k1botUse", useStats); // 0 refresh, 1 getall
+var log = new System.Collections.Generic.List<string>(); D.SetData("k1botLog", log);
+var stats = new int[6]; D.SetData("k1botStats", stats); // 0 aim,1 picks,2 skillClose,3 reward,4 gift,5 guide
+void Click(UnityEngine.GameObject g) => UnityEngine.EventSystems.ExecuteEvents.Execute(g, new UnityEngine.EventSystems.PointerEventData(UnityEngine.EventSystems.EventSystem.current), UnityEngine.EventSystems.ExecuteEvents.pointerClickHandler);
+// compiled collector: alive positions of component ct
+System.Func<object, System.Collections.Generic.List<UnityEngine.Vector3>> Build(System.Type mgrType, System.Type ct, bool needValid) {
+  var X = typeof(System.Linq.Expressions.Expression);
+  var P = System.Linq.Expressions.Expression.Parameter(typeof(object), "m");
+  var qm = q.MakeGenericMethod(ct); var qpt = qm.GetParameters()[0].ParameterType;
+  var getEnum = qm.ReturnType.GetMethod("GetEnumerator"); var et = getEnum.ReturnType;
+  var en = System.Linq.Expressions.Expression.Variable(qm.ReturnType, "en"); var e = System.Linq.Expressions.Expression.Variable(et, "e");
+  var lt = typeof(System.Collections.Generic.List<UnityEngine.Vector3>); var list = System.Linq.Expressions.Expression.Variable(lt, "list");
+  var pv = System.Linq.Expressions.Expression.Variable(posT, "p");
+  var cur = System.Linq.Expressions.Expression.Property(e, "Current");
+  var i1 = System.Linq.Expressions.Expression.Field(cur, "Item1"); var i2 = System.Linq.Expressions.Expression.Field(cur, "Item2");
+  var tryGet = mgrType.GetMethods().First(m => m.Name == "TryGetComponent" && m.IsGenericMethodDefinition && m.GetParameters().Length == 2).MakeGenericMethod(posT);
+  System.Linq.Expressions.Expression cond = System.Linq.Expressions.Expression.Not(System.Linq.Expressions.Expression.Field(i2, "IsDead"));
+  if (needValid) cond = System.Linq.Expressions.Expression.AndAlso(cond, System.Linq.Expressions.Expression.Field(i2, "IsValid"));
+  cond = System.Linq.Expressions.Expression.AndAlso(cond, System.Linq.Expressions.Expression.Call(System.Linq.Expressions.Expression.Convert(P, mgrType), tryGet, i1, pv));
+  var val = System.Linq.Expressions.Expression.Field(pv, "Value");
+  var v3 = System.Linq.Expressions.Expression.New(typeof(UnityEngine.Vector3).GetConstructor(new[]{ typeof(float), typeof(float), typeof(float) }), System.Linq.Expressions.Expression.Field(val, "x"), System.Linq.Expressions.Expression.Field(val, "y"), System.Linq.Expressions.Expression.Field(val, "z"));
+  var add = System.Linq.Expressions.Expression.Call(list, lt.GetMethod("Add"), v3);
+  var brk = System.Linq.Expressions.Expression.Label("brk");
+  var loop = System.Linq.Expressions.Expression.Loop(System.Linq.Expressions.Expression.IfThenElse(System.Linq.Expressions.Expression.Call(e, et.GetMethod("MoveNext")), System.Linq.Expressions.Expression.IfThen(cond, add), System.Linq.Expressions.Expression.Break(brk)), brk);
+  var block = System.Linq.Expressions.Expression.Block(new[]{ en, e, list, pv },
+    System.Linq.Expressions.Expression.Assign(list, System.Linq.Expressions.Expression.New(lt)),
+    System.Linq.Expressions.Expression.Assign(en, System.Linq.Expressions.Expression.Call(qm, System.Linq.Expressions.Expression.Convert(P, qpt))),
+    System.Linq.Expressions.Expression.Assign(e, System.Linq.Expressions.Expression.Call(en, getEnum)), loop, list);
+  return System.Linq.Expressions.Expression.Lambda<System.Func<object, System.Collections.Generic.List<UnityEngine.Vector3>>>(block, P).Compile();
+}
+System.Func<object, System.Collections.Generic.List<UnityEngine.Vector3>> colD = null, colM = null;
+float nextUi = 0, nextAim = 0, busyUntil = 0;
+UnityEngine.Events.UnityAction act = () => {
+  try {
+    float now = UnityEngine.Time.unscaledTime;
+    if (now >= nextUi && now >= busyUntil) {
+      nextUi = now + 0.15f;
+      var all = UnityEngine.Object.FindObjectsOfType<UnityEngine.Canvas>(false).Where(c => c.isRootCanvas).ToList();
+      bool inBattle = all.Any(c => c.name.StartsWith("UITowerDefenseGamePlay"));
+      var card = all.FirstOrDefault(c => c.name.StartsWith("UIEnhanceCard"));
+      if (card != null) {
+        var items = card.GetComponentsInChildren<UnityEngine.Transform>(false).Where(x => x.name == "Click" && x.parent.name.StartsWith("Item")).ToList();
+        var titles = card.GetComponentsInChildren<UnityEngine.UI.Text>(false).Where(t => t.name == "Title" && t.transform.parent.name == "TitleBg").Select(t => t.text).ToList();
+        int pick = 0; System.Collections.Generic.List<int> ids = null;
+        try { var pm = pmT.GetProperty("I", bf).GetValue(null); var pop = findPop.Invoke(pm, new object[]{ ecT }); ids = (System.Collections.Generic.List<int>)fIds.GetValue(pop);
+          int pk = -1; var tn = D.GetData("k1teamNames") as string[]; if (tn != null) for (int k = 0; k < titles.Count; k++) if (tn.Contains(titles[k])) { pk = k; break; }
+          if (pk < 0) for (int k = 0; k < ids.Count; k++) if (ids[k] == 113010623 || ids[k] == 112010625) { pk = k; break; }
+          if (pk < 0) for (int k = 0; k < ids.Count; k++) if (star.Contains(ids[k])) { pk = k; break; }
+          if (pk < 0) for (int k = 0; k < ids.Count; k++) { var s = ids[k].ToString(); if (s.StartsWith("1110206") || s.StartsWith("1120106") || s.StartsWith("1130106")) { pk = k; break; } }
+          pick = pk < 0 ? 0 : pk;
+          var qs = ids.Select(Q).ToList(); int mx = qs.Max(); int hi = qs.Sum(x => x >= 5 ? 3 : x == 4 ? 2 : x == 3 ? 1 : 0); if (qs[pick] < mx) pick = qs.IndexOf(mx);
+          string key = string.Join(",", ids);
+          if (titles.Count >= 2 && !tried.Contains(key)) { tried.Add(key);
+            var dp = dpP.GetValue(null); var dpt = dp.GetType(); bool canReq = (bool)mCanReq.Invoke(pop, null); var pa = paI.GetValue(null);
+            int allRem = (int)mAllRem.Invoke(pop, null); int allCost = (int)mCost.Invoke(null, new object[]{ 10135547, (int)dpt.GetProperty("RestAllSelectionCnt").GetValue(dp) }); long allOwn = System.Convert.ToInt64(mCnt.Invoke(pa, new object[]{ (int)mAllId.Invoke(null, null) }));
+            int refRem = (int)mRefRem.Invoke(pop, null); int refCost = (int)mCost.Invoke(null, new object[]{ 10135546, (int)dpt.GetProperty("RefreshCount").GetValue(dp) }); long refOwn = System.Convert.ToInt64(mCnt.Invoke(pa, new object[]{ (int)mRefId.Invoke(null, null) }));
+            string q3 = "[" + string.Join(",", titles.Select((t, i) => t + ":q" + qs.ElementAtOrDefault(i))) + "]";
+            if (canReq && ids.Count >= 2 && titles.Count >= 2 && hi >= 5 && allRem > 0 && allOwn >= allCost) { mAllClick.Invoke(pop, new object[]{ null, null }); useStats[1]++; log.Add(System.DateTime.Now.ToString("HH:mm:ss") + " GETALL cost=" + allCost + " own=" + allOwn + " rem=" + allRem + " " + q3); busyUntil = now + 2f; return; }
+            if (canReq && titles.Count >= 2 && mx <= 3 && refRem > 0 && refOwn >= refCost) { mRefClick.Invoke(pop, new object[]{ null, null }); useStats[0]++; log.Add(System.DateTime.Now.ToString("HH:mm:ss") + " REFRESH cost=" + refCost + " own=" + refOwn + " rem=" + refRem + " " + q3); busyUntil = now + 2f; return; }
+          }
+        } catch (System.Exception ex2) { D.SetData("k1botErr2", (ex2.InnerException ?? ex2).Message); }
+        if (items.Count > pick && titles.Count > 0) { Click(items[pick].gameObject); stats[1]++; log.Add(System.DateTime.Now.ToString("HH:mm:ss") + " pick " + titles.ElementAtOrDefault(pick) + " of [" + string.Join(",", titles) + "] ids=" + (ids == null ? "" : string.Join(",", ids))); if (log.Count > 400) log.RemoveAt(0); busyUntil = now + 0.6f; return; }
+      }
+      var skill = all.FirstOrDefault(c => c.name.StartsWith("UIEnhanceSkill"));
+      if (skill != null) { var bc = skill.GetComponentsInChildren<UnityEngine.Transform>(false).FirstOrDefault(x => x.name == "BtnClose"); if (bc != null) { Click(bc.gameObject); stats[2]++; busyUntil = now + 0.6f; return; } }
+      var rw = all.FirstOrDefault(c => c.name.StartsWith("UIWinRewardGrid"));
+      if (rw != null && inBattle) { var ok = rw.GetComponentsInChildren<UnityEngine.Transform>(false).FirstOrDefault(x => x.GetComponents<UnityEngine.Component>().Any(k => k is UnityEngine.EventSystems.IPointerClickHandler) && x.GetComponentsInChildren<UnityEngine.UI.Text>(false).Any(t => t.text.Contains("确") || t.text.Contains("领"))); if (ok != null) { Click(ok.gameObject); stats[3]++; busyUntil = now + 0.6f; return; } }
+      var gift = all.FirstOrDefault(c => c.name.StartsWith("UITriggerGift_New"));
+      if (gift != null) { var cb = gift.GetComponentsInChildren<UnityEngine.Transform>(false).FirstOrDefault(x => x.name == "CloseBtn"); if (cb != null) { Click(cb.gameObject); stats[4]++; busyUntil = now + 0.6f; return; } }
+      if (inBattle) { var gd = all.FirstOrDefault(c => c.name.StartsWith("GuideDialog")); if (gd != null) { var cl = gd.GetComponentsInChildren<UnityEngine.Transform>(false).FirstOrDefault(x => x.GetComponents<UnityEngine.Component>().Any(k => k is UnityEngine.EventSystems.IPointerClickHandler)); if (cl != null) { Click(cl.gameObject); stats[5]++; busyUntil = now + 0.6f; return; } } }
+    }
+    if (now >= nextAim) {
+      nextAim = now + 0.5f;
+      var fsm = UnityEngine.Object.FindObjectOfType(fsmT); if (fsm == null) return;
+      var king = (UnityEngine.GameObject)fKing.GetValue(fsm); if (king == null) return;
+      var w = worldT.GetProperty("I", bf).GetValue(null); if (w == null) return; var mgr = worldT.GetField("LogicMgr").GetValue(w);
+      if (colD == null) { colD = Build(mgr.GetType(), dt, true); colM = Build(mgr.GetType(), mt, false); }
+      var kp = king.transform.position; bool center = fMode.GetValue(fsm).ToString() != "Movable";
+      UnityEngine.Vector3? best = null; float bs = float.MaxValue;
+      foreach (var lst in new[]{ colD(mgr), colM(mgr) }) foreach (var p in lst) { float s = center ? (p - kp).sqrMagnitude : p.z; if (s < bs) { bs = s; best = p; } }
+      if (best == null) return; var tp = best.Value; stats[0]++;
+      if (!center) { fPD.SetValue(fsm, kp); fDS.SetValue(fsm, kp); mMove.Invoke(fsm, new object[]{ new UnityEngine.Vector3(tp.x, kp.y, kp.z) }); }
+      else mRot.Invoke(fsm, new object[]{ new UnityEngine.Vector3(tp.x, kp.y, tp.z) });
+    }
+  } catch (System.Exception ex) { D.SetData("k1botErr", System.DateTime.Now.ToString("HH:mm:ss") + " " + (ex.InnerException ?? ex).GetType().Name + ":" + (ex.InnerException ?? ex).Message); }
+};
+UnityEngine.Application.onBeforeRender += act; D.SetData("k1botR", act);
+return "bot on";

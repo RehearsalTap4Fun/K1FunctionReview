@@ -1,0 +1,12 @@
+var types = System.AppDomain.CurrentDomain.GetAssemblies().SelectMany(a => { try { return a.GetTypes(); } catch { return new System.Type[0]; } }).ToList();
+var bf = System.Reflection.BindingFlags.Public|System.Reflection.BindingFlags.NonPublic|System.Reflection.BindingFlags.Static|System.Reflection.BindingFlags.Instance;
+var t = types.First(x => x.Name == "Phase4SkillAudio"); var a = t.GetProperty("Active", bf).GetValue(null);
+if (a == null) return "audio inactive";
+var bind = (System.Collections.IDictionary)t.GetField("m_Bindings", bf).GetValue(a);
+var bs = new System.Collections.Generic.List<string>();
+foreach (System.Collections.DictionaryEntry kv in bind) { var r = kv.Value; var rt = r.GetType(); bs.Add(kv.Key + ":" + rt.GetField("castAudioID").GetValue(r) + "/" + rt.GetField("hitAudioID").GetValue(r) + "/" + rt.GetField("iceCastAudioID").GetValue(r) + "/" + rt.GetField("iceHitAudioID").GetValue(r) + ",once=" + rt.GetField("oncePerEntity").GetValue(r) + ",cd=" + rt.GetField("hitCooldownSeconds").GetValue(r) + ",stop=" + rt.GetField("stopWithEntity").GetValue(r)); }
+var gate = t.GetField("m_Gate", bf).GetValue(a); var nt = (System.Collections.IDictionary)gate.GetType().GetField("m_NextTime", bf).GetValue(gate);
+var hits = new System.Collections.Generic.List<string>(); foreach (System.Collections.DictionaryEntry kv in nt) hits.Add(kv.Key.ToString());
+var cast = (System.Collections.IDictionary)t.GetField("m_CastAudioIDs", bf).GetValue(a); var cs = new System.Collections.Generic.List<string>(); foreach (System.Collections.DictionaryEntry kv in cast) cs.Add(kv.Value.ToString());
+var miss = (System.Collections.IEnumerable)t.GetField("m_Missing", bf).GetValue(a); var ms = new System.Collections.Generic.List<string>(); foreach (var m in miss) ms.Add(m.ToString());
+return System.DateTime.Now.ToString("HH:mm:ss") + " bindings=[" + string.Join(" ", bs) + "] hitPlayed=[" + string.Join(",", hits) + "] castPlaying=[" + string.Join(",", cs) + "] missing=[" + string.Join(",", ms) + "]";

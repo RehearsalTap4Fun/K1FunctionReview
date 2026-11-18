@@ -1,0 +1,51 @@
+// endlessmon.cs __MODE__ on|off|dump|cfg
+var D = System.AppDomain.CurrentDomain;
+var oldR = D.GetData("k1monR") as UnityEngine.Events.UnityAction;
+var mode = "__MODE__";
+if (mode == "dump") { var l = D.GetData("k1monLog") as System.Collections.Generic.List<string>; if (l == null) return "none"; var o = string.Join("\n", l); if ("__CLEAR__" == "1") l.Clear(); return o; }
+var types = D.GetAssemblies().SelectMany(a => { try { return a.GetTypes(); } catch { return new System.Type[0]; } }).ToList();
+var bf = System.Reflection.BindingFlags.Public|System.Reflection.BindingFlags.NonPublic|System.Reflection.BindingFlags.Static|System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.FlattenHierarchy;
+var rtT = types.First(x => x.Name == "Phase4EndlessRuntime");
+if (mode == "cfg") {
+  var rt = rtT.GetProperty("Active", bf).GetValue(null); if (rt == null) return "no endless runtime";
+  var cfg = rtT.GetProperty("Config", bf).GetValue(rt); var ct = cfg.GetType();
+  var s = "maxActive=" + ct.GetField("maxActiveSublevels").GetValue(cfg) + " maxMinion=" + ct.GetField("maxMinionSublevels").GetValue(cfg) + " minionAliveCap=" + ct.GetField("minionAliveCap").GetValue(cfg) + " launchInterval=" + ct.GetField("launchIntervalSeconds").GetValue(cfg) + " ready=" + ct.GetField("runtimeReady").GetValue(cfg) + "\n";
+  var tl = (System.Collections.IList)ct.GetField("templates").GetValue(cfg); int i = 0;
+  foreach (var t in tl) { var tt = t.GetType(); s += i++ + ": id=" + tt.GetField("id").GetValue(t) + " src=L" + tt.GetField("sourceLevelID").GetValue(t) + " mode=" + tt.GetField("gameMode").GetValue(t) + " dragon=" + tt.GetField("dragonGroupID").GetValue(t) + " minionPlan=" + tt.GetField("minionPlanID").GetValue(t) + " dUnits=" + tt.GetField("dragonUnits").GetValue(t) + " mUnits=" + tt.GetField("minionUnits").GetValue(t) + " budget=" + tt.GetField("scoreBudget").GetValue(t) + "\n"; }
+  return s;
+}
+if (oldR != null) { UnityEngine.Application.onBeforeRender -= oldR; D.SetData("k1monR", null); }
+if (mode == "off") return "mon off";
+var log = D.GetData("k1monLog") as System.Collections.Generic.List<string>; if (log == null) { log = new System.Collections.Generic.List<string>(); D.SetData("k1monLog", log); }
+var worldT = types.First(x => x.Name == "World" && x.GetField("LogicMgr") != null);
+var api = types.First(x => x.Name == "SystemAPI" && x.GetMethods().Any(m => m.Name == "QueryEntities"));
+var q = api.GetMethods().First(m => m.Name == "QueryEntities" && m.IsGenericMethodDefinition && m.GetGenericArguments().Length == 1 && m.GetParameters().Length == 1);
+var instT = types.First(x => x.Name == "Phase4EndlessInstanceComponent"); var pendT = types.First(x => x.Name == "Phase4EndlessPendingComponent");
+var minT = types.First(x => x.Name == "Phase4MinionComponent"); var dT = types.First(x => x.Name == "DragonUnitMoveComponent");
+var lifeT = types.First(x => x.Name == "Phase4PlayerLife");
+System.Collections.Generic.List<object> Rows(object mgr, System.Type ct) { var res = new System.Collections.Generic.List<object>(); var en = q.MakeGenericMethod(ct).Invoke(null, new[]{ mgr }); var e = en.GetType().GetMethod("GetEnumerator").Invoke(en, null); var et = e.GetType(); var mn = et.GetMethod("MoveNext"); var cur = et.GetProperty("Current"); int g = 0; while ((bool)mn.Invoke(e, null) && g++ < 6000) { var it = cur.GetValue(e); res.Add(it.GetType().GetField("Item2").GetValue(it)); } return res; }
+var prevInst = new System.Collections.Generic.Dictionary<int, (int tpl, int killed, int scoreAtStart, float t0)>();
+int prevLife = -1, prevScore = -1; float next = 0, t0g = -1;
+UnityEngine.Events.UnityAction act = () => {
+  try {
+    float now = UnityEngine.Time.unscaledTime; if (now < next) return; next = now + 2f;
+    var rt = rtT.GetProperty("Active", bf).GetValue(null); if (rt == null) return;
+    var w = worldT.GetProperty("I", bf).GetValue(null); if (w == null) return; var mgr = worldT.GetField("LogicMgr").GetValue(w);
+    if (t0g < 0) t0g = now; float el = now - t0g;
+    int score = (int)rtT.GetProperty("Score").GetValue(rt); int killed = (int)rtT.GetProperty("KilledUnits").GetValue(rt);
+    int act = (int)rtT.GetProperty("ActiveSublevelCount").GetValue(rt); int actM = (int)rtT.GetProperty("ActiveMinionSublevelCount").GetValue(rt);
+    var insts = Rows(mgr, instT); var pend = Rows(mgr, pendT).Count;
+    var cur = new System.Collections.Generic.Dictionary<int, (int, int)>();
+    foreach (var x in insts) cur[(int)instT.GetField("Sequence").GetValue(x)] = ((int)instT.GetField("TemplateIndex").GetValue(x), (int)instT.GetField("KilledCount").GetValue(x));
+    foreach (var kv in cur) if (!prevInst.ContainsKey(kv.Key)) { prevInst[kv.Key] = (kv.Value.Item1, kv.Value.Item2, score, el); log.Add(el.ToString("F0") + "s START seq" + kv.Key + " tpl" + kv.Value.Item1 + " score=" + score + " active=" + act + "/" + actM + "m pend=" + pend); }
+    foreach (var k in prevInst.Keys.ToList()) if (!cur.ContainsKey(k)) { var v = prevInst[k]; log.Add(el.ToString("F0") + "s DONE seq" + k + " tpl" + v.tpl + " dur=" + (el - v.t0).ToString("F0") + "s scoreDelta(all)=" + (score - v.scoreAtStart) + " score=" + score); prevInst.Remove(k); }
+    foreach (var kv in cur) { var v = prevInst[kv.Key]; prevInst[kv.Key] = (v.tpl, kv.Value.Item2, v.scoreAtStart, v.t0); }
+    int life = -1; var la = lifeT.GetProperty("Active", bf).GetValue(null); if (la != null) { var st = lifeT.GetProperty("State", bf).GetValue(la); life = (int)st.GetType().GetField("CurrentLife").GetValue(st); }
+    if (life != prevLife) { log.Add(el.ToString("F0") + "s LIFE " + prevLife + "->" + life + " score=" + score); prevLife = life; }
+    int minions = Rows(mgr, minT).Count(m => !(bool)minT.GetField("IsDead").GetValue(m)); int segs = Rows(mgr, dT).Count(d => !(bool)dT.GetField("IsDead").GetValue(d));
+    if (((int)el) % 10 < 2 || score != prevScore && log.Count < 5) log.Add(el.ToString("F0") + "s S score=" + score + " killed=" + killed + " active=" + act + "/" + actM + "m pend=" + pend + " inst=[" + string.Join(" ", cur.Select(c => c.Key + ":" + c.Value.Item1 + ":" + c.Value.Item2)) + "] minions=" + minions + " segs=" + segs + " life=" + life + " fps=" + (1f / UnityEngine.Time.smoothDeltaTime).ToString("F0"));
+    prevScore = score; if (log.Count > 3000) log.RemoveRange(0, 500);
+  } catch (System.Exception ex) { D.SetData("k1monErr", (ex.InnerException ?? ex).Message); }
+};
+UnityEngine.Application.onBeforeRender += act; D.SetData("k1monR", act);
+return "mon on";

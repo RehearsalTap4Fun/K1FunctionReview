@@ -4,7 +4,7 @@
 
 | featureId | 功能 | 别名 / 搜索词 | 关联需求 / 历史分支 | 历史证据范围 | 档案 | 更新日期 |
 |---|---|---|---|---|---|---|
-| k1-giant-snake-phase4 | 巨蛇大作战4期 | 肉鸽塔防4期、Phase4Minion、混合无尽、计次盾 | NK-10652、NK-10657 / dev_NK-10652 | S-04反馈定向复验9项5通过/4失败：P18、多束及文案（Unity显示为准）、ESC结算显示修复；服务端全选不去重、英/阿通行证与退出文案仍在母表、俄语标题压按钮；含Editor拉母表、冷启动切语与反馈插图限制经验 | [巨蛇四期档案](k1-giant-snake-phase4/experience.md) | 2026-11-04 |
+| k1-giant-snake-phase4 | 巨蛇大作战4期 | 肉鸽塔防4期、Phase4Minion、混合无尽、计次盾 | NK-10652、NK-10657 / dev_NK-10652 | S-07第41关无尽体验（client 96a62eb8）：满星三新阵容12,082分/13:40；结算与同步被247172拒、排行只记早期同步（#61）、结算被拒后旧局不关闭致主动退出需重登（新增#68）、#63血量成长通过、#65返回提示截断；含无尽监控/bot/探针模板 | [巨蛇四期档案](k1-giant-snake-phase4/experience.md) | 2026-11-11 |
 | k1-gm-auto-occupy | GM 自动占领 | LGmAutoOccupy、王座、禁迁、自动迁城 | dev_NK-9557 / 用户定向修复实测 | Unity真实迁城及107项回归通过；出兵被王战None状态拦截，待整服前置授权 | [自动占领档案](k1-gm-auto-occupy/experience.md) | 2026-11-02 |
 | k1-kvk-sea-world | KVK海底世界 | 王座、KVK4、独立地图、85模板、匹配隔离 | NK-10712、NK-10714、NK-10707、NK-10715、NK-10735 / dev | 独立地图/真实归属前置已验证；缺真实85模板，上下文不能替业务验收 | [KVK海世界档案](k1-kvk-sea-world/experience.md) | 2026-10-29 |
 | k1-lava-cave | 熔岩洞穴与科技扣费 | LavaCave、AP、批量科技升级 | NK-10750 / dev | Unity正常合法扣费、资源不足无副作用、单升/批升预算旅程通过 | [熔岩洞穴档案](k1-lava-cave/experience.md) | 2026-10-29 |
@@ -24,6 +24,8 @@
 | k1-anonymous-login-password | 匿名账号登录密码稳定性 | ClientLoginPassword、匿名登录、杀进程、密码指纹 | NK-10861 | Android8536新增三轮真实匿名密码认证经服务端确认同值；密码单项通过；游戏入场1通过2失败，iOS未测 | [匿名密码档案](k1-anonymous-login-password/experience.md) | 2026-11-02 |
 
 | k1-throne-war-king-skill | 国王技能与城堡技能弹窗 | 王座战、禁锢、UIPlayerCityInfo、UIThroneWarKingSkill | NK-10866 / CS-305229 | 按用户指定原录屏城堡弹窗复验；技能使用与ESC正常，三语说明裁切；未通过 | [国王技能档案](k1-throne-war-king-skill/experience.md) | 2026-11-03 |
+
+| k1-svs-cross-map-switch | SVS跨服V1/V2地图切换与传送 | SVS、跨服王座战、跨服入侵战、ThroneCross、WMapTarget、MapSwitch | NK-10910 / dev_NK-10910（仅客户端） | Unity标题级7用例通过（V1↔V2互跨、敌服迁城、回本服、ESC、本服迁城）；V2敌服焦土可落点极小为服务端风险；超时恢复与其他跨服场景未回归 | [SVS地图切换档案](k1-svs-cross-map-switch/experience.md) | 2026-11-04 |
 
 | k1-save-egg-mail | 巨龙前置迁移补偿邮件 | SaveEgg、345、60010003、RoyalChest、版本迁移、防重 | NK-10875 / dev | Unity九项实现回归通过；完整产品规则待确认；只修既有模板ID无需机械三语 | [龙蛋邮件档案](k1-save-egg-mail/experience.md) | 2026-11-03 |
 

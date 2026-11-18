@@ -1,0 +1,5 @@
+void Click(UnityEngine.GameObject g) => UnityEngine.EventSystems.ExecuteEvents.Execute(g, new UnityEngine.EventSystems.PointerEventData(UnityEngine.EventSystems.EventSystem.current), UnityEngine.EventSystems.ExecuteEvents.pointerClickHandler);
+var root = UnityEngine.Object.FindObjectsOfType<UnityEngine.Canvas>(false).Where(c=>c.isRootCanvas && c.name.StartsWith("UIMain")).OrderByDescending(c=>c.sortingOrder).First();
+var icon = root.GetComponentsInChildren<UnityEngine.UI.Image>(false).First(i => i.name == "ImageIcon" && i.sprite && i.sprite.name == "UI_Activity_RoguelikeTower_Icon_Noticeboard").transform;
+var tgt = icon; while (tgt != null && !tgt.GetComponents<UnityEngine.Component>().Any(k => k is UnityEngine.EventSystems.IPointerClickHandler)) tgt = tgt.parent;
+Click(tgt.gameObject); return "opened via " + tgt.name;

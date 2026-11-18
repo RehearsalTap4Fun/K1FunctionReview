@@ -1,0 +1,9 @@
+var ge = UnityEngine.Object.FindObjectsOfType<UnityEngine.Canvas>(false).FirstOrDefault(c => c.isRootCanvas && c.name.StartsWith("UITowerDefenseGameEnd"));
+if (ge == null) return "no GameEnd";
+var t = ge.GetComponentsInChildren<UnityEngine.UI.Text>(false).FirstOrDefault(x => x.text.Contains("请点击任意位置返回") || x.text.Contains("校验失败"));
+if (t == null) return "no tip";
+var rt = t.rectTransform; var cs = new UnityEngine.Vector3[4]; rt.GetWorldCorners(cs);
+var cam = ge.renderMode == UnityEngine.RenderMode.ScreenSpaceOverlay ? null : ge.worldCamera;
+var sp = cs.Select(c => UnityEngine.RectTransformUtility.WorldToScreenPoint(cam, c)).ToArray();
+string path = ""; var p = t.transform; while (p != null && p != ge.transform) { path = p.name + "/" + path; p = p.parent; }
+return "path=" + path + " text=" + t.text.Replace("\n", "\\n") + " | screen=" + UnityEngine.Screen.width + "x" + UnityEngine.Screen.height + " rectScreen y[" + sp[0].y.ToString("F0") + "," + sp[1].y.ToString("F0") + "] x[" + sp[0].x.ToString("F0") + "," + sp[2].x.ToString("F0") + "] size=" + rt.rect.size + " preferredH=" + t.preferredHeight.ToString("F0") + " vOverflow=" + t.verticalOverflow + " hOverflow=" + t.horizontalOverflow + " align=" + t.alignment + " fontSize=" + t.fontSize + " bestFit=" + t.resizeTextForBestFit + " pivot=" + rt.pivot + " anchoredPos=" + rt.anchoredPosition;

@@ -1,0 +1,16 @@
+var types = System.AppDomain.CurrentDomain.GetAssemblies().SelectMany(a => { try { return a.GetTypes(); } catch { return new System.Type[0]; } }).ToList();
+var bf = System.Reflection.BindingFlags.Public|System.Reflection.BindingFlags.NonPublic|System.Reflection.BindingFlags.Static|System.Reflection.BindingFlags.Instance|System.Reflection.BindingFlags.FlattenHierarchy;
+var worldT = types.First(x => x.Name == "World" && x.GetField("LogicMgr") != null);
+var mgr = worldT.GetField("LogicMgr").GetValue(worldT.GetProperty("I", bf).GetValue(null));
+var api = types.First(x => x.Name == "SystemAPI" && x.GetMethods().Any(m => m.Name == "QueryEntities"));
+var q = api.GetMethods().First(m => m.Name == "QueryEntities" && m.IsGenericMethodDefinition && m.GetGenericArguments().Length == 1 && m.GetParameters().Length == 1);
+var ct = types.First(x => x.Name == "Phase4MinionComponent");
+var en = q.MakeGenericMethod(ct).Invoke(null, new[]{ mgr }); var e = en.GetType().GetMethod("GetEnumerator").Invoke(en, null);
+var outp = new System.Collections.Generic.List<string>(); int n = 0;
+while ((bool)e.GetType().GetMethod("MoveNext").Invoke(e, null)) { var it = e.GetType().GetProperty("Current").GetValue(e); int id = (int)it.GetType().GetField("Item1").GetValue(it); var u = it.GetType().GetField("Item2").GetValue(it); n++;
+  int drop = (int)ct.GetField("DropID").GetValue(u); if (drop <= 0) continue;
+  outp.Add(id + ":d" + drop + ":hp" + ct.GetField("Hp").GetValue(u) + ":p" + ct.GetField("NextPointIndex").GetValue(u) + ":y" + ((float)ct.GetField("ImageY").GetValue(u)).ToString("F0") + (((bool)ct.GetField("ReachedDefense").GetValue(u)) ? ":END" : "")); }
+var lt = types.First(x => x.Name == "Phase4PlayerLife"); var a = lt.GetProperty("Active", bf).GetValue(null);
+var life = a == null ? "-" : lt.GetProperty("State", bf).GetValue(a).GetType().GetField("CurrentLife").GetValue(lt.GetProperty("State", bf).GetValue(a)).ToString();
+var cq = types.First(x => x.Name == "Phase4ChestQueue"); var qa = cq.GetProperty("Active", bf)?.GetValue(null);
+return System.DateTime.Now.ToString("HH:mm:ss.f") + " life=" + life + " units=" + n + " chests=[" + string.Join(" ", outp) + "] chestQ=" + (qa == null ? "null" : "granted=" + cq.GetProperty("GrantedCount").GetValue(qa) + ",pending=" + cq.GetProperty("PendingCount").GetValue(qa));

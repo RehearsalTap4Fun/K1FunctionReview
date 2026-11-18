@@ -5,8 +5,8 @@
 | featureId | k1-giant-snake-phase4 |
 | 别名 | 肉鸽塔防4期、巨蛇4期、Phase4Minion、混合无尽 |
 | 关联需求 / 分支 | NK-10652、NK-10657 / dev_NK-10652 |
-| 更新时间 | 2026-11-04，Asia/Shanghai |
-| 最近实际验证 | S-04（2026-11-04，client 4177b094/config 40aed93/server 2605@ba9bb524，macOS Unity）反馈表定向复验9项：5通过（全选客户端锁、P18可读提示、基础多束、多重射线四语文案〔按用户“Unity显示即可”改判〕、ESC/结算被拒显示）、4失败（服务端全选不去重、英/阿通行证重复词与英文退出文案仍在翻译母表、俄语41关标题压住i按钮）；其余81项为本轮范围外。S-02（2026-11-03，同版本21cf159/9f4436e，macOS Unity）90项：19通过、14失败、37阻塞、14执行遗漏、6用户排除（生命周期）；小兵/盾/混合无尽仍未生效，根因已定位为新关卡表未接入+实例白名单。S-01首轮85项：14通过、25失败、46阻塞；18条事项待统一决策。不能称这些战斗类型已通过。 |
+| 更新时间 | 2026-11-12，Asia/Shanghai |
+| 最近实际验证 | S-05（2026-11-06～11-09，X15移植后：client 7f1b8308/config de1bdd70/server 2605@e4fe5ba3，macOS Unity）：按用户决定“聚焦移植与反馈”跑108项中的56项：47通过、8失败（开局被拒无提示、服务端全选不去重、寒霜未接入、混合关出蛇波序、复刻音效基础形态回退旧音、英/俄卡名压视频按钮、俄41关标题仍压通行证、阿语Flame Ray漏翻）、1执行遗漏（外围结算）、52用户排除；生命周期TC-85/86/88/89/90首次实测通过。11-09开发另推e01180b2/4eca851c/5c9224bd与config d5fc0859并自测改反馈行26/27/28为已通过，尚未经AI复验。S-04（2026-11-04，client 4177b094/config 40aed93/server 2605@ba9bb524，macOS Unity）反馈表定向复验9项：5通过（全选客户端锁、P18可读提示、基础多束、多重射线四语文案〔按用户“Unity显示即可”改判〕、ESC/结算被拒显示）、4失败（服务端全选不去重、英/阿通行证重复词与英文退出文案仍在翻译母表、俄语41关标题压住i按钮）；其余81项为本轮范围外。S-02（2026-11-03，同版本21cf159/9f4436e，macOS Unity）90项：19通过、14失败、37阻塞、14执行遗漏、6用户排除（生命周期）；小兵/盾/混合无尽仍未生效，根因已定位为新关卡表未接入+实例白名单。S-01首轮85项：14通过、25失败、46阻塞；18条事项待统一决策。不能称这些战斗类型已通过。 |
 
 ## 再次验收先看
 
@@ -16,13 +16,13 @@
 
 | 字段 | 内容 |
 |---|---|
-| status | needs_review |
+| status | precheck_confirmed |
 | source | https://alidocs.dingtalk.com/i/nodes/7NkDwLng8ZMa3Y5aTpPpp724JKMEvZBY |
-| confirmedVersion / confirmedAt | 尚未确认 |
-| currentVersion | e43dd6227179640eef661a23ca66d00840b8d03a0dd9a12c476c70a466732667（S-01 Markdown正文SHA256）；S-02经`dws doc read`取得Markdown的SHA256为4dff1e46702a8579c34397ed03008a5544009c1404f556cb2dc187f1eccb26bd，文档最后修改时间约2026-10-26早于S-01，两次哈希差异来自导出方式不同，尚不可直接比较 |
-| checkedAt | 2026-11-04，Asia/Shanghai（S-04）：dws读取正文SHA256为e43dd622…，与S-01一致；S-02/S-03的4dff1e46…仅多一个结尾换行，updateTime仍为2026-10-26 10:31，文档未变 |
-| evidence | S-01中的document-source.json、plan.json；S-02中的doc.md、plan-r3.json；S-04中的doc.md、plan.json |
-| reason / nextAction | 本轮用户明确要求存疑项先记、首轮实测后统一决策；不得倒填文档确认或回写原文。 |
+| confirmedVersion / confirmedAt | revision 33；Markdown正文SHA256 4ec8b81f55704f5a24ef04ec76a1c683450ae7dc0170e2df9f254340c01094df；2026-11-06，Asia/Shanghai |
+| currentVersion | 同confirmedVersion（S-05运行验收以该版为基线，变更记录1.1） |
+| checkedAt | 2026-11-06（S-05预检写入后回读）；运行阶段沿用，未再改原文 |
+| evidence | S-05预检FunctionPreview/.tmp/k1-nk10652-20261106-precheck（alignment.md、handoff.json、doc-after.md、result.json）与reports/20261106-100829-4-nk-10652-nk-10657-x15-53e10ef0 |
+| reason / nextAction | 用户逐项确认ALN-01～09均为“需求已调整”（逐关生命、淤泥护层、三弹道X15形态、小兵血量、7种刷新、混合关出蛇波序、复刻音效与技能视频），原文与变更记录已更新并回读。之后若纳入新提交（如11-09的e01180b2）只对齐受影响规则。淤泥计次数字显示（a64da10）不在1.1正文内，待用户确认是否属需求。 |
 
 ## 来源与版本
 
@@ -31,6 +31,9 @@
 | S-01 | K1FunctionReview/.tmp/k1-nk10652-20261102-unity；客户端21cf159a3edf48da49716ede0ccb154ab84c56f5、正式配置9f4436eb149816db6dbf4cde5c9260ac09fd3c78 | 本机原始证据，不随Skill分发；10份工作簿经Git LFS OID/大小校验，85项用例已编排，首局已实际执行但失败。S-02所在机器上不可访问。 |
 | S-02 | FunctionPreview/.tmp/k1-nk10652-20261103-unity（plan-r3/state-r3）与reports/k1-nk10652-20261103-unity-r3；client 21cf159、config 9f4436e、server dev@e116bce；测试服为线上同SID备份导入后本人重建；macOS Unity 2022.3.62f2c1 | 本机原始证据，不随Skill分发；90项用例按同版文档重建，Unity路径实测，真机范围外；生命周期6项经用户决定本轮排除。 |
 | S-04 | FunctionPreview/.tmp/k1-nk10652-20261104-recheck（plan/state）与reports/k1-nk10652-20261104-recheck；client dev_NK-10652@4177b094、config 40aed93（客户端产物为bd4b2c74 jenkins导入，本轮未重跑转换）、server沿用remote-jiangzhenyu-gs-2605（dev@ba9bb524，最新dev 1deeaf93仅KVK改动）；S-03批次为k1-nk10652-20261103-recheck | 本机原始证据，不随Skill分发；Unity路径，真机范围外；反馈表待验收/未通过项定向复验。 |
+| S-05 | FunctionPreview/.tmp/k1-nk10652-20261106-precheck（静态，冻结client 0f784de7/config a182bac3/server dev e4fe5ba3）与.tmp/k1-nk10652-20261106-runtime（plan/state，运行client 7f1b8308、config de1bdd70、server 2605@e4fe5ba3 备份线上2605重建；11-09实例回收后同授权重建，新匿名角色、GM强开新期）；reports/k1-nk10652-20261106-runtime | 本机原始证据，不随Skill分发；只走Unity路径，真机为范围外；51项老用例与TC-22按用户决定排除。 |
+| S-07 | FunctionReview/.tmp/k1-nk10652-20261111-endless（evidence/endless.log、e1/e2/e4-mon/net/bot、截图）与reports/k1-nk10652-20261111-endless/summary.html；client dev_NK-10652@96a62eb8、config 27d4adc583、server dev@343e9994+config b3cf57c4（2605未重部署），macOS Unity 2022.3.62f2c1 | 本机原始证据，不随Skill分发；第41关无尽玩家体验（非完整验收），4局+1次复现，bot自动瞄准选卡。 |
+| S-08 | FunctionReview/.tmp/k1-v601-20261111/evidence/nk10652（report.md、r1/r2-net、server-2605-verify.txt、shots/nk10652）；601版本日第20行定向复验；client dev@f3770958（含7f2104e8/066ac313/e466e364）、server 2605 dev@343e9994+config dev@7fdd86cb，macOS Unity | 本机原始证据，不随Skill分发；只复验无尽结算/同步/排行，Unity路径 |
 
 ## 已核实的定位与待验证项
 
@@ -79,7 +82,20 @@
 | RUN-DELETE-EXIT | 暂停→退出→Delete离开战斗不发EndReq，服务端仍在局中；下次点挑战弹“当前还有未通关关卡是否继续挑战”，选取消才清掉。 | S-04三次复现；可用作卡结算外的干净退战方式，但Delete会整目录删本地档（见RUN-QUIT-DELETE-ALL），先隔离原档。 |
 | RUN-ESC-AFTER-CARD | 选卡刚关闭的同一刻发ESC，可能被关闭中的选卡弹窗吞掉（不暂停也无暂停页）。 | S-04英/俄/阿各见一次；判定ESC行为前确认暂停页实际出现，未出现则在HUD稳定后重试，不据此报缺陷。 |
 | TOOL-FEEDBACK-IMAGE-APPEND | dws sheet range update写richText图片要求每个image带resourceUrl，range read只返回resourceId；已有图片的单元格无法在保留原图的前提下追加新图。write-image只用于空单元格；新增行set-dropdown会把原下拉范围扩到该行。 | S-04已验证：已有问题行只更新文字并在报告保留本次截图，新增行用write-image附图；在线打开核验需浏览器，扩展未连接时记“附件待验证”。 |
-| RUN-RU-TITLE-OVERLAP | 俄语第41关标题“41. Бесконечное ИСПЫТАНИЕ”把i说明按钮挤到右侧，被通行证图标压住大半；中英文正常。 | S-04新发现（ru-activity-main.png），已新增反馈行AI-NK10652-R3-RU-TITLE。 |
+| RUN-RU-TITLE-OVERLAP | 俄语第41关标题“41. Бесконечное ИСПЫТАНИЕ”把i说明按钮挤到右侧，被通行证图标压住大半；中英文正常。 | S-04新发现（ru-activity-main.png），已新增反馈行AI-NK10652-R3-RU-TITLE。 | S-05复验：i按钮已移到标题左侧可见可点，但标题未缩字仍伸入通行证图标下，仍未通过（行23已更新）。
+| RUN-LIFECYCLE-END | `actv timepass` 推进到 endTs 后本期实例从 info1/list 消失、his 保留；服务端 OnEnd 只做 SendRankRewards 与 RecycleCards。系统邮箱两封同名“[巨蛇大作战]活动结束”：排行奖励（ActvRankSectionCfg→VersionRewardBaseCfg）与碎片回收（Cnt×ConstConfig 10135550 [蓝25,紫100,橙400] 钻石）。未领关卡奖励不补发、下一期清空；活动道具50100000/1/2不回收，下一期开启另发初始各+1；`actv newActv 100109541` 只建主活动，BP/排行/商店需各自实例。 | S-05实测（TC-85/86/88/89/90通过）；外围BP/商店结算需在结束前先产生消耗，本轮遗漏（TC-87）。结束时进行中战局同步被247172/11201拒绝且无奖励，但客户端浮出原始“参数错误（11201）”。推进后用 `actv timereset` 复原。 |
+| RUN-SERVER-STALL | 11-09 13:23 起服务端不再回该客户端心跳（进程、端口、模块 goroutine 正常，gsgate 无新连接），结算请求挂起显示“挑战结算中”。 | 恢复：停止/重进 Play→fastlogin；“玩家在线”时仅对本人测试角色临时开 FastLoginForce，期间可能先“登录超时/平台认证失败”，稍后重试成功；登录后补发 EndReq，下次挑战“未通关是否继续”选取消。未定位根因，不作缺陷。 |
+| RUN-LANG-NEUTRAL-NAV | 切语言后按文字匹配的脚本（“巨蛇大作战”“挑战”“删除”）失效。 | S-05：活动入口用 HUD ImageIcon sprite `UI_Activity_RoguelikeTower_Icon_Noticeboard` 定位（scripts/open-activity-by-icon），挑战用 `KingInfo/BtnStart`，退战确认用 `ButtonGroup/BtnRedM1`，技能详情翻页 `Banner/RightBtn`、视频 `Banner/VideoBtn`、视频关闭限定 `VideoPanel/Title/CloseBtn`。 |
+| RUN-LEDGER-SCHEMA | runtime_acceptance 结果须用 `observation` 与 `{kind,path}` 证据，passed 覆盖全部 requiredEvidence，带 lifecycleAssertionId 的 passed 还要逐 observable 填 observedEffects；blocked 项会阻止 check-advance。 | S-05：临时写法（observed/字符串证据）导致 EVIDENCE_SCOPE_MISMATCH/LifecycleError，返工补证；生命周期前需先让前序阶段全部成为通过/失败/排除。 |
+| RUN-AUDIO-BINDINGS | a64da10 起 Phase4SkillAudio 绑定改读 DragonRoguelikeSkill 的 SkillSound/SkillHitSound/AudioIce*；运行探针（scripts/phase4-audio-bindings）可读绑定、已播命中、正在播的施放与缺失ID。 | S-05：幼龙基础100010206=24001005、弹群基础100030106=24001001/24001002 为旧音，开发方案与 d64ddbec JSON 应为24000201、24000208/24000209；其余7条为复刻音。已记反馈行AI-NK10652-R5-AUDIO。 |
+| RUN-CONTROLLED-CONSTRUCT | 固定逻辑 Tick 下降帧不能构造大步长；同 Tick 击杀+到达无现成入口。 | S-05：越终点用在场单位 walker 受控 Advance(速度,3600s) 后恢复（scripts/phase4-walker-overshoot）；子关切换不回血用 Phase4PlayerLife.TryDamage 受控扣1血再观察 Phase4EndlessInstance 序号；宝箱到终点用 chest-arrival 探针看 DropID 单位消失、生命减、宝箱队列 granted 不变。均在报告注明受控。同 Tick 裁决（TC-22）仍待开发调试入口。 |
+| RUN-PLAYER-EXPERIENCE | 正常玩家体验跑法：领主必须跟随目标走位（FormationSlotManager.HandleMovableModeMovement/HandleCenterModeRotation）；阵容不会自动换成高战力卡，需按 TowerDefenseCardData.CombatPower 取前4上阵；战力远超推荐时出现“碾压”(FastPass)可一次跳多关；复活消耗按1/2/4递增。 | S-06（11-10，client 5889968f→3b4cd629，server dev@343e9994）：不走位/不换阵容时第2～10关反复卡关（数据无效）；换阵容后9.17K→31.37K。第27关告别港湾三蛇是主要卡点（89K/推荐64.8K最好47%，改配置后6%～11%）；GM发碎片至245K后27→40一次扫荡。服务端payTotal $241.90（策略内$121.93，脚本误判多买$119.97）。战斗机器人需挂在Unity内（onBeforeRender），外部轮询每次约1.3s；无尽HUD无“关卡进度”文字需单独判断；隐藏的GamePlay画布会残留。 |
+| RUN-ENDLESS-SCHEDULE | 第41关运行时 Phase4EndlessRuntime.Config：maxActive 3、maxMinion 1、minionAliveCap 60、launchInterval 6s、74模板（源L1~L40）。纯蛇模板预算固定1000（与7/28/33/70计分单位无关），含小兵模板=10×(蛇单位+小兵)。CanLaunch 被挡的模板改到队尾（blocked.Order=NextPendingOrder++），不丢弃但打乱顺序。 | S-07（11-11，client 96a62eb8）：三局采样 active≤3、含小兵≤1；单局最多推进到第12/74个实例，tpl7（L3，460兵）因tpl0占小兵名额被挪到队尾，之后所有含小兵模板均未出场；minionAliveCap 未触达（同屏最多18只）、循环未触达。scripts/phase4-endless-monitor 的 cfg 模式可导出模板表。 |
+| RUN-ENDLESS-REJECT-OPEN | 无尽结算EndReq被247172拒绝后服务端StartingInfo保留：改阵容TeamSaveReq返回247153（飘字，但界面阵容/战力不回滚，开战用服务端旧阵容）；失败页离开后再点挑战弹“继续挑战”，确认会读档回到已失败战局（生命1、积分为最后存档）；若从暂停→退出→确认主动结束，客户端删存档并置IsRunning=false，再点挑战只发StartReq得247153“肉鸽塔防已经开始游戏”，重进活动无效。 | S-07已复现两次；脱困：冷启动Play→fastlogin重登（InfoNtf使IsRunning=true）→点挑战→“继续挑战”选取消（空进度EndReq返回0）。改阵容前先这样关掉旧局并核对TeamSaveAck errCode=0。已记反馈行AI-NK10652-R7-ENDLESSQUITSTUCK（#68）并补充#61。 |
+| RUN-ENDLESS-RANK-SYNC | 局内 ActvRogueTowerSyncProgressReq（约每3秒或选卡时）同样走 VerifyEndlessPower：按积分精确查 ActivityDragonPowerVerify(100010934, Value 1~700) 且开局战力≥Power，否则247172并飘字。排行只随被接受的同步更新：排行积分=40×100+maxEndlessProgress×10，上限11,000，与单局真实积分无关。表在Value 46→47处所需战力43,435→34,748非单调。 | S-07：249K只过360、299.95K只过400~500；13分钟12,082分局排行8,000，1分钟1,740分局因早期同步500通过升到9,000。 |
+| RUN-ENDLESS-ECON | 活动道具阶梯（ConstConfig）：刷新50100000 [1,1,2,2,3]、全部获得50100001 [1,2,3,4]、复活50100002 [1,2,4,6]，每局分别5/4/4次；GM `addasset pid item id n` 可补。卡碎片150000201/150000301 addasset 后自动转为卡牌cnt，SendActvRogueTowerCardUpStarReq 每次一档（0→5★共1000），满星返回22004，再 SendActvRogueTowerCardSkillUnlockReq(card,0..4) 解锁星级技能。 | S-07实测阶梯与剩余次数显示一致；满星后海潮/弹群单卡79,670，阵容183.5K→299.95K。后期复活收益低：4次复活共+790分（+7%），后三次各+42~112分。UIEnhanceCard 全部获得档位读 RestAllSelectionCnt（活动中实为已用次数，命名误导）。 |
+| RUN-ENDLESS-HP-RESULT | fbebaf7e 后四期无尽按 SpawnedDragonBodySegmentCount 计算龙组血量（scripts/phase4-dragon-group-hp）；失败页 ClickTipText 高80、preferredHeight 135、Truncate，第二行“请点击任意位置返回”不可见（scripts/phase4-result-tip-probe）。 | S-07：第1节6,000→第113节1.46M→第510节37.9亿，113→225节≈1.02^112，#63已通过；返回功能可用但提示截断，#65未通过。 |
+| RUN-ENDLESS-VERIFY-SCALE | 服务端 VerifyEndlessPower 用上报值精确查 ActivityDragonPowerVerify(100010934)，表只有 Value 1~700，查不到即 247172（日志 `endless power verify cfg miss`，与战力无关）；第4期客户端上报 Phase4EndlessRuntime.Score，ActDragonEndlessTemplateCfg 74 模板每个 score_budget=1000，所以积分一过700必被拒。排行分=4000+最高被接受值×10（上限11,000）同样按≤700设计。 | S-08（11-12，client f3770958）已验证：299,954战力首同步562通过，1027起全部拒绝，阵亡结算2,996分被拒（DEFEAT无积分），排行只记9,620；积分≤700时结算正常（主动退出16分EndAck=0）；ESC可离开被拒结算页；被拒后点挑战→“继续挑战”选取消即关旧局并可再开局。客户端血量成长/积分分摊修复不解决该问题，需前后端统一口径。复验时先看服务端日志 cfg miss 还是 verify fail，区分“表不覆盖”和“战力不足”。 |
 
 ## 运行与界面覆盖
 
@@ -88,6 +104,12 @@
 S-02（2026-11-03，同版本）：Unity路径90项实测，19通过/14失败/37阻塞/14执行遗漏/6用户排除。通过：正常入口、通关解锁、关卡领奖与失败重试/重复领取、刷新与单次全选、复活扣费与后退、读档恢复、选卡暂停冻结、蛇身挂箱与K1选卡、三弹道作为活动卡接入、游走弹20枚持续游走与命中台账去重、技能页关闭无软锁。失败：开局Ack不判错、新关卡表未接入（第3/11/4/41关仍旧数据）、小兵/盾/无尽实例白名单、幼龙单束、环伤害参数与正式配置不一致、全选同帧双扣、ESC半退出与战斗中弹退出游戏、英/俄/阿显示问题。阻塞：依赖小兵/盾/混合无尽/挑战积分的37项及环境不可构造的兼容项；执行遗漏：同帧裁决、低帧越点、环带几何与空心负向、射线跟随/重选、多箱、未处理箱结束等专项采样。生命周期6项因前序阻塞无法通过check-advance，经用户决定本轮排除，待P0修复后在新部署连同前序阻塞项复测。反馈表来源与字段映射记录在S-02私有笔记，不写入共享Skill。
 
 S-04（2026-11-04，client 4177b094，2605@ba9bb524）：开发按上轮反馈修复后的反馈表定向复验，Unity路径9项5通过/4失败，81项范围外（TC-34按用户决定由失败改判通过，#4/P16已通过）。通过：客户端全选防重、领奖错误提示四语可读（P18已通过）、基础2束且强化到4束、ESC暂停/结算被拒显示DEFEAT与原因。失败：服务端全选重放仍双扣（#6）、英/阿通行证重复词与英文退出文案仍在母表（#8，开发只改了en.tsv）、俄语41关标题压住i按钮（新增行）。本轮未跑配置转换（测试服Jenkins无该任务、本机无客户端Jenkins凭证），跑转换会向dev_NK-10652推提交并按母表覆盖en.tsv手改。
+
+S-05（2026-11-06～09，X15移植，client 7f1b8308/config de1bdd70/server 2605@e4fe5ba3）：先远端冻结做静态预检与9项文档对齐，再Unity路径运行56项：47通过/8失败/1执行遗漏/52排除。新通过：逐关生命3、淤泥护层三档与破盾吸收、幼龙1束+焚阵与多束、海潮前向与满潮回环、弹群2枚与熔潮终式20枚、小兵血量显示、Legacy刷波节奏、纯兵关、宝箱到终点、越终点、无尽子关不回血、技能视频、客户端全选防重、生命周期五项。失败：开局被拒无提示、服务端全选重复扣费、寒霜未接入、DragonSpawnWaves未读取、基础形态复刻音回退、英/俄新卡名压视频按钮、俄41关标题压通行证、阿语111020619漏翻。洋红背景仍在，按环境问题处理。
+
+S-07（2026-11-11，client 96a62eb8，第41关无尽体验报告）：旧最强阵容249K 8,829分/5:50；三新0★+神圣之光183.5K 9,042分/8:12（复活2）；三新满星+神圣之光299.95K 12,082分/13:40（复活4，刷新5、全部获得3）。新技能为主力（满星时游走弹群占71%伤害）。所有结算与局内同步（积分>表内阈值）被247172拒绝，排行只记早期同步；结算被拒后旧局不关闭导致阵容保存被拒、可读档回到已失败战局、主动退出后需重登才能开局（新增#68）。#63龙身血量成长通过，#65返回可用但提示截断未通过。调度符合3/1，但被挡的含小兵模板移到74模板循环队尾，实际单局只见tpl0一个含小兵小关（待策划确认）。
+
+S-08（2026-11-12，601版本日第20行定向复验，client dev@f3770958）：7f2104e8/066ac313/e466e364 改了无尽血量成长（Base 300000×seq^2.5，10后×(seq/10)^2）和积分分摊，但服务端校验表只覆盖积分1~700，第4期每模板1000分，同步与结算超过700仍全部247172，排行只记首次同步，仍未通过（反馈行61已追加）。同一299.95K阵容由13分40秒/12,082分降为135秒/2,996分。活动结束结算与#68主动退出路径本轮未重跑。
 
 ## 首轮后用户决定（2026-11-03）
 
