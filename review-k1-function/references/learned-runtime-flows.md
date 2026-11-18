@@ -24,3 +24,21 @@
 ## 黄金矿工已学习入口（2026-10-20）
 
 已迁入 [黄金矿工验收档案](../features/k1-gold-miner/experience.md)，包含原入口、API 类型、教学、异步道具、挑战关及异常记录；必要模板及参数、清理、版本和验证边界见 [脚本档案](../features/k1-gold-miner/scripts/usage.md)。旧链接保留此入口，后续只维护功能档案。
+
+
+## Unity 首次导入与独立实例接入（2026-11-11）
+
+- entryId：`windows-fresh-unity-import-mcp-route-20261111`；状态：已验证的环境操作方法；适用：Windows、Unity 2022.3.62f2c1、项目集成 TFW unity-mcp v10.1.1-beta.1 的此次验证版本。不是功能验收通过记录。
+- 全新 Library 的首次导入可在脚本编译成功后继续处理音频、预制体及 Spine 后处理。短时没有新增导入行、低 CPU 或没有 MCP 端口不足以证明导入失败；结合新资源路径、后处理日志与最终正常退出回执判断，不按累计耗时重建缓存。
+- 项目本版 MCP 自动接入处理器默认跳过 batch。`-batchmode -quit` 应以明确成功退出和退出码 0 核验；交互 Editor 另核真实项目路径、编译状态和实例。进 Play 后首次 SpriteAtlas 打包仍可能暂时阻塞调试读取，读取失败不重发业务写操作。
+- 交互实例未自动连上已有 MCP 服务、但独立调试桥已可用时，本版可由目标 Editor 调用 `MCPForUnity.Editor.Services.MCPServiceLocator.Bridge.StartAsync()`。返回只记录请求排队/完成标量，不序列化 Task；随后重新枚举实例并按新项目的完整 `Name@hash` 固定路由，再读取状态与自定义工具。两个项目同名时尤其不能仅凭名称选择。
+- 登录框架错误的 Editor 弹窗可能共用“玩家在线”的泛化文案。先保留原错误、核实际 errCode 和服务端对应记录，再判断是否在线；弹窗文字本身不构成强制登录的依据。正常重连成功也不能抹掉首轮错误或潜在补创角副作用。
+- 下次复用先核工具包版本、进程、项目、初始化阶段和实际回执；账号、服务器、GM 许可与当前数据不从本条经验继承。具体环境与原始回执保存在使用者私有任务笔记，不写入共享 Skill。
+
+## 钉钉反馈单元格多图保留（2026-11-11）
+
+- entryId：`dws-axls-multiple-images-preserve-20261111`；适用范围：本批次DWS CLI实际返回的schema与axls表格，复用前须重新查支持能力。
+- `sheet write-image` 在本次实测中替换目标单元格已有图片，不是追加。先完整读取该单元格所有图及文本，保留原resourceId/resourceUrl；有其他协作者变化时重新合并，不盲写。
+- 本版 `dws schema --cli-path 'sheet range update' --compact` 明确支持 `type:richText`、`texts`内image子项；`resourceId`单独不足，必须提供真实`resourceUrl`。这是live schema证明的新格式，不是顶层`type:image`。本次先media-upload真实本地图片，随后一次写入含全部图片的richText，再完整回读D2；不要把此方法用于尚不支持该格式的旧CLI。
+- 多图写入成功后仍逐图核验：通过文档真实resourceId调用 `doc +media-preview` 下载，实际打开，并核下载字节与原图SHA一致。相对resourceUrl不能作为群消息HTTPS图片链接；播报另取真实临时downloadUrl，签名链接只保留私有台账。
+- 本次两张真实英俄失败图片同时回读与逐图打开成功；不能仅凭write响应或图片数量声称原图已保留、附件可用。

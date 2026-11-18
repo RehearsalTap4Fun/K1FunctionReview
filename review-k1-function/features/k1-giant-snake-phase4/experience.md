@@ -33,6 +33,7 @@
 | S-04 | FunctionPreview/.tmp/k1-nk10652-20261104-recheck（plan/state）与reports/k1-nk10652-20261104-recheck；client dev_NK-10652@4177b094、config 40aed93（客户端产物为bd4b2c74 jenkins导入，本轮未重跑转换）、server沿用remote-jiangzhenyu-gs-2605（dev@ba9bb524，最新dev 1deeaf93仅KVK改动）；S-03批次为k1-nk10652-20261103-recheck | 本机原始证据，不随Skill分发；Unity路径，真机范围外；反馈表待验收/未通过项定向复验。 |
 | S-05 | FunctionPreview/.tmp/k1-nk10652-20261106-precheck（静态，冻结client 0f784de7/config a182bac3/server dev e4fe5ba3）与.tmp/k1-nk10652-20261106-runtime（plan/state，运行client 7f1b8308、config de1bdd70、server 2605@e4fe5ba3 备份线上2605重建；11-09实例回收后同授权重建，新匿名角色、GM强开新期）；reports/k1-nk10652-20261106-runtime | 本机原始证据，不随Skill分发；只走Unity路径，真机为范围外；51项老用例与TC-22按用户决定排除。 |
 | S-07 | FunctionReview/.tmp/k1-nk10652-20261111-endless（evidence/endless.log、e1/e2/e4-mon/net/bot、截图）与reports/k1-nk10652-20261111-endless/summary.html；client dev_NK-10652@96a62eb8、config 27d4adc583、server dev@343e9994+config b3cf57c4（2605未重部署），macOS Unity 2022.3.62f2c1 | 本机原始证据，不随Skill分发；第41关无尽玩家体验（非完整验收），4局+1次复现，bot自动瞄准选卡。 |
+| S-07（6c248026） | FunctionPreview/.tmp/k1-nk10652-20261110-2650-from27 与 reports/k1-nk10652-20261111-2650-player27-to-endless；client 6c248026d4e8、server dev@343e9994b985、config dev_NK-10652@e09bec633 | 本机原始证据，不随Skill分发；第27至40关及满星无尽体验，另含7笔Editor模拟购买。 |
 | S-08 | FunctionReview/.tmp/k1-v601-20261111/evidence/nk10652（report.md、r1/r2-net、server-2605-verify.txt、shots/nk10652）；601版本日第20行定向复验；client dev@f3770958（含7f2104e8/066ac313/e466e364）、server 2605 dev@343e9994+config dev@7fdd86cb，macOS Unity | 本机原始证据，不随Skill分发；只复验无尽结算/同步/排行，Unity路径 |
 
 ## 已核实的定位与待验证项
@@ -123,3 +124,19 @@ S-01的decision-confirmations.json已逐项确认18/18。决定不等于修复�
 - 洋红背景本轮暂不处理，下一轮观察是否复现；不将暂缓写成已修复或通过。低分持久化、IsRunning语义及无尽错误恢复仍按已确认条件补验后定性。
 
 私有反馈来源、账号、目标服、环境权限、清理与恢复状态均读取S-01～S-04私有笔记，不写入共享Skill。
+
+## S-07（6c248026） 玩家体验增量（2026-11-11）
+
+来源 S-07（6c248026）：Unity本轮冻结client 6c248026d4e8、server dev 343e9994b985、config dev_NK-10652 e09bec633；私有回执与原图在 FunctionPreview/.tmp/k1-nk10652-20261110-2650-from27，汇总在 FunctionPreview/reports/k1-nk10652-20261111-2650-player27-to-endless，不随Skill分发。此为第27关起的玩家体验，不能覆盖历史详细用例、其他语言、活动生命周期及真机缺口。没有修改业务代码或正式配置。
+
+| entryId | 状态、结论及适用范围 | 验证与下次操作 |
+|---|---|---|
+| RUN-ENDLESS-SCORE-VERIFY | 已验证：上述服务端按(ContentID,progress)精确查ActivityDragonPowerVerify；四期Content100010934正式源仅Value1..700，客户端上报挑战积分。满星power492294仍在966分起被247172拒绝，最终11956分未落库，best660；普通返回后正常重登IsRunning=true/IsPlaying=false。 | 2026-11-11 S-07（6c248026）：359对Sync请求/回包、实际容器cfg miss、冻结源码、正式XLSX及最终EndReq/重登互证。此版本不能沿用旧RUN-ENDLESS-POWER-VERIFY“只补战力即可”的建议；开发统一积分/校验语义后复测Sync、End、best与StartingInfo清理。未绕校验、未GM清现场。 |
+| RUN-PLAYER-27-40 | 已验证：14关15战，38首次54.76%失败后正常补强重试，40复活4次共13券；全部尝试总全选87券、复活22券。27最初一段沿用AUTO=true后经正常UI关闭，其后false，非全段纯手动对照。 | S-07（6c248026）各关before/胜负/EndAck0/领奖/指标台账。38策略、随机结果与战力均变化，不能把重试改善全归因于加战力；40战斗完成后遗留HUD100%尚有一组残血为待决体验观察。 |
+| RUN-FULLSTAR-OPTION-INDEX | 已验证：14卡最高星级来自正式源，两个蓝卡3星、其余12卡5星；102有两条3星词条，全卡共67配置列表项。 | S-07（6c248026）正式表、运行卡状态及正常UI逐项解锁回读；按列表索引处理，不能按星数推算索引。GM补碎片/升星仅为无尽夹具，不计作正常付费养成通过。 |
+| RUN-REVIVE-COSTS | 已验证：正式10135548数组为1/2/4/6，第4次6券。 | S-07（6c248026）实际40关四次复活与源表。辅助输入守卫必须读当前复活次数和正式数组；本轮误推8时仅修正守卫并在同一局继续，不能记成第2次挑战或产品故障。 |
+| RUN-PAY-EDITOR-BOUNDARY | 已验证：正常UI触发Unity内建Editor模拟购买，7笔到账/限购/正常重登成功；未产生真实CreateOrder，SDK渠道支付仍阻塞。 | S-07（6c248026）七组请求/奖励通知与重登对比。区分内建Editor测试购买和直接GM补养成，不能用二者证明真实SDK渠道支付。 |
+| RUN-SHOP-LIMITS | 已验证：蓝自选044与紫自选049正式limit=-1不限购；048中级随机150，050混合随机300，051橙自选50。 | S-07（6c248026）正式表与实际UI。旧“紫自选36/50”推断失效，后续按源表/运行时读值。 |
+| RUN-HUD-100-REMAINING | 待决体验观察：40关进度显示100%时，一组仍20166/1325998HP，之后要求复活。 | S-07（6c248026）原HUD及实体采样；推荐未全清前最多显示99%，由策划决定。不能表述成全体敌人已死仍失败，不据此覆盖旧反馈的开发结论。 |
+
+清理已验证：原登录标志、测试购买开关、AUTO及GameView恢复，三份隔离原存档按哈希恢复，自有回调与探针清理，未保存原本已脏场景；并发仓库改动全部保留。协作反馈表元信息可读但范围读取持续6000ms超时/断连，未写任何单元格，在线维护待服务恢复后按最新单元格合并。无新增共享脚本；身份绑定执行副本只保留本地。

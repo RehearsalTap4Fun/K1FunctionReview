@@ -141,3 +141,38 @@ Client42c4667d/Serverba9bb524/Config1d42a49c，仅Unity。新规则5c0a83f要求
 任务724类型/AccumHandler/真实ArenaChallenge事件接线存在，但无已取得的有效任务实例可做0→1。现有goalevent或finishdaily不能替代真实挑战；plua的LuaState命令结束即关闭，不能让任务dispatcher持有长期Lua闭包。原单允许先加类型，实例缺口不等于未投放导致功能失败。10375延期评论不能自动排除；一期表现/受击动画改动已合入，独立特效目标与其对应仍待确认。
 
 本批私有报告`.tmp/k1-600-2904-20261103/reports/NK10371-arena-impact-2904`：3项通过、2项待补，未声明全需求通过。正常结算真实ESC返回主榜后重进已核；本批最终中文、345/354临时开关OFF、观察器注销。角色/服务器/历史结论每轮重新绑定。不要在blob过滤缓存上做全库git grep：它会大量懒加载及自动GC，可能耗尽磁盘；按已确定路径物化精确源码，停止本轮遗留的检索进程后再收尾，不删除有依赖的索引对象。
+
+## 2026-11-03 Unity 取证与输入能力增量
+
+S600-UI：仅记录本轮竞技场/国王技能 UI 集中验证中可复用的取证方法，不在此汇总业务终态。client dev 8aabc31d25547d9dd623f7c77bb944d325c65708，正式转换产物 bc585159f5c2b00e8b50f4d029da5fb97fd61f51；server e116bcec247456366d2c1a5d466f2942df41d803，config 1d42a49cc9035ad4d4681016dd09ac25e0e893ae。原始证据索引为私有 `FunctionPreview/.tmp/k1-600-unity-20261103/arena-ui-language-review/root-handoff-facts.json`、同目录 `visual-review.json`，及该批次 `king-entry-followup/closure-review-20261103/image-review.json`、`ui/king-native-drag-retry.jsonl`。这些文件和身份均不随 Skill 分发；当前机器已读，迁移后不可访问须重新核对。
+
+| entryId | 方法 / 结论 | 状态、范围及下次动作 | 来源 / 日期 |
+|---|---|---|---|
+| arena600-capture-data-separation | 真实绑定/协议先独立保存 `*-data.json`，capture 与导航分调用；逐图核面板和稳定画面 | 已验证本轮曾因帧尾截图取得后继页面、因辅助 capture 同名写 JSON 覆盖原 dump。被覆盖的 dump 不能作为原始业务证据；重新读取并另名取证。通用完整规则复用 [commerce-screenshot-frame](../k1-commerce-shops/experience.md)，不复制第二套脚本 | S600-UI / 2026-11-03 |
+| unity600-native-drag-held-move | 原生拖动必须出现按下→按住移动→抬起，并确认实际输入/列表响应；只有按下与最终抬起跳位不构成有效拖动 | 已验证本轮 CUA.drag 未交付 held-move，属于工具缺口，不能据此判产品滑动失败。20 帧 MCP 指针经实际 raycast 拖动处理器滚动成功，只证明 UI 事件层功能，明确非 OS 注入、不写 normalizedPosition；严格原生断言保留 tool blocked，待能力恢复或人工补验，不无限重复同一无效输入 | S600-UI / 2026-11-03；适用于本轮 Unity 输入能力，不自动推广为所有 CUA 版本失效 |
+
+本次仅新增上述两条方法，未将旧批次通过、开发参考或本轮单张截图迁移成当前完整业务结论；未修改公共脚本、需求确认标记或共享身份模板。
+
+
+## 2026-11-04 来源刷新与既有缓存接续（非新增业务验收）
+
+S600-CACHE-RESUME：本轮仅Unity既有缓存只读和离线正式源核对；client正式转换产物 `07e959519e793439ba4416fa7c794c554bf5bd25`（源码冻结 `90abb924cd5a32ed20b1de5e5d7a5cfbdaa2dd3c`）、server `1deeaf9332bf677094853e9c2a798c3bb8acb20f`、config `ebdfe05f07745d86184fe5a6f7af3c3dd0cdf178`。**0项新增业务通过**；未初始化、发ArenaQuery、打开Arena、挑战、刷新、支付、领奖或CU。主协调已同步来源/缓存核查并回读释放为待验收；本段不是整项运行结论，不改历史计数及既有documentBaseline确认状态。
+
+私有来源统一位于 `FunctionPreview/.tmp/k1-600-round-20261103-2128/`，不随Skill分发，迁移时必须重新核访问性：
+
+| 来源编号 | 日期与位置 | 验证层级及可访问情况 |
+|---|---|---|
+| S600-CACHE-RESUME-JIRA | 2026-11-04 15:06 +08:00；`ui-cases/arena-jira-latest-readonly.json`、`arena-jira-refresh-delta.json`、`arena-latest-jira-and-cache-handoff.md` | 实际认证GET，五单全部正文、分页评论及附件元数据回读，前后updated/attachment稳定；当前可读 |
+| S600-CACHE-RESUME-STATE | 2026-11-04 15:26 +08:00；`bridge/arena-owned-existing-cache-readonly-1.json`、`ui-cases/arena-owned-cache-formal-map.json` | 主协调已执行本人身份守卫后的既有缓存快照；离线四本正式XLSX逐一与冻结提交LFS oid/SHA256一致；当前可读 |
+| S600-CACHE-RESUME-AUDIT | 2026-11-04 15:29 +08:00；`ui-cases/arena-source-cache-resume-audit-20261104-1530.json`、`600-2-result-readback-20261104-152950.json` | 来源/缓存接续审计与在线待验收回读；不是新业务通过报告；当前可读 |
+
+| entryId | 结论 / 方法与状态 | 适用条件、成功信号及下次动作 | 来源 / 实际验证日期 |
+|---|---|---|---|
+| arena-existing-cache-no-init | 已验证严格已有缓存读取：用已核类型 `THelper.Ins<T>` 的私有静态字段 `s_Ins` 取现存实例，不访问会在空时new的 `.I`；GameData直接读已有 `_taskGameData`，只输出白名单原始字段 | `K1Game/Core/Singleton/InstanceHelper.cs:13-21`；TaskGameData的TaskData getter也会new并注册事件。现存实例为空就返回未知，不能初始化补数据；不序列化整个扩展对象，不调用Config/GetConfigQuestType。实际片段留本轮 `ui-cases/arena-cache-readonly-template.cs.txt`，身份绑定执行副本不进入共享Skill；下次重核字段/类型/线程及账号后复用方法 | S600-CACHE-RESUME-STATE / 2026-11-04 |
+| arena-query-consumes-defense | 已验证源码边界：Arena `ReqQuery` 不是严格只读；`HotfixScripts/Logic/NewArena/LNewArenaMgr.Net.cs:16-18`明示服务器会顺带消费防守待处理队列，登录初始化也可能调用ReqQuery | 查缓存时禁止为补空Data调用ReqQuery、Init/OnLogin或打开Arena；普通打开/查询应另按当轮业务授权和前置评估。此次Data未收到、榜单/记录缓存页-1、无最近挑战，不能凭缓存空推断服务端未开放、没有对手/战报或本轮挑战通过 | S600-CACHE-RESUME-STATE / 2026-11-04（源码核对，非协议执行） |
+| arena-real-cache-task-formal-map | 已验证实际26条日常、10条唯一章节任务（oldChapter与chapter为同10实例），合计36唯一任务全部在冻结根表映射，正式QuestType均非724 | 协议QuestTypeDaily→`DailyQuestNew.xlsx/NewQuestCommonCfg`，QuestTypeMain→`ChapterQuest.xlsx/ChapterQuestCfg`；依据`Protos/Extension/D2QuestEx.cs:323-336,365-374`，不可将协议Daily/Main枚举、cfgID或Order值当条件724。custom10另查：100034/35/36和200101…200110缺行，其余命中类型与根表相同且非724；不推定当前有效Group10或缺行回退。`chapterQuestInfoReceived=true`区分真实回包与构造默认值；该快照只覆盖日常/章节，不证明其他活动、未来任务或所有角色没有724。取得真实724实例与权威前后计数后再判断是否需要挑战；不伪造任务或发goalevent/finishdaily | S600-CACHE-RESUME-STATE / 2026-11-04 |
+| arena-refresh-source-before-repeat | 已验证本次NK-10371/10373/10374/10375及任务子单10372正文、全部评论（4/5/3/1/0）与附件元数据（0/0/0/1/0）均无新增；没有新724实例或特效接入目标 | NK-10375仍只有1724823“特效有时间就接，其他优化项先进了”，不能凭Jira完成或已合入其他表现改动解除范围待确认。附件652051元数据没变，已有原PNG本次实际复核；本次secure GET302未冒充图片，也未CU。静态原图不能证明连续效果、部署资源或主辅听感。没有新增可执行依据，无须消耗挑战次数重复旧已通过项 | S600-CACHE-RESUME-JIRA / 2026-11-04 |
+| arena-resume-batches-no-count-inheritance | 已验证接续范围区分：旧600-2904-IMPACT经验为3通过2待补，关联原报告本机未找到；另一个可访问`FunctionPreview/reports/k1-600-unity-20261103/600-2/runtime-result.json`为4通过2阻塞，版本不同 | 两份历史材料不能合并计数、虚构缺失报告的断言ID，或迁移成本轮通过。本次无Arena打开/请求/挑战，0新增业务通过；已释放待验收仅表示停止归属，不能读成完成/失败。后续先找新真实实例/明确效果接入依据，保留来源缺口，不用旧结果填新台账 | S600-CACHE-RESUME-AUDIT / 2026-11-04 |
+| arena-human-audio-decision-kept | 本次无新听感结论：沿用600-2904中用户选择稍后人工判断主辅音的决定；状态仍待验 | Heavy_Hit/Punish_Hit实际播放、volume/priority、稀疏截图或有断点AudioListener采样均不能代替主辅听感；本次Jira刷新未带来人工确认或新的录音比较。保留既定人工动作，不由来源/缓存整理自动改为通过、失败或排除 | S600-CACHE-RESUME-AUDIT与原600-2904段 / 决定为历史，本次2026-11-04仅核对保持 |
+
+本次只追加以上方法及适用边界，保留原有档案全文。未更改业务、正式配置、索引、共享运行笔记、documentBaseline、在线状态或历史报告；身份绑定脚本仍在私有本轮目录，不加入Git提交/推送。
