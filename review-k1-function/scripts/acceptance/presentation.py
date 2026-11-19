@@ -10,7 +10,7 @@ BANNER_ROOT = ('https://raw.githubusercontent.com/RehearsalTap4Fun/K1FunctionRev
 
 def plain(value, limit=160):
     value = ' '.join(str(value or '').split())
-    return value if len(value) <= limit else value[:limit - 1] + '…'
+    return value if limit is None or len(value) <= limit else value[:limit - 1] + '…'
 
 
 def markdown(value, limit=160):
@@ -36,8 +36,10 @@ def details(value):
     if not isinstance(value, dict):
         return {}
     result = {k: plain(value.get(k), 500) for k in
-              ('issue', 'expected', 'environment', 'jira', 'nextStep', 'screenshotUnavailableReason')
+              ('expected', 'environment', 'jira', 'nextStep', 'screenshotUnavailableReason')
               if value.get(k)}
+    if value.get('issue'):
+        result['issue'] = plain(value['issue'], None)
     for key in ('jiraUrl', 'reportUrl', 'tableUrl'):
         url = web_url(value.get(key))
         if url:
@@ -75,19 +77,28 @@ def footer(recorded_at, event_number):
     return f'记录时间：{markdown(shown)}（北京时间） · 播报编号：{markdown(event_number)}'
 
 
+def failure_reason(conclusion, display):
+    if display.get('issue'):
+        return display['issue']
+    conclusion = plain(conclusion, None)
+    prefix = re.search(r'(?:^|[。；;\s])(?:失败原因|未通过原因|问题)[：:]\s*(?=\S)', conclusion)
+    return conclusion[prefix.end():] if prefix else conclusion
+
+
 def failure_message(*, label, mode, item, counters, recorded_at, event_number,
                     conclusion, display=None):
     display = details(display)
     title = '进度播报｜验收未通过｜' + plain(label, 60)
     heading = '**' + markdown(item['title'], 160) + '**'
-    if display.get('jira'):
-        jira = markdown(display['jira'], 60)
+    jira_id = display.get('jira') or (item['id'] if display.get('jiraUrl') else '')
+    if jira_id:
+        jira = markdown(jira_id, 60)
         heading += ' · ' + (f'[{jira}]({display["jiraUrl"]})' if display.get('jiraUrl') else jira)
-    blocks = [banner('failed', display), '### ' + markdown(title), heading,
-              '**问题**：' + markdown(display.get('issue') or conclusion),
+    blocks = ['**失败原因**：' + markdown(failure_reason(conclusion, display), None),
+              '### ' + markdown(title), heading,
               '**预期**：' + markdown(display.get('expected') or '预期待补充，详见报告'),
               '**环境**：' + markdown(display.get('environment') or '环境待补充，详见报告')
-              + ' · ' + markdown(mode)]
+              + ' · ' + markdown(mode), banner('failed', display)]
     screenshots = display.get('screenshots', [])
     if screenshots:
         blocks.extend(f'![截图{i + 1}：{markdown(s["caption"] or "失败现场", 60)}]({s["url"]})'
@@ -97,7 +108,9 @@ def failure_message(*, label, mode, item, counters, recorded_at, event_number,
     else:
         blocks.append('**截图**：暂无可展示截图；' + markdown(
             display.get('screenshotUnavailableReason') or '请在报告中核对证据缺口。'))
-    blocks.append(f'[查看报告]({display["reportUrl"]})' if display.get('reportUrl') else '报告链接待补充。')
+    links = [f'[{name}]({display[key]})' for key, name in [('reportUrl', '查看报告'), ('tableUrl', '版本表')]
+             if display.get(key)]
+    blocks.append(' · '.join(links) if links else '报告链接待补充。')
     blocks.extend([f'总需求：{counters["total"]}｜已完成：{counters["completed"]}｜未完成：{counters["incomplete"]}'
                    f'\n\n待验收：{counters["pending"]}｜正在验收：{counters["running"]}',
                    footer(recorded_at, event_number)])
@@ -118,7 +131,7 @@ def summary_message(*, label, mode, items, round_id, recorded_at, event_number, 
         lines = []
         for item in groups[status][:5]:
             extra = details(item.get('display'))
-            reason = extra.get('issue') or item.get('conclusion') or '原因详见报告'
+            reason = failure_reason(item.get('conclusion'), extra) or '原因详见报告'
             line = '- ' + markdown(item['title'], 60) + '：' + markdown(reason, 80)
             if status == 'blocked':
                 line += '；下一步：' + markdown(extra.get('nextStep') or '待明确补验动作', 80)

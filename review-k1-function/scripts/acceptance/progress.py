@@ -141,7 +141,9 @@ class ProgressStore:
         return {'versionDate': data['versionDate'], 'acceptanceMode': data['acceptanceMode'],
                 'source': data['source'], 'revision': data['revision'], 'counts': counts(data),
                 'items': list(data['items'].values()),
-                'notifications': [{k: e.get(k) for k in ('sequence', 'itemId', 'delivery', 'attempts', 'nextAttemptAt', 'code', 'mentionResolution')}
+                'notifications': [{k: e.get(k) for k in ('sequence', 'itemId', 'delivery', 'attempts',
+                                                         'nextAttemptAt', 'code', 'mentionResolution',
+                                                         'providerCode', 'groupConfirmation')}
                                   for e in data['outbox']]}
 
     def sync(self, snapshot):
@@ -278,13 +280,34 @@ class ProgressStore:
             atomic_json(self.path, data)
         return {'counts': c, 'revision': data['revision'], 'sequence': seq}
 
-    def flush(self, sender, clock=time.time, limit=5):
+    def confirm_delivery(self, sequence, confirm):
+        with locked(self.root):
+            entry = self.read()['outbox'][sequence - 1]
+        if entry['delivery'] != 'unknown' or 'attemptedAt' not in entry:
+            return
+        try:
+            proof = confirm(entry['payload'], entry['attemptedAt'])
+        except Exception:
+            return  # Group read failures never imply that the message can be resent.
+        if not isinstance(proof, dict) or not all(text(proof.get(k)) for k in ('messageId', 'createdAt')):
+            return
+        with locked(self.root):
+            data = self.read()
+            data['outbox'][sequence - 1].update(
+                delivery='sent', code='GROUP_READBACK_CONFIRMED', sentAt=stamp(),
+                groupConfirmation={'messageId': proof['messageId'], 'createdAt': proof['createdAt'],
+                                   'verifiedAt': stamp()})
+            atomic_json(self.path, data)
+
+    def flush(self, sender, clock=time.time, limit=5, priority_sequence=None):
         """One bounded drain; future retries run on the next event/resume/flush.
 
         A crashed sender is recovered as unknown, never blindly retried.
         Holding the sender lock does not block new acceptance result records.
         """
         require(type(limit) is int and 1 <= limit <= 5, 'SEND_LIMIT_INVALID')
+        confirm = getattr(sender, 'confirm_delivery', None)
+        checked = set()
         with locked(self.root, 'sender.lock', timeout=0):
             with locked(self.root):
                 data = self.read()
@@ -312,8 +335,9 @@ class ProgressStore:
                     recent = [t for t in data.get('attemptTimes', []) if t > current - 60]
                     if len(recent) >= 15:
                         break
-                    entry = next((e for e in data['outbox'] if e['delivery'] == 'pending'
-                                  and e['nextAttemptAt'] <= current), None)
+                    eligible = [e for e in data['outbox'] if e['delivery'] == 'pending'
+                                and e['nextAttemptAt'] <= current]
+                    entry = min(eligible, key=lambda e: e['sequence'] != priority_sequence, default=None)
                     if entry is None:
                         break
                     sequence = entry['sequence']
@@ -336,13 +360,13 @@ class ProgressStore:
                             entry.update(delivery='suppressed', code='SUPERSEDED_RESULT')
                             atomic_json(self.path, data)
                             continue
-                    entry.update(delivery='sending', attempts=entry['attempts'] + 1)
+                    entry.update(delivery='sending', attempts=entry['attempts'] + 1, attemptedAt=current)
                     sequence, payload = entry['sequence'], deepcopy(entry['payload'])
                     data['attemptTimes'] = recent + [current]
                     atomic_json(self.path, data)  # Durable before network side effects.
                 try:
                     response = sender(payload)
-                    if not isinstance(response, dict) or response.get('outcome') not in {'sent', 'retry', 'unknown'}:
+                    if not isinstance(response, dict) or response.get('outcome') not in {'accepted', 'sent', 'retry', 'unknown'}:
                         response = {'outcome': 'unknown', 'code': 'INVALID_DELIVERY_RECEIPT'}
                 except Exception:
                     response = {'outcome': 'unknown', 'code': 'SEND_EXCEPTION'}
@@ -353,6 +377,8 @@ class ProgressStore:
                     code = str(response.get('code', 'UNSPECIFIED'))
                     entry['code'] = code if re.fullmatch(r'[A-Z0-9_:-]{1,64}', code) else 'REDACTED_ERROR'
                     entry['delivery'] = ('pending' if entry['attempts'] < 3 else 'failed') if outcome == 'retry' else outcome
+                    if outcome == 'accepted':
+                        entry.update(delivery='unknown', providerCode=entry['code'], code='GROUP_READBACK_PENDING')
                     provider_delay = response.get('retryAfterSeconds', 0)
                     provider_delay = provider_delay if type(provider_delay) is int and provider_delay >= 0 else 0
                     entry['nextAttemptAt'] = clock() + max(provider_delay, 30 if entry['attempts'] == 1 else 120)
@@ -361,6 +387,16 @@ class ProgressStore:
                     if outcome == 'sent':
                         entry['sentAt'] = stamp()
                     atomic_json(self.path, data)
+                if callable(confirm) and outcome in {'accepted', 'unknown'}:
+                    self.confirm_delivery(sequence, confirm)
+                    checked.add(sequence)
+            if callable(confirm):
+                with locked(self.root):
+                    unresolved = [m['sequence'] for m in self.read()['outbox']
+                                  if m['delivery'] == 'unknown' and 'attemptedAt' in m
+                                  and m['sequence'] not in checked]
+                for sequence in unresolved[:max(0, limit - len(checked))]:
+                    self.confirm_delivery(sequence, confirm)
         return {'notifications': self.status()['notifications']}
 
     def resolve(self, request):

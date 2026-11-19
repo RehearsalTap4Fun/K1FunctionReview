@@ -26,7 +26,7 @@ def test_failure_contains_details_links_and_only_two_screenshots(layout):
                                    'screenshots': [{'url': f'https://images.example.test/{i}.png',
                                                     'caption': f'截图{i}'} for i in range(3)]})
     assert 'failed.png' in body and '验收未通过' in body
-    assert '**问题**：关闭后丢失' in body
+    assert body.startswith('**失败原因**：关闭后丢失\n\n')
     assert '**预期**：再次打开仍保留' in body
     assert 'Unity' in body and 'NK\\-100' in body
     assert '[查看报告]' in body

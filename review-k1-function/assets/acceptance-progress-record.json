@@ -11,10 +11,11 @@
   "display": {
     "jira": "",
     "jiraUrl": "",
-    "issue": "替换为一句话实际异常",
+    "issue": "替换为失败原因，首句直接写触发条件和实际错误",
     "expected": "替换为一句话正确表现",
     "environment": "替换为客户端路径、测试服及实际版本",
     "reportUrl": "",
+    "tableUrl": "",
     "screenshots": [],
     "screenshotUnavailableReason": "没有有效截图时填写真实原因",
     "nextStep": "阻塞结论时填写具体补验动作"

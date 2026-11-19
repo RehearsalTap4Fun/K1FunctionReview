@@ -28,7 +28,9 @@ def dws_call(args):
     result = subprocess.run([binary, *args, '--format', 'json'], capture_output=True,
                             encoding='utf-8', timeout=15, check=True)
     data = json.loads(result.stdout.lstrip('\ufeff'))
-    require(isinstance(data, dict) and data.get('success') is True, 'OWNER_LOOKUP_UNAVAILABLE')
+    require(isinstance(data, dict), 'OWNER_LOOKUP_UNAVAILABLE')
+    paged_messages = args[:3] == ['chat', 'message', 'list'] and isinstance(data.get('messages'), list)
+    require(data.get('success') is True or paged_messages, 'OWNER_LOOKUP_UNAVAILABLE')
     return data
 
 
@@ -55,18 +57,22 @@ class OwnerResolver:
             require(result.get('hasMore') is True and bool(result.get('nextCursor')), 'OWNER_LOOKUP_UNAVAILABLE')
             cursor = str(result['nextCursor'])
 
-    def group_members(self):
-        if self.members is not None:
-            return self.members
+    def resolve_group_id(self):
+        if self.group_id:
+            return self.group_id
         group_id = self.config.get('openConversationId')
         if not group_id:
             groups = self.pages(['chat', 'search', '--query', self.config['groupName']], 'groups')
             matches = {g.get('openConversationId') for g in groups if g.get('title') == self.config['groupName']}
             require(len(matches) == 1 and None not in matches, 'OWNER_GROUP_AMBIGUOUS')
             group_id = matches.pop()
-        members = self.pages(['chat', 'group', 'members', '--id', group_id], 'list')
-        self.group_id, self.members = group_id, members
-        return members
+        self.group_id = group_id
+        return group_id
+
+    def group_members(self):
+        if self.members is None:
+            self.members = self.pages(['chat', 'group', 'members', '--id', self.resolve_group_id()], 'list')
+        return self.members
 
     def resolve(self, value):
         names = owner_names(value)
@@ -133,7 +139,9 @@ def apply_mentions(payload, resolution):
                            labels.get(i.get('code'), '身份未核实') + '）' for i in resolution['unresolved'])
         lines.append('**未能定向提醒**：' + missing)
     notice = '\n\n'.join(lines)
+    if not notice:
+        return result
     body = result['markdown']['text']
-    marker = '\n\n**问题**：'
+    marker = '\n\n**预期**：' if body.startswith('**失败原因**：') else '\n\n**问题**：'
     result['markdown']['text'] = body.replace(marker, '\n\n' + notice + marker, 1) if marker in body else body + '\n\n' + notice
     return result

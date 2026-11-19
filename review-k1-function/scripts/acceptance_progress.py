@@ -29,7 +29,8 @@ def execute(action, request, root, config_path=None):
     result = (store.record(request) if action == 'record' else
               store.summarize(request) if action == 'summarize' else store.status())
     try:
-        result['notification'] = store.flush(RobotClient(config_path))
+        sequence = result.get('event', result).get('sequence')
+        result['notification'] = store.flush(RobotClient(config_path), priority_sequence=sequence)
     except (WorkflowError, OSError) as error:
         # A notification outage must not undo an accepted, durably recorded conclusion.
         result['notification'] = {'error': error.code if isinstance(error, WorkflowError) else 'NOTIFICATION_IO_ERROR'}

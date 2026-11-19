@@ -164,3 +164,59 @@ def test_display_metadata_is_persisted_and_used_by_round_summary(store, tmp_path
     result(store, tmp_path, 'C', 'blocked')
     store.summarize(summary_request(store, tmp_path))
     assert '重开后阵容丢失' in store.read()['outbox'][1]['payload']['markdown']['text']
+
+
+def test_failure_reason_comes_before_heading_and_mentions_without_truncation(store, tmp_path):
+    from acceptance.owners import apply_mentions
+
+    proof = tmp_path / 'failure.txt'
+    proof.write_text('服务器回执', encoding='utf-8')
+    reason = '服务端在白银已解锁时仍允许更换主题。' + '复现边界条件。' * 90 + '重新拉取后主题仍然改变。'
+    store.record({'eventId': 'failure', 'itemId': 'A', 'status': 'failed',
+                  'expectedItemRevision': 0, 'conclusionFinal': True,
+                  'conclusion': '测试步骤和已通过的用例。' * 30 + '失败原因：' + reason,
+                  'evidence': [str(proof)]})
+    entry = store.read()['outbox'][0]
+    body = apply_mentions(entry['payload'], {'userIds': ['handler']})['markdown']['text']
+    assert body.split('\n\n')[0] == '**失败原因**：' + reason
+    assert body.index('@handler') > body.index('重新拉取后主题仍然改变。')
+
+
+def test_structured_failure_reason_overrides_long_conclusion(store, tmp_path):
+    proof = tmp_path / 'failure.txt'
+    proof.write_text('服务器回执', encoding='utf-8')
+    reason = '预期禁止切换，实际返回成功。' + '补充失败细节。' * 100 + '原因结束。'
+    store.record({'eventId': 'failure', 'itemId': 'A', 'status': 'failed',
+                  'expectedItemRevision': 0, 'conclusionFinal': True,
+                  'conclusion': '环境前置和已通过的用例。' * 60,
+                  'display': {'issue': reason}, 'evidence': [str(proof)]})
+    assert store.read()['outbox'][0]['payload']['markdown']['text'].split('\n\n')[0] == '**失败原因**：' + reason
+
+
+def test_ack_without_group_message_stays_unknown_and_resume_only_reads(store, tmp_path):
+    result(store, tmp_path, 'A', 'failed')
+
+    class Sender:
+        calls = 0
+        proof = None
+
+        def __call__(self, payload):
+            self.calls += 1
+            return {'outcome': 'accepted', 'code': 'API_0'}
+
+        def confirm_delivery(self, payload, attempted_at):
+            assert attempted_at == 1800000000
+            return self.proof
+
+    sender = Sender()
+    store.flush(sender, clock=lambda: 1800000000)
+    first = store.status()['notifications'][0]
+    assert first['delivery'] == 'unknown' and first['code'] == 'GROUP_READBACK_PENDING'
+    assert sender.calls == 1
+
+    sender.proof = {'messageId': 'msg-1', 'createdAt': '2027-01-15 16:00:01'}
+    store.flush(sender, clock=lambda: 1800000030)
+    delivered = store.status()['notifications'][0]
+    assert delivered['delivery'] == 'sent'
+    assert delivered['groupConfirmation']['messageId'] == 'msg-1'
+    assert sender.calls == 1
